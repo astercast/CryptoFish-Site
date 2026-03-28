@@ -197,9 +197,13 @@ function renderStatsBar() {
   setEl('stat-items',  c.total_supply?.toLocaleString() ?? '2,165');
   setEl('stat-offer',  fmt(c.avg_price, 3));
 
-  // Update countup targets for holders/items so animation uses live values
+  // Re-set countup targets so animation can re-run on each stats refresh
+  const floorEl   = document.getElementById('stat-floor');
+  const volumeEl  = document.getElementById('stat-volume');
   const holdersEl = document.getElementById('stat-holders');
   const itemsEl   = document.getElementById('stat-items');
+  if (floorEl)   floorEl.dataset.countup   = String(c.floor_price);
+  if (volumeEl)  volumeEl.dataset.countup  = String(c.total_volume);
   if (holdersEl && c.num_owners)   holdersEl.dataset.countup = String(c.num_owners);
   if (itemsEl   && c.total_supply) itemsEl.dataset.countup   = String(c.total_supply);
 
@@ -214,6 +218,9 @@ function renderStatsBar() {
   document.querySelectorAll('[data-countup]').forEach(el => {
     const target = parseFloat(el.dataset.countup);
     if (isNaN(target)) return;
+    // Re-set the attribute so subsequent refreshes can re-animate
+    const countupVal = el.dataset.countup;
+    el.dataset.countup = '';
     let v = 0; const inc = target / 40;
     const isInt = target >= 10;
     const t = setInterval(() => {
@@ -221,8 +228,6 @@ function renderStatsBar() {
       el.textContent = isInt ? Math.round(v).toLocaleString() : v.toFixed(3);
       if (v >= target) clearInterval(t);
     }, 16);
-    // seed the data attr so re-renders still work
-    el.dataset.countup = '';
   });
 }
 
@@ -482,6 +487,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Fetch live data in parallel
   await Promise.allSettled([fetchEthPrice(), fetchCollectionStats()]);
+  // Re-render FOTD now that ETH price is available for USD conversion
+  renderFOTD();
   fetchRecentSales();
 
   // Periodic refreshes

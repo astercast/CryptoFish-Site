@@ -216,6 +216,7 @@ nav {
 }
 .hero-title em { color: var(--accent); font-style: italic; }
 .hero-sub { font-size: 16px; line-height: 1.7; color: var(--text2); max-width: 480px; margin-bottom: 36px; }
+.hero-text { min-width: 0; }
 .hero-btns { display: flex; gap: 12px; flex-wrap: wrap; }
 
 .hero-fish-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -448,6 +449,7 @@ nav {
 /* ── Fish Detail ───────────────────────────────── */
 .detail-layout { max-width: 1100px; margin: 0 auto; padding: 48px 40px 80px; display: grid; grid-template-columns: 380px 1fr; gap: 64px; }
 .detail-art-wrap { position: sticky; top: 72px; height: fit-content; }
+.detail-body { min-width: 0; }
 .detail-art {
   background: linear-gradient(145deg,var(--bg2),#dce8f0);
   border-radius: var(--radius-lg); border: 1px solid var(--border);

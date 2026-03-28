@@ -110,20 +110,27 @@ function initGlobe() {
     autoRotateTimer = setTimeout(() => { autoRotate = true; }, 3500);
   };
 
-  canvas.addEventListener('mousedown', e => {
-    mouseDown = true; isDragging = false;
-    prevX = e.clientX; prevY = e.clientY;
-    autoRotate = false;
-  });
-  window.addEventListener('mousemove', e => {
+  const onMouseMove = e => {
     if (!mouseDown) return;
     const dx = e.clientX - prevX, dy = e.clientY - prevY;
     if (Math.abs(dx) > 2 || Math.abs(dy) > 2) isDragging = true;
     globeGroup.rotation.y += dx * 0.007;
     globeGroup.rotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, globeGroup.rotation.x + dy * 0.004));
     prevX = e.clientX; prevY = e.clientY;
+  };
+  const onMouseUp = () => { mouseDown = false; resumeAuto(); };
+  const onResize = () => {
+    const w = canvas.offsetWidth, h = canvas.offsetHeight;
+    if (w && h) { globeCamera.aspect = w/h; globeCamera.updateProjectionMatrix(); globeRenderer.setSize(w, h); }
+  };
+
+  canvas.addEventListener('mousedown', e => {
+    mouseDown = true; isDragging = false;
+    prevX = e.clientX; prevY = e.clientY;
+    autoRotate = false;
   });
-  window.addEventListener('mouseup', () => { mouseDown = false; resumeAuto(); });
+  window.addEventListener('mousemove', onMouseMove);
+  window.addEventListener('mouseup', onMouseUp);
 
   // Touch
   let tx = 0, ty = 0;
@@ -157,10 +164,7 @@ function initGlobe() {
   });
 
   // Resize
-  window.addEventListener('resize', () => {
-    const w = canvas.offsetWidth, h = canvas.offsetHeight;
-    if (w && h) { globeCamera.aspect = w/h; globeCamera.updateProjectionMatrix(); globeRenderer.setSize(w, h); }
-  });
+  window.addEventListener('resize', onResize);
 
   // Animate
   let tick = 0;
