@@ -171,7 +171,7 @@ async function fetchRecentSales() {
       const localFish = FISH_DATA.find(f => parseInt(f.id) === parseInt(rawId));
       return {
         fish:  localFish?.emoji ?? pickEmoji(name),
-        name:  localFish?.common ?? name.replace('CryptoFish', '').trim() || 'CryptoFish',
+        name:  localFish?.common ?? (name.replace('CryptoFish', '').trim() || 'CryptoFish'),
         token,
         eth,
         usd:   fmtUSD(eth),
