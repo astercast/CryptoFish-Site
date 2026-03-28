@@ -45,14 +45,3 @@ const LOCALITIES = [
   { name:'Pacific Ocean',      sub:'Largest ocean basin',                   count:86,  lat:5,    lon:-140, color:'#2d7a4f', fish:[], desc:'The Pacific Ocean is Earth\'s largest and deepest ocean.' },
 ];
 
-const RECENT_SALES = [
-  { fish:'', name:'CryptoFish #834',  token:'#0834', eth:'0.068', usd:'$140',   time:'2m ago',  idx:833 },
-  { fish:'', name:'CryptoFish #1204', token:'#1204', eth:'0.22',  usd:'$454',   time:'18m ago', idx:1203 },
-  { fish:'', name:'CryptoFish #312',  token:'#0312', eth:'0.07',  usd:'$144',   time:'34m ago', idx:311 },
-  { fish:'', name:'CryptoFish #721',  token:'#0721', eth:'0.085', usd:'$175',   time:'1h ago',  idx:720 },
-  { fish:'', name:'CryptoFish #3',    token:'#0003', eth:'8.8',   usd:'$18,150',time:'3h ago',  idx:2 },
-  { fish:'', name:'CryptoFish #847',  token:'#0847', eth:'0.12',  usd:'$247',   time:'5h ago',  idx:846 },
-  { fish:'', name:'CryptoFish #1891', token:'#1891', eth:'0.09',  usd:'$186',   time:'7h ago',  idx:1890 },
-  { fish:'', name:'CryptoFish #1423', token:'#1423', eth:'0.52',  usd:'$1,074', time:'9h ago',  idx:1422 },
-  { fish:'', name:'CryptoFish #543',  token:'#0543', eth:'0.28',  usd:'$578',   time:'11h ago', idx:542 },
-];

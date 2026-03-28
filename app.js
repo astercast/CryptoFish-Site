@@ -93,9 +93,7 @@ function updatePriceDisplays() {
   setEl('stat-offer-usd', '≈ ' + fmtUSD(c?.avg_price ?? 0.05));
   const navEl = document.getElementById('nav-eth-val');
   if (navEl && liveEthPrice) navEl.textContent = '$' + liveEthPrice.toLocaleString();
-  setEl('top-sale-usd-1', '≈ ' + fmtUSD(12.5));
-  setEl('top-sale-usd-2', '≈ ' + fmtUSD(8.8));
-  setEl('top-sale-usd-3', '≈ ' + fmtUSD(6.2));
+  // Top sales USD will be set by live fetch
 }
 
 // ── Live: OpenSea Collection Stats ────────────────
@@ -161,12 +159,8 @@ async function fetchRecentSales() {
     });
     renderSalesFeed(sales);
   } catch (e) {
-    console.warn('[OpenSea sales] fallback:', e.message);
-    renderSalesFeed(RECENT_SALES.map(s => ({
-      ...s,
-      image: FISH_DATA[s.idx]?.image || '',
-      name: FISH_DATA[s.idx] ? escapeHTML(FISH_DATA[s.idx].name) : s.name,
-    })));
+    console.warn('[OpenSea sales] error:', e.message);
+    renderSalesFeed([]); // Show nothing if API fails
   }
 }
 
@@ -215,6 +209,10 @@ function renderStatsBar() {
 function renderSalesFeed(sales) {
   const el = document.getElementById('sales-list');
   if (!el) return;
+  if (!sales.length) {
+    el.innerHTML = '<div class="sales-loading">No recent sales found.</div>';
+    return;
+  }
   el.innerHTML = sales.map((s, i) => `
     <div class="sale-item" style="animation-delay:${i * 0.04}s" onclick="showFish(${s.idx ?? 0})">
       <div class="sale-fish-icon">${s.image ? `<img src="${encodeURI(s.image)}" alt="" loading="lazy">` : '🐟'}</div>
@@ -229,28 +227,62 @@ function renderSalesFeed(sales) {
     </div>`).join('');
 }
 
-function simulateLiveSale() {
-  const el = document.getElementById('sales-list');
-  if (!el) return;
-  const idx = Math.floor(Math.random() * FISH_DATA.length);
-  const f   = FISH_DATA[idx];
-  const s   = RECENT_SALES[Math.floor(Math.random() * RECENT_SALES.length)];
-  const div = document.createElement('div');
-  div.className = 'sale-item sale-item--new';
-  div.onclick   = () => showFish(idx);
-  div.innerHTML = `
-    <div class="sale-fish-icon">${f.image ? `<img src="${encodeURI(f.image)}" alt="" loading="lazy">` : '🐟'}</div>
-    <div class="sale-info">
-      <div class="sale-name">${escapeHTML(f.name)}</div>
-      <div class="sale-detail">#${f.id} · just now</div>
+
+// ── Live: OpenSea Top Sales ─────────────────────
+async function fetchTopSales() {
+  try {
+    const r = await fetch(
+      'https://api.opensea.io/api/v2/events/collection/cryptofish?event_type=sale&limit=100&occurred_before=' + Math.floor(Date.now() / 1000),
+      { headers: { accept: 'application/json' }, cache: 'no-store' }
+    );
+    if (!r.ok) throw new Error(r.status);
+    const d  = await r.json();
+    const ev = d.asset_events ?? [];
+    const sales = ev.filter(e => {
+      const sym = (e.payment?.symbol || '').toUpperCase();
+      return !sym || sym === 'ETH' || sym === 'WETH';
+    }).map(e => {
+      const eth   = e.payment ? (parseInt(e.payment.quantity) / 1e18) : 0;
+      const rawId = e.nft?.identifier ?? '';
+      const token = rawId ? '#' + String(rawId).padStart(4, '0') : '—';
+      const idx   = rawId ? parseInt(rawId) - 1 : 0;
+      const f     = FISH_DATA[idx];
+      return {
+        image: f?.image || '',
+        name:  f ? escapeHTML(f.name) : ('CryptoFish #' + rawId),
+        token,
+        eth,
+        usd:   fmtUSD(eth),
+        idx,
+      };
+    });
+    // Sort by ETH descending, take top 3
+    const top = sales.sort((a, b) => b.eth - a.eth).slice(0, 3);
+    renderTopSales(top);
+  } catch (e) {
+    console.warn('[OpenSea top sales] error:', e.message);
+    renderTopSales([]);
+  }
+}
+
+function renderTopSales(topSales) {
+  const grid = document.querySelector('.top-sales-grid');
+  if (!grid) return;
+  if (!topSales.length) {
+    grid.innerHTML = '<div class="sales-loading">No top sales found.</div>';
+    return;
+  }
+  grid.innerHTML = topSales.map((s, i) => `
+    <div class="top-sale-card" onclick="showFish(${s.idx ?? 0})">
+      <div class="top-sale-rank">#${i + 1}</div>
+      <div class="top-sale-art">${s.image ? `<img src="${encodeURI(s.image)}" alt="" loading="lazy">` : '🐟'}</div>
+      <div class="top-sale-info">
+        <div class="top-sale-name">${s.name}</div>
+        <div class="top-sale-price">${s.eth} ETH</div>
+        <div class="top-sale-usd">${s.usd}</div>
+      </div>
     </div>
-    <div class="sale-price">
-      <div class="sale-eth">${s.eth} ETH</div>
-      <div class="sale-usd">${fmtUSD(s.eth)}</div>
-    </div>`;
-  el.insertBefore(div, el.firstChild);
-  while (el.children.length > 12) el.removeChild(el.lastChild);
-  setTimeout(() => div.classList.remove('sale-item--new'), 1500);
+  `).join('');
 }
 
 // ── Render: Fish of the Day ───────────────────────
@@ -549,11 +581,7 @@ function renderHeroCards() {
 document.addEventListener('DOMContentLoaded', async () => {
   buildFilterPills();
   renderHeroCards();
-  renderSalesFeed(RECENT_SALES.map(s => ({
-    ...s,
-    image: FISH_DATA[s.idx]?.image || '',
-    name: FISH_DATA[s.idx] ? escapeHTML(FISH_DATA[s.idx].name) : s.name,
-  })));
+  renderSalesFeed([]); // Start empty, will fill with real sales
   renderLibrary();
   renderFOTD();
   initScrollReveal();
@@ -561,14 +589,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   await Promise.allSettled([fetchEthPrice(), fetchCollectionStats()]);
   renderFOTD();
   fetchRecentSales();
+  fetchTopSales();
 
   setInterval(fetchEthPrice,        60_000);
   setInterval(fetchCollectionStats, 300_000);
   setInterval(fetchRecentSales,     120_000);
-
-  const scheduleSale = () => {
-    const ms = 20000 + Math.random() * 40000;
-    setTimeout(() => { simulateLiveSale(); scheduleSale(); }, ms);
-  };
-  scheduleSale();
+  setInterval(fetchTopSales,        300_000);
 });
