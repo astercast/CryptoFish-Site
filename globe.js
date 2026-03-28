@@ -197,7 +197,35 @@ function showPopover(loc) {
     `<div class="popover-fish">${f}</div>`).join('');
   const exploreBtn = document.getElementById('pop-explore-btn');
   if (exploreBtn) exploreBtn.onclick = () => exploreLocality(loc.name);
-  document.getElementById('locality-popover').classList.add('visible');
+
+  // Position popover near the dot, but keep it onscreen
+  const pop = document.getElementById('locality-popover');
+  const canvas = document.getElementById('globe-canvas');
+  // Default: center of canvas
+  let x = canvas.offsetLeft + canvas.offsetWidth / 2;
+  let y = canvas.offsetTop + canvas.offsetHeight / 2;
+  // Try to use last mouse position if available
+  if (window.lastGlobeClick) {
+    x = window.lastGlobeClick.x;
+    y = window.lastGlobeClick.y;
+  }
+  // Popover size
+  const popW = 320, popH = 320;
+  // Clamp to viewport
+  const pad = 16;
+  x = Math.max(pad, Math.min(x, window.innerWidth  - popW - pad));
+  y = Math.max(pad, Math.min(y, window.innerHeight - popH - pad));
+  pop.style.left = x + 'px';
+  pop.style.top  = y + 'px';
+  pop.style.width = popW + 'px';
+  pop.style.maxWidth = '96vw';
+  pop.style.position = 'fixed';
+  pop.classList.add('visible');
+}
+  // Track last mouse click for popover positioning
+  canvas.addEventListener('mousedown', e => {
+    window.lastGlobeClick = { x: e.clientX, y: e.clientY };
+  });
 }
 
 function closePopover() {

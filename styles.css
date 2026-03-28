@@ -438,10 +438,11 @@ nav {
 .locality-arrow { color: var(--text3); font-size: 13px; flex-shrink: 0; }
 
 .locality-popover {
-  position: absolute; top: 80px; left: 40px; z-index: 10;
+  position: fixed; top: 80px; left: 40px; z-index: 1002;
   background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius-lg); width: 296px; padding: 20px;
+  border-radius: var(--radius-lg); width: 320px; max-width: 96vw; padding: 20px;
   box-shadow: var(--shadow-lg); display: none;
+  transition: left .15s, top .15s;
 }
 .locality-popover.visible { display: block; animation: popoverIn .25s var(--ease-out); }
 @keyframes popoverIn { from { opacity:0; transform: scale(.96) translateY(4px); } to { opacity:1; transform: none; } }
