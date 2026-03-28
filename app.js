@@ -28,7 +28,10 @@ function fmtUSD(eth) {
   return '$' + Math.round(parseFloat(eth) * liveEthPrice).toLocaleString();
 }
 function timeAgo(ms) {
+  // Guard: if timestamp looks like it was already in ms, don't multiply
+  if (ms > Date.now() * 10) ms = ms / 1000;
   const s = Math.floor((Date.now() - ms) / 1000);
+  if (s < 0) return 'just now';
   if (s < 60)    return s + 's ago';
   if (s < 3600)  return Math.floor(s / 60) + 'm ago';
   if (s < 86400) return Math.floor(s / 3600) + 'h ago';
@@ -96,10 +99,14 @@ function updatePriceDisplays() {
   const c = liveCollection;
   setEl('stat-vol-usd',   '≈ ' + fmtUSD(c?.total_volume ?? 706.66));
   setEl('stat-floor-usd', '≈ ' + fmtUSD(c?.floor_price ?? 0.064));
-  setEl('stat-offer-usd', '≈ ' + fmtUSD(c?.top_offer ?? 0.05));
+  setEl('stat-offer-usd', '≈ ' + fmtUSD(c?.avg_price ?? 0.05));
   // Nav ETH ticker
   const navEl = document.getElementById('nav-eth-val');
   if (navEl && liveEthPrice) navEl.textContent = '$' + liveEthPrice.toLocaleString();
+  // Top sale USD values
+  setEl('top-sale-usd-1', '≈ ' + fmtUSD(12.5));
+  setEl('top-sale-usd-2', '≈ ' + fmtUSD(8.8));
+  setEl('top-sale-usd-3', '≈ ' + fmtUSD(6.2));
   // detail page live price
   const fish = FISH_DATA[currentFishIndex];
   if (fish && document.getElementById('page-detail')?.classList.contains('active')) {
@@ -125,14 +132,14 @@ async function fetchCollectionStats() {
       num_owners:   parseInt(s.num_owners     ?? 596),
       total_supply: parseInt(s.count          ?? 2165),
       listed_count: s.listed_count ? parseInt(s.listed_count) : null,
-      top_offer:    parseFloat(s.average_price ?? 0.05),
+      avg_price:    parseFloat(s.average_price ?? 0.05),
     };
   } catch (e) {
     console.warn('[OpenSea stats] fallback:', e.message);
     liveCollection = liveCollection || {
       floor_price: 0.064, total_volume: 706.66,
       num_owners: 596, total_supply: 2165,
-      listed_count: null, top_offer: 0.05,
+      listed_count: null, avg_price: 0.05,
     };
   }
   renderStatsBar();
@@ -150,7 +157,11 @@ async function fetchRecentSales() {
     const ev = d.asset_events ?? [];
     if (!ev.length) throw new Error('empty');
 
-    const sales = ev.map(e => {
+    const sales = ev.filter(e => {
+      // Only show ETH/WETH sales — skip USDC and other tokens with different decimals
+      const sym = (e.payment?.symbol || '').toUpperCase();
+      return !sym || sym === 'ETH' || sym === 'WETH';
+    }).map(e => {
       const eth   = e.payment ? (parseInt(e.payment.quantity) / 1e18).toFixed(4) : '0.064';
       const rawId = e.nft?.identifier ?? '';
       const name  = e.nft?.name || (rawId ? 'CryptoFish #' + rawId : 'CryptoFish');
@@ -184,7 +195,13 @@ function renderStatsBar() {
   setEl('stat-volume', c.total_volume.toLocaleString(undefined, { maximumFractionDigits: 1 }));
   setEl('stat-holders',c.num_owners?.toLocaleString() ?? '—');
   setEl('stat-items',  c.total_supply?.toLocaleString() ?? '2,165');
-  setEl('stat-offer',  fmt(c.top_offer, 3));
+  setEl('stat-offer',  fmt(c.avg_price, 3));
+
+  // Update countup targets for holders/items so animation uses live values
+  const holdersEl = document.getElementById('stat-holders');
+  const itemsEl   = document.getElementById('stat-items');
+  if (holdersEl && c.num_owners)   holdersEl.dataset.countup = String(c.num_owners);
+  if (itemsEl   && c.total_supply) itemsEl.dataset.countup   = String(c.total_supply);
 
   if (c.num_owners && c.total_supply)
     setEl('stat-holders-sub', ((c.num_owners / c.total_supply) * 100).toFixed(1) + '% of supply');

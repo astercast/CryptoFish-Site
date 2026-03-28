@@ -111,17 +111,17 @@
       </div>
       <div class="stat-item">
         <div class="stat-label">Unique Holders</div>
-        <div class="stat-value" id="stat-holders">596</div>
+        <div class="stat-value"><span id="stat-holders" data-countup="596">596</span></div>
         <div class="stat-sub" id="stat-holders-sub">27.5% of supply</div>
       </div>
       <div class="stat-item">
         <div class="stat-label">Items</div>
-        <div class="stat-value" id="stat-items">2,165</div>
+        <div class="stat-value"><span id="stat-items" data-countup="2165">2,165</span></div>
         <div class="stat-sub" id="stat-listed-sub">3.4% listed</div>
       </div>
       <div class="stat-item">
-        <div class="stat-label">Top Offer</div>
-        <div class="stat-value"><span id="stat-offer">0.050</span><span class="stat-unit"> WETH</span></div>
+        <div class="stat-label">Avg Sale Price</div>
+        <div class="stat-value"><span id="stat-offer">0.050</span><span class="stat-unit"> ETH</span></div>
         <div class="stat-sub" id="stat-offer-usd">— USD</div>
       </div>
     </div>
@@ -195,7 +195,7 @@
             <div class="top-sale-info">
               <div class="top-sale-name">Blue Whale</div>
               <div class="top-sale-price">12.5 ETH</div>
-              <div class="top-sale-usd">≈ $25,800</div>
+              <div class="top-sale-usd" id="top-sale-usd-1">≈ $25,800</div>
             </div>
           </div>
           <div class="top-sale-card" onclick="showFish(6)">
@@ -204,7 +204,7 @@
             <div class="top-sale-info">
               <div class="top-sale-name">Coelacanth</div>
               <div class="top-sale-price">8.8 ETH</div>
-              <div class="top-sale-usd">≈ $18,150</div>
+              <div class="top-sale-usd" id="top-sale-usd-2">≈ $18,150</div>
             </div>
           </div>
           <div class="top-sale-card" onclick="showFish(7)">
@@ -213,7 +213,7 @@
             <div class="top-sale-info">
               <div class="top-sale-name">Spinner Dolphin</div>
               <div class="top-sale-price">6.2 ETH</div>
-              <div class="top-sale-usd">≈ $12,800</div>
+              <div class="top-sale-usd" id="top-sale-usd-3">≈ $12,800</div>
             </div>
           </div>
         </div>
@@ -302,23 +302,28 @@
         <input class="filter-search" placeholder="Search genera…" oninput="filterPills('genera-filters',this.value)">
         <div class="filter-pills" id="genera-filters">
           <div class="filter-pill" onclick="toggleFilter(this,'genera','Amphiprion')">Amphiprion</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'genera','Pterois')">Pterois</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'genera','Chromis')">Chromis</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'genera','Chaetodon')">Chaetodon</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'genera','Acanthurus')">Acanthurus</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'genera','Hippocampus')">Hippocampus</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'genera','Rhincodon')">Rhincodon</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'genera','Pomacanthus')">Pomacanthus</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'genera','Stegostoma')">Stegostoma</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'genera','Balaenoptera')">Balaenoptera</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'genera','Latimeria')">Latimeria</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'genera','Stenella')">Stenella</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'genera','Hapalochlaena')">Hapalochlaena</div>
           <div class="filter-pill" onclick="toggleFilter(this,'genera','Arothron')">Arothron</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'genera','Sphyrna')">Sphyrna</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'genera','Chelmon')">Chelmon</div>
+          <div class="filter-pill" onclick="toggleFilter(this,'genera','Balaenoptera')">Balaenoptera</div>
           <div class="filter-pill" onclick="toggleFilter(this,'genera','Cheilinus')">Cheilinus</div>
+          <div class="filter-pill" onclick="toggleFilter(this,'genera','Chelmon')">Chelmon</div>
+          <div class="filter-pill" onclick="toggleFilter(this,'genera','Dosidicus')">Dosidicus</div>
+          <div class="filter-pill" onclick="toggleFilter(this,'genera','Ginglymostoma')">Ginglymostoma</div>
+          <div class="filter-pill" onclick="toggleFilter(this,'genera','Grapsus')">Grapsus</div>
+          <div class="filter-pill" onclick="toggleFilter(this,'genera','Hapalochlaena')">Hapalochlaena</div>
+          <div class="filter-pill" onclick="toggleFilter(this,'genera','Latimeria')">Latimeria</div>
+          <div class="filter-pill" onclick="toggleFilter(this,'genera','Nautilus')">Nautilus</div>
+          <div class="filter-pill" onclick="toggleFilter(this,'genera','Neomonachus')">Neomonachus</div>
+          <div class="filter-pill" onclick="toggleFilter(this,'genera','Panulirus')">Panulirus</div>
           <div class="filter-pill" onclick="toggleFilter(this,'genera','Paracanthurus')">Paracanthurus</div>
+          <div class="filter-pill" onclick="toggleFilter(this,'genera','Pterois')">Pterois</div>
+          <div class="filter-pill" onclick="toggleFilter(this,'genera','Rhincodon')">Rhincodon</div>
+          <div class="filter-pill" onclick="toggleFilter(this,'genera','Sphyrna')">Sphyrna</div>
+          <div class="filter-pill" onclick="toggleFilter(this,'genera','Stegostoma')">Stegostoma</div>
+          <div class="filter-pill" onclick="toggleFilter(this,'genera','Stenella')">Stenella</div>
+          <div class="filter-pill" onclick="toggleFilter(this,'genera','Stenopus')">Stenopus</div>
+          <div class="filter-pill" onclick="toggleFilter(this,'genera','Synchiropus')">Synchiropus</div>
+          <div class="filter-pill" onclick="toggleFilter(this,'genera','Thunnus')">Thunnus</div>
+          <div class="filter-pill" onclick="toggleFilter(this,'genera','Zanclus')">Zanclus</div>
         </div>
       </div>
       <div class="filter-group">
