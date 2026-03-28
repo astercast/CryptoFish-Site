@@ -23,7 +23,7 @@
     <button class="nav-link active" onclick="showPage('home')">Home</button>
     <button class="nav-link" onclick="showPage('library')">Library</button>
     <button class="nav-link" onclick="showPage('globe')">Globe</button>
-    <button class="nav-link" onclick="showPage('nemo')">About Findurnemo</button>
+    <button class="nav-link" onclick="showPage('nemo')">About</button>
   </div>
   <div class="nav-right">
     <div class="eth-ticker" id="nav-eth-price" title="Live ETH price">
@@ -40,7 +40,7 @@
   <button class="mobile-nav-link" onclick="showPage('home')">Home</button>
   <button class="mobile-nav-link" onclick="showPage('library')">Library</button>
   <button class="mobile-nav-link" onclick="showPage('globe')">Globe</button>
-  <button class="mobile-nav-link" onclick="showPage('nemo')">About Findurnemo</button>
+  <button class="mobile-nav-link" onclick="showPage('nemo')">About</button>
   <button class="mobile-nav-link primary" onclick="window.open('https://opensea.io/collection/cryptofish','_blank')">View on OpenSea ↗</button>
 </div>
 
@@ -64,9 +64,7 @@
         <button class="btn-secondary" onclick="showPage('globe')">View the Globe</button>
       </div>
     </div>
-    <div class="hero-fish-grid reveal" id="hero-fish-grid">
-      <!-- Populated dynamically by renderHeroCards() -->
-    </div>
+    <!-- Removed hero fish grid for a cleaner, info-focused homepage -->
   </div>
 
   <!-- Stats Bar — IDs match renderStatsBar() -->
@@ -358,11 +356,11 @@
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════════
-     ABOUT FINDURNEMO
-════════════════════════════════════════════════ -->
-<div id="page-nemo" class="page">
 
+<!-- ════════════════════════════════════════════════
+     ABOUT
+═════════════════════════════════════════════════ -->
+<div id="page-nemo" class="page">
   <div class="nemo-hero">
     <div class="nemo-avatar reveal">🎣</div>
     <div class="nemo-eyebrow reveal">Findurnemo · Pixel Artist</div>
@@ -378,17 +376,31 @@
 
   <div class="nemo-stats-bar">
     <div class="nemo-stats-inner">
-      <div class="nemo-stat reveal"><div class="nemo-stat-num">2,166</div><div class="nemo-stat-label">Fish Illustrated</div></div>
-      <div class="nemo-stat reveal"><div class="nemo-stat-num">1,700+</div><div class="nemo-stat-label">Unique Species</div></div>
+      <div class="nemo-stat reveal"><div class="nemo-stat-num">2,166</div><div class="nemo-stat-label">Fish</div></div>
+      <div class="nemo-stat reveal"><div class="nemo-stat-num">1,700+</div><div class="nemo-stat-label">Species</div></div>
       <div class="nemo-stat reveal"><div class="nemo-stat-num">340+</div><div class="nemo-stat-label">Genera</div></div>
-      <div class="nemo-stat reveal"><div class="nemo-stat-num">989</div><div class="nemo-stat-label">Global Localities</div></div>
-      <div class="nemo-stat reveal"><div class="nemo-stat-num">706 ETH</div><div class="nemo-stat-label">Total Volume</div></div>
+      <div class="nemo-stat reveal"><div class="nemo-stat-num">989</div><div class="nemo-stat-label">Localities</div></div>
+      <div class="nemo-stat reveal"><div class="nemo-stat-num">706 ETH</div><div class="nemo-stat-label">Volume</div></div>
     </div>
   </div>
 
   <div class="nemo-section reveal" style="margin-top:32px;">
-    <div class="nemo-section-title">About the Artist</div>
-    <p class="nemo-prose">Findurnemo is a pixel artist and researcher focused on marine life. Their work spans several NFT collections since 2021, with CryptoFish as the flagship project. Each fish is illustrated by hand and based on real species, with scientific accuracy and conservation in mind.</p>
+    <div class="nemo-section-title">About CryptoFish</div>
+    <p class="nemo-prose">
+      CryptoFish is a collection of 2,166 hand-crafted pixel art NFTs, each representing a real fish species. Every fish is unique, with rarity based on both collection traits and real-world biology. Created by Findurnemo, CryptoFish celebrates marine biodiversity and the beauty of rare species.
+    </p>
+    <ul class="nemo-list">
+      <li>Every CryptoFish is a real, scientifically classified species, with genus, species, and locality encoded on-chain.</li>
+      <li>Rarity is not just about collection traits—many fish are rare in the wild due to their conservation status, limited range, or unique evolutionary history.</li>
+      <li>Some species are critically endangered or known from only a single locality, making their digital representation as rare as their real-world existence.</li>
+      <li>Traits like color, pattern, and locality are based on real biology, not just random generation.</li>
+      <li>The collection includes over 1,700 species, 340+ genera, and nearly 1,000 localities, making it one of the most scientifically diverse NFT projects.</li>
+      <li>Each fish is hand-drawn in pixel art, referencing real scientific illustrations and field guides.</li>
+      <li>CryptoFish is a tribute to the diversity and fragility of aquatic life, aiming to raise awareness for conservation through art and technology.</li>
+    </ul>
+    <p class="nemo-prose">
+      For more, follow <a href="https://x.com/findurnemo" target="_blank">@findurnemo</a> and explore the full collection on <a href="https://opensea.io/collection/cryptofish" target="_blank">OpenSea</a>.
+    </p>
   </div>
 
   <footer class="site-footer">

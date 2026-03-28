@@ -252,21 +252,26 @@ nav {
 .stat-up { color: var(--lc); } .stat-down { color: var(--en); }
 
 /* ── FOTD ──────────────────────────────────────── */
+/* Fish of the Day Card — square image */
 .fotd-card {
   background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius-lg); overflow: hidden;
-  display: grid; grid-template-columns: 300px 1fr;
+  display: grid; grid-template-columns: 220px 1fr;
 }
 .fotd-art {
   background: linear-gradient(145deg,#e4eff8,#d0e4f0);
   display: flex; align-items: center; justify-content: center;
   line-height: 1; position: relative; padding: 0; overflow: hidden;
+  width: 220px; height: 220px;
 }
 .fotd-emoji {
   animation: fotdFloat 4s ease-in-out infinite;
-  display: block; width: 100%; height: 100%;
+  display: block; width: 180px; height: 180px; aspect-ratio: 1/1;
+  margin: auto;
 }
-.fotd-emoji img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.fotd-emoji img {
+  width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 12px;
+}
 @keyframes fotdFloat {
   0%,100% { transform: translateY(0); }
   50%      { transform: translateY(-8px); }
