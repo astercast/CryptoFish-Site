@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CryptoFish — Real Fish. Rare Fish.</title>
-<meta name="description" content="CryptoFish: 2,165 hand-crafted pixel art NFTs. Every fish is a real species, classified with Linnaean taxonomy and encoded on Ethereum.">
+<meta name="description" content="CryptoFish: 2,166 hand-crafted pixel art NFTs. Every fish is a real species, classified with Linnaean taxonomy and encoded on Ethereum.">
 <meta property="og:title" content="CryptoFish — Real Fish. Rare Fish.">
-<meta property="og:description" content="2,165 hand-crafted pixel art NFTs. Real species. Linnaean taxonomy. Conservation status. Ethereum.">
+<meta property="og:description" content="2,166 hand-crafted pixel art NFTs. Real species. Linnaean taxonomy. Conservation status. Ethereum.">
 <meta property="og:image" content="https://i2c.seadn.io/ethereum/2bfbfbaa8f9a43a29c49de14cea2ff55/567540cb4397ede62334a90f4eb202/23567540cb4397ede62334a90f4eb202.gif">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -52,7 +52,7 @@
   <!-- Hero -->
   <div class="home-hero">
     <div class="hero-text">
-      <div class="hero-eyebrow reveal">2,165 Species · Ethereum · Since May 2025</div>
+      <div class="hero-eyebrow reveal">2,166 Species · Ethereum · Since May 2025</div>
       <h1 class="hero-title reveal">Real Fish.<br><em>Rare Fish.</em></h1>
       <p class="hero-sub reveal">
         Every CryptoFish is a real species, hand-crafted in pixel art and scientifically classified
@@ -64,35 +64,8 @@
         <button class="btn-secondary" onclick="showPage('globe')">View the Globe</button>
       </div>
     </div>
-    <div class="hero-fish-grid reveal">
-      <div class="hero-fish-card large" onclick="showFish(0)">
-        <div class="fish-img-wrap large-wrap">🐠</div>
-        <div class="fish-card-info">
-          <div class="fish-card-name">Clownfish (Ocellaris)</div>
-          <div class="fish-card-sci">Amphiprion ocellaris</div>
-        </div>
-      </div>
-      <div class="hero-fish-card" onclick="showFish(3)">
-        <div class="fish-img-wrap">🐡</div>
-        <div class="fish-card-info">
-          <div class="fish-card-name">Dog-Faced Pufferfish</div>
-          <div class="fish-card-sci">Arothron nigropunctatus</div>
-        </div>
-      </div>
-      <div class="hero-fish-card" onclick="showFish(2)">
-        <div class="fish-img-wrap">🦈</div>
-        <div class="fish-card-info">
-          <div class="fish-card-name">Zebra Shark</div>
-          <div class="fish-card-sci">Stegostoma tigrinum</div>
-        </div>
-      </div>
-      <div class="hero-fish-card" onclick="showFish(4)">
-        <div class="fish-img-wrap">🐙</div>
-        <div class="fish-card-info">
-          <div class="fish-card-name">Blue-Ringed Octopus</div>
-          <div class="fish-card-sci">Hapalochlaena lunulata</div>
-        </div>
-      </div>
+    <div class="hero-fish-grid reveal" id="hero-fish-grid">
+      <!-- Populated dynamically by renderHeroCards() -->
     </div>
   </div>
 
@@ -116,7 +89,7 @@
       </div>
       <div class="stat-item">
         <div class="stat-label">Items</div>
-        <div class="stat-value"><span id="stat-items" data-countup="2165">2,165</span></div>
+        <div class="stat-value"><span id="stat-items" data-countup="2166">2,166</span></div>
         <div class="stat-sub" id="stat-listed-sub">3.4% listed</div>
       </div>
       <div class="stat-item">
@@ -234,30 +207,33 @@
         <svg class="donut-svg" viewBox="0 0 160 160" width="160" height="160">
           <circle cx="80" cy="80" r="60" fill="none" stroke="#e2ddd8" stroke-width="20"/>
           <circle class="donut-seg" cx="80" cy="80" r="60" fill="none" stroke="#2d7a4f" stroke-width="20"
-            stroke-dasharray="169 208" stroke-dashoffset="0"/>
-          <circle class="donut-seg" cx="80" cy="80" r="60" fill="none" stroke="#7a6d2d" stroke-width="20"
-            stroke-dasharray="75 302" stroke-dashoffset="-169"/>
+            stroke-dasharray="171 206" stroke-dashoffset="0"/>
+          <circle class="donut-seg" cx="80" cy="80" r="60" fill="none" stroke="#557799" stroke-width="20"
+            stroke-dasharray="145 232" stroke-dashoffset="-171"/>
           <circle class="donut-seg" cx="80" cy="80" r="60" fill="none" stroke="#7a4a2d" stroke-width="20"
-            stroke-dasharray="60 317" stroke-dashoffset="-244"/>
-          <circle class="donut-seg" cx="80" cy="80" r="60" fill="none" stroke="#7a2d2d" stroke-width="20"
-            stroke-dasharray="40 337" stroke-dashoffset="-304"/>
+            stroke-dasharray="20 357" stroke-dashoffset="-316"/>
           <circle class="donut-seg" cx="80" cy="80" r="60" fill="none" stroke="#5c1515" stroke-width="20"
-            stroke-dasharray="20 357" stroke-dashoffset="-344"/>
+            stroke-dasharray="13 364" stroke-dashoffset="-336"/>
           <circle class="donut-seg" cx="80" cy="80" r="60" fill="none" stroke="#999" stroke-width="20"
-            stroke-dasharray="13 364" stroke-dashoffset="-364"/>
+            stroke-dasharray="12 365" stroke-dashoffset="-349"/>
+          <circle class="donut-seg" cx="80" cy="80" r="60" fill="none" stroke="#7a2d2d" stroke-width="20"
+            stroke-dasharray="9 368" stroke-dashoffset="-361"/>
+          <circle class="donut-seg" cx="80" cy="80" r="60" fill="none" stroke="#7a6d2d" stroke-width="20"
+            stroke-dasharray="7 370" stroke-dashoffset="-370"/>
         </svg>
         <div class="donut-center">
-          <div class="donut-center-num">2,165</div>
+          <div class="donut-center-num">2,166</div>
           <div class="donut-center-label">TOTAL</div>
         </div>
       </div>
       <div class="conservation-list">
-        <div class="cons-row"><div class="cons-dot" style="background:#2d7a4f"></div><div class="cons-label">Least Concern (LC)</div><div class="cons-bar-wrap"><div class="cons-bar" style="width:0%;background:#2d7a4f" data-width="71"></div></div><div class="cons-count">1,537</div></div>
-        <div class="cons-row"><div class="cons-dot" style="background:#7a6d2d"></div><div class="cons-label">Near Threatened (NT)</div><div class="cons-bar-wrap"><div class="cons-bar" style="width:0%;background:#7a6d2d" data-width="31"></div></div><div class="cons-count">324</div></div>
-        <div class="cons-row"><div class="cons-dot" style="background:#7a4a2d"></div><div class="cons-label">Vulnerable (VU)</div><div class="cons-bar-wrap"><div class="cons-bar" style="width:0%;background:#7a4a2d" data-width="25"></div></div><div class="cons-count">189</div></div>
-        <div class="cons-row"><div class="cons-dot" style="background:#7a2d2d"></div><div class="cons-label">Endangered (EN)</div><div class="cons-bar-wrap"><div class="cons-bar" style="width:0%;background:#7a2d2d" data-width="16"></div></div><div class="cons-count">82</div></div>
-        <div class="cons-row"><div class="cons-dot" style="background:#5c1515"></div><div class="cons-label">Critically Endangered (CR)</div><div class="cons-bar-wrap"><div class="cons-bar" style="width:0%;background:#5c1515" data-width="8"></div></div><div class="cons-count">23</div></div>
-        <div class="cons-row"><div class="cons-dot" style="background:#999"></div><div class="cons-label">Data Deficient (DD)</div><div class="cons-bar-wrap"><div class="cons-bar" style="width:0%;background:#999" data-width="5"></div></div><div class="cons-count">10</div></div>
+        <div class="cons-row"><div class="cons-dot" style="background:#2d7a4f"></div><div class="cons-label">Least Concern (LC)</div><div class="cons-bar-wrap"><div class="cons-bar" style="width:0%;background:#2d7a4f" data-width="45"></div></div><div class="cons-count">980</div></div>
+        <div class="cons-row"><div class="cons-dot" style="background:#557799"></div><div class="cons-label">Not Evaluated / Unknown</div><div class="cons-bar-wrap"><div class="cons-bar" style="width:0%;background:#557799" data-width="39"></div></div><div class="cons-count">839</div></div>
+        <div class="cons-row"><div class="cons-dot" style="background:#7a4a2d"></div><div class="cons-label">Vulnerable (VU)</div><div class="cons-bar-wrap"><div class="cons-bar" style="width:0%;background:#7a4a2d" data-width="5"></div></div><div class="cons-count">114</div></div>
+        <div class="cons-row"><div class="cons-dot" style="background:#5c1515"></div><div class="cons-label">Critically Endangered (CR)</div><div class="cons-bar-wrap"><div class="cons-bar" style="width:0%;background:#5c1515" data-width="3"></div></div><div class="cons-count">73</div></div>
+        <div class="cons-row"><div class="cons-dot" style="background:#999"></div><div class="cons-label">Data Deficient (DD)</div><div class="cons-bar-wrap"><div class="cons-bar" style="width:0%;background:#999" data-width="3"></div></div><div class="cons-count">67</div></div>
+        <div class="cons-row"><div class="cons-dot" style="background:#7a2d2d"></div><div class="cons-label">Endangered (EN)</div><div class="cons-bar-wrap"><div class="cons-bar" style="width:0%;background:#7a2d2d" data-width="2"></div></div><div class="cons-count">51</div></div>
+        <div class="cons-row"><div class="cons-dot" style="background:#7a6d2d"></div><div class="cons-label">Near Threatened (NT)</div><div class="cons-bar-wrap"><div class="cons-bar" style="width:0%;background:#7a6d2d" data-width="2"></div></div><div class="cons-count">42</div></div>
       </div>
     </div>
   </div>
@@ -300,55 +276,14 @@
       <div class="filter-group">
         <div class="filter-group-label">Genera</div>
         <input class="filter-search" placeholder="Search genera…" oninput="filterPills('genera-filters',this.value)">
-        <div class="filter-pills" id="genera-filters">
-          <div class="filter-pill" onclick="toggleFilter(this,'genera','Amphiprion')">Amphiprion</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'genera','Arothron')">Arothron</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'genera','Balaenoptera')">Balaenoptera</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'genera','Cheilinus')">Cheilinus</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'genera','Chelmon')">Chelmon</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'genera','Dosidicus')">Dosidicus</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'genera','Ginglymostoma')">Ginglymostoma</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'genera','Grapsus')">Grapsus</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'genera','Hapalochlaena')">Hapalochlaena</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'genera','Latimeria')">Latimeria</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'genera','Nautilus')">Nautilus</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'genera','Neomonachus')">Neomonachus</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'genera','Panulirus')">Panulirus</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'genera','Paracanthurus')">Paracanthurus</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'genera','Pterois')">Pterois</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'genera','Rhincodon')">Rhincodon</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'genera','Sphyrna')">Sphyrna</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'genera','Stegostoma')">Stegostoma</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'genera','Stenella')">Stenella</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'genera','Stenopus')">Stenopus</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'genera','Synchiropus')">Synchiropus</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'genera','Thunnus')">Thunnus</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'genera','Zanclus')">Zanclus</div>
-        </div>
+        <div class="filter-pills" id="genera-filters"></div>
       </div>
       <div class="filter-group">
         <div class="filter-group-label">Locality</div>
         <input class="filter-search" placeholder="Search locality…" oninput="filterPills('locality-filters',this.value)">
-        <div class="filter-pills" id="locality-filters">
-          <div class="filter-pill" onclick="toggleFilter(this,'locality','Indo-Pacific')">Indo-Pacific</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'locality','Great Barrier Reef')">Great Barrier Reef</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'locality','Red Sea')">Red Sea</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'locality','Caribbean')">Caribbean</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'locality','Coral Sea')">Coral Sea</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'locality','Solomon Islands')">Solomon Islands</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'locality','Hawaiian Waters')">Hawaiian Waters</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'locality','Comoro Islands')">Comoro Islands</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'locality','Galápagos Islands')">Galápagos Islands</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'locality','Global Oceans')">Global Oceans</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'locality','Pacific Ocean')">Pacific Ocean</div>
-        </div>
+        <div class="filter-pills" id="locality-filters"></div>
       </div>
-      <div class="filter-group">
-        <div class="filter-group-label">Listing Status</div>
-        <div class="filter-pills">
-          <div class="filter-pill" onclick="toggleFilter(this,'listed','true')">Listed only</div>
-        </div>
-      </div>
+
     </div>
 
     <div class="library-main">
@@ -356,8 +291,6 @@
         <button class="filter-toggle-btn" onclick="toggleFilterSidebar()">⚙ Filters</button>        <input class="filter-search library-search" id="library-search" placeholder="Search by name, species, or ID…" oninput="searchLibrary(this.value)">        <div class="library-count" id="lib-count">Loading…</div>
         <select class="sort-select" onchange="sortLibrary(this.value)">
           <option value="id">Sort: Token ID</option>
-          <option value="price-asc">Sort: Price ↑</option>
-          <option value="price-desc">Sort: Price ↓</option>
           <option value="alpha">Sort: Species A–Z</option>
           <option value="status">Sort: Conservation</option>
         </select>
@@ -444,7 +377,7 @@
 
       <div class="detail-nav">
         <button class="detail-nav-btn" onclick="navFish(-1)">← Previous</button>
-        <button class="detail-nav-btn random" onclick="showFish(Math.floor(Math.random()*FISH_DATA.length))">🎲 Random</button>
+        <button class="detail-nav-btn random" onclick="showFish(Math.floor(Math.random()*2166))">🎲 Random</button>
         <button class="detail-nav-btn" onclick="navFish(1)">Next →</button>
       </div>
     </div>
@@ -471,10 +404,10 @@
 
   <div class="nemo-stats-bar">
     <div class="nemo-stats-inner">
-      <div class="nemo-stat reveal"><div class="nemo-stat-num">2,165</div><div class="nemo-stat-label">Fish Illustrated</div></div>
-      <div class="nemo-stat reveal"><div class="nemo-stat-num">400+</div><div class="nemo-stat-label">Unique Species</div></div>
-      <div class="nemo-stat reveal"><div class="nemo-stat-num">80+</div><div class="nemo-stat-label">Genera</div></div>
-      <div class="nemo-stat reveal"><div class="nemo-stat-num">60+</div><div class="nemo-stat-label">Global Localities</div></div>
+      <div class="nemo-stat reveal"><div class="nemo-stat-num">2,166</div><div class="nemo-stat-label">Fish Illustrated</div></div>
+      <div class="nemo-stat reveal"><div class="nemo-stat-num">1,700+</div><div class="nemo-stat-label">Unique Species</div></div>
+      <div class="nemo-stat reveal"><div class="nemo-stat-num">340+</div><div class="nemo-stat-label">Genera</div></div>
+      <div class="nemo-stat reveal"><div class="nemo-stat-num">989</div><div class="nemo-stat-label">Global Localities</div></div>
       <div class="nemo-stat reveal"><div class="nemo-stat-num">706 ETH</div><div class="nemo-stat-label">Total Volume</div></div>
     </div>
   </div>

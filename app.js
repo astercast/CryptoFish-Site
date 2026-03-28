@@ -10,8 +10,10 @@ let currentSort      = 'id';
 let mobileNavOpen    = false;
 let liveEthPrice     = null;
 let liveCollection   = null;
-let activeFilters    = { status: [], genera: [], locality: [], listed: [] };
+let activeFilters    = { status: [], genera: [], locality: [] };
 let currentSearch    = '';
+let libraryPage      = 0;
+const PAGE_SIZE      = 60;
 
 // ── Helpers ───────────────────────────────────────
 function setEl(id, val) {
@@ -28,7 +30,6 @@ function fmtUSD(eth) {
   return '$' + Math.round(parseFloat(eth) * liveEthPrice).toLocaleString();
 }
 function timeAgo(ms) {
-  // Guard: if timestamp looks like it was already in ms, don't multiply
   if (ms > Date.now() * 10) ms = ms / 1000;
   const s = Math.floor((Date.now() - ms) / 1000);
   if (s < 0) return 'just now';
@@ -37,16 +38,8 @@ function timeAgo(ms) {
   if (s < 86400) return Math.floor(s / 3600) + 'h ago';
   return Math.floor(s / 86400) + 'd ago';
 }
-function pickEmoji(name) {
-  const n = (name || '').toLowerCase();
-  const map = [
-    ['clown','🐠'],['puffer','🐡'],['shark','🦈'],['whale','🐋'],
-    ['dolphin','🐬'],['octopus','🐙'],['lion','🦁'],['seal','🦭'],
-    ['coelacanth','🪸'],['nautilus','🐚'],['squid','🦑'],['shrimp','🦐'],
-    ['lobster','🦞'],['crab','🦀'],['tuna','🐟'],
-  ];
-  for (const [k, v] of map) if (n.includes(k)) return v;
-  return ['🐟','🐠','🐡','🦈','🦑'][Math.floor(Math.random() * 5)];
+function escapeHTML(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 // ── Navigation ────────────────────────────────────
@@ -66,8 +59,6 @@ function showPage(page) {
   if (page === 'globe') setTimeout(initGlobe, 80);
   window.scrollTo({ top: 0, behavior: 'smooth' });
   if (mobileNavOpen) toggleMobileNav();
-
-  // Re-run scroll reveal for new page
   setTimeout(initScrollReveal, 50);
 }
 
@@ -100,24 +91,16 @@ function updatePriceDisplays() {
   setEl('stat-vol-usd',   '≈ ' + fmtUSD(c?.total_volume ?? 706.66));
   setEl('stat-floor-usd', '≈ ' + fmtUSD(c?.floor_price ?? 0.064));
   setEl('stat-offer-usd', '≈ ' + fmtUSD(c?.avg_price ?? 0.05));
-  // Nav ETH ticker
   const navEl = document.getElementById('nav-eth-val');
   if (navEl && liveEthPrice) navEl.textContent = '$' + liveEthPrice.toLocaleString();
-  // Top sale USD values
   setEl('top-sale-usd-1', '≈ ' + fmtUSD(12.5));
   setEl('top-sale-usd-2', '≈ ' + fmtUSD(8.8));
   setEl('top-sale-usd-3', '≈ ' + fmtUSD(6.2));
-  // detail page live price
-  const fish = FISH_DATA[currentFishIndex];
-  if (fish && document.getElementById('page-detail')?.classList.contains('active')) {
-    setEl('detail-usd', '≈ ' + fmtUSD(fish.price) + ' USD');
-  }
 }
 
 // ── Live: OpenSea Collection Stats ────────────────
 async function fetchCollectionStats() {
   try {
-    // v2 stats endpoint — no API key needed for public collections
     const r = await fetch(
       'https://api.opensea.io/api/v2/collections/cryptofish/stats',
       { headers: { accept: 'application/json' }, cache: 'no-store' }
@@ -125,12 +108,11 @@ async function fetchCollectionStats() {
     if (!r.ok) throw new Error(r.status);
     const d = await r.json();
     const s = d.total ?? d;
-
     liveCollection = {
       floor_price:  parseFloat(s.floor_price  ?? 0.064),
       total_volume: parseFloat(s.volume       ?? 706.66),
       num_owners:   parseInt(s.num_owners     ?? 596),
-      total_supply: parseInt(s.count          ?? 2165),
+      total_supply: parseInt(s.count          ?? 2166),
       listed_count: s.listed_count ? parseInt(s.listed_count) : null,
       avg_price:    parseFloat(s.average_price ?? 0.05),
     };
@@ -138,7 +120,7 @@ async function fetchCollectionStats() {
     console.warn('[OpenSea stats] fallback:', e.message);
     liveCollection = liveCollection || {
       floor_price: 0.064, total_volume: 706.66,
-      num_owners: 596, total_supply: 2165,
+      num_owners: 596, total_supply: 2166,
       listed_count: null, avg_price: 0.05,
     };
   }
@@ -158,31 +140,33 @@ async function fetchRecentSales() {
     if (!ev.length) throw new Error('empty');
 
     const sales = ev.filter(e => {
-      // Only show ETH/WETH sales — skip USDC and other tokens with different decimals
       const sym = (e.payment?.symbol || '').toUpperCase();
       return !sym || sym === 'ETH' || sym === 'WETH';
     }).map(e => {
       const eth   = e.payment ? (parseInt(e.payment.quantity) / 1e18).toFixed(4) : '0.064';
       const rawId = e.nft?.identifier ?? '';
-      const name  = e.nft?.name || (rawId ? 'CryptoFish #' + rawId : 'CryptoFish');
       const token = rawId ? '#' + String(rawId).padStart(4, '0') : '—';
       const ts    = (e.closing_time ?? e.event_timestamp ?? 0) * 1000;
-      // find in our data if possible
-      const localFish = FISH_DATA.find(f => parseInt(f.id) === parseInt(rawId));
+      const idx   = rawId ? parseInt(rawId) - 1 : 0;
+      const f     = FISH_DATA[idx];
       return {
-        fish:  localFish?.emoji ?? pickEmoji(name),
-        name:  localFish?.common ?? (name.replace('CryptoFish', '').trim() || 'CryptoFish'),
+        image: f?.image || '',
+        name:  f ? escapeHTML(f.name) : ('CryptoFish #' + rawId),
         token,
         eth,
         usd:   fmtUSD(eth),
         time:  timeAgo(ts),
-        idx:   localFish ? FISH_DATA.indexOf(localFish) : 0,
+        idx,
       };
     });
     renderSalesFeed(sales);
   } catch (e) {
     console.warn('[OpenSea sales] fallback:', e.message);
-    renderSalesFeed(RECENT_SALES);
+    renderSalesFeed(RECENT_SALES.map(s => ({
+      ...s,
+      image: FISH_DATA[s.idx]?.image || '',
+      name: FISH_DATA[s.idx] ? escapeHTML(FISH_DATA[s.idx].name) : s.name,
+    })));
   }
 }
 
@@ -194,10 +178,9 @@ function renderStatsBar() {
   setEl('stat-floor',  fmt(c.floor_price, 3));
   setEl('stat-volume', c.total_volume.toLocaleString(undefined, { maximumFractionDigits: 1 }));
   setEl('stat-holders',c.num_owners?.toLocaleString() ?? '—');
-  setEl('stat-items',  c.total_supply?.toLocaleString() ?? '2,165');
+  setEl('stat-items',  c.total_supply?.toLocaleString() ?? '2,166');
   setEl('stat-offer',  fmt(c.avg_price, 3));
 
-  // Re-set countup targets so animation can re-run on each stats refresh
   const floorEl   = document.getElementById('stat-floor');
   const volumeEl  = document.getElementById('stat-volume');
   const holdersEl = document.getElementById('stat-holders');
@@ -214,12 +197,9 @@ function renderStatsBar() {
 
   updatePriceDisplays();
 
-  // Count-up animation on stat values
   document.querySelectorAll('[data-countup]').forEach(el => {
     const target = parseFloat(el.dataset.countup);
     if (isNaN(target)) return;
-    // Re-set the attribute so subsequent refreshes can re-animate
-    const countupVal = el.dataset.countup;
     el.dataset.countup = '';
     let v = 0; const inc = target / 40;
     const isInt = target >= 10;
@@ -237,7 +217,7 @@ function renderSalesFeed(sales) {
   if (!el) return;
   el.innerHTML = sales.map((s, i) => `
     <div class="sale-item" style="animation-delay:${i * 0.04}s" onclick="showFish(${s.idx ?? 0})">
-      <div class="sale-fish-icon">${s.fish}</div>
+      <div class="sale-fish-icon">${s.image ? `<img src="${encodeURI(s.image)}" alt="" loading="lazy">` : '🐟'}</div>
       <div class="sale-info">
         <div class="sale-name">${s.name}</div>
         <div class="sale-detail">${s.token} · ${s.time}</div>
@@ -249,19 +229,20 @@ function renderSalesFeed(sales) {
     </div>`).join('');
 }
 
-// Flash a new sale into feed
 function simulateLiveSale() {
   const el = document.getElementById('sales-list');
   if (!el) return;
-  const s  = RECENT_SALES[Math.floor(Math.random() * RECENT_SALES.length)];
+  const idx = Math.floor(Math.random() * FISH_DATA.length);
+  const f   = FISH_DATA[idx];
+  const s   = RECENT_SALES[Math.floor(Math.random() * RECENT_SALES.length)];
   const div = document.createElement('div');
   div.className = 'sale-item sale-item--new';
-  div.onclick   = () => showFish(s.idx ?? 0);
+  div.onclick   = () => showFish(idx);
   div.innerHTML = `
-    <div class="sale-fish-icon">${s.fish}</div>
+    <div class="sale-fish-icon">${f.image ? `<img src="${encodeURI(f.image)}" alt="" loading="lazy">` : '🐟'}</div>
     <div class="sale-info">
-      <div class="sale-name">${s.name}</div>
-      <div class="sale-detail">${s.token} · just now</div>
+      <div class="sale-name">${escapeHTML(f.name)}</div>
+      <div class="sale-detail">#${f.id} · just now</div>
     </div>
     <div class="sale-price">
       <div class="sale-eth">${s.eth} ETH</div>
@@ -274,26 +255,36 @@ function simulateLiveSale() {
 
 // ── Render: Fish of the Day ───────────────────────
 function renderFOTD() {
-  const day  = Math.floor(Date.now() / 86400000); // changes at UTC midnight
-  const fish = FISH_DATA[day % FISH_DATA.length];
-  const idx  = FISH_DATA.indexOf(fish);
+  const day  = Math.floor(Date.now() / 86400000);
+  const idx  = day % FISH_DATA.length;
+  const fish = FISH_DATA[idx];
 
-  setEl('fotd-emoji',   fish.emoji);
-  setEl('fotd-name',    fish.common);
-  setEl('fotd-sci',     fish.sci);
-  setEl('fotd-genera',  fish.genus);
-  setEl('fotd-family',  fish.family);
-  setEl('fotd-locality',fish.locality);
+  const artEl = document.getElementById('fotd-emoji');
+  if (artEl) {
+    if (fish.image) {
+      artEl.innerHTML = `<img src="${encodeURI(fish.image)}" alt="${escapeHTML(fish.name)}" class="fotd-img">`;
+    } else {
+      artEl.textContent = '🐟';
+    }
+  }
+
+  setEl('fotd-name',    fish.name);
+  setEl('fotd-sci',     fish.sci || '—');
+  setEl('fotd-genera',  fish.genus || '—');
+  setEl('fotd-family',  '—');
+  setEl('fotd-locality',fish.locality || '—');
   setEl('fotd-token',   '#' + fish.id);
-  setEl('fotd-desc',    fish.history.slice(0, 290) + '…');
-  setHTML('fotd-status',`<span class="status-pill status-${fish.status.toLowerCase()}">⬤ ${STATUS_NAMES[fish.status]}</span>`);
+  setEl('fotd-desc',    fish.sci
+    ? `${fish.genus} ${fish.species} from ${fish.locality || 'unknown locality'}. Conservation status: ${STATUS_NAMES[fish.status] || 'Unknown'}.`
+    : (fish.honorary ? `Custom honorary token for ${fish.honorary}.` : ''));
+  setHTML('fotd-status',`<span class="status-pill status-${fish.status.toLowerCase()}">⬤ ${STATUS_NAMES[fish.status] || 'Unknown'}</span>`);
 
   const vb = document.getElementById('fotd-view-btn');
   const bb = document.getElementById('fotd-buy-btn');
   const pl = document.getElementById('fotd-profile-link');
   if (vb) vb.onclick = () => showFish(idx);
   if (pl) pl.onclick = () => showFish(idx);
-  if (bb) bb.onclick = () => window.open('https://opensea.io/collection/cryptofish', '_blank');
+  if (bb) bb.onclick = () => window.open(`https://opensea.io/assets/ethereum/0x9ef31ce8cca614e7aff3c1b883740e8d2728fe91/${fish.tokenId}`, '_blank');
 }
 
 // ── Fish Detail ───────────────────────────────────
@@ -303,42 +294,61 @@ function showFish(idx) {
   const f = FISH_DATA[idx];
   if (!f) return;
 
-  setEl('detail-art',        f.emoji);
+  const artEl = document.getElementById('detail-art');
+  if (artEl) {
+    if (f.image) {
+      artEl.innerHTML = `<img src="${encodeURI(f.image)}" alt="${escapeHTML(f.name)}" class="detail-img">`;
+    } else {
+      artEl.innerHTML = '🐟';
+    }
+  }
+
   setEl('detail-token',      'Token #' + f.id);
-  setEl('detail-price',      f.price + ' ETH');
-  setEl('detail-usd',        '≈ ' + fmtUSD(f.price) + ' USD');
-  setEl('detail-common',     f.common);
-  setEl('detail-sci',        f.sci);
-  setEl('detail-genus-bc',   f.genus);
-  setEl('detail-species-bc', f.species);
-  setEl('sp-common',   f.common);
-  setEl('sp-sci',      f.sci);
-  setEl('sp-order',    f.order);
-  setEl('sp-family',   f.family);
-  setEl('sp-genus',    f.genus);
-  setEl('sp-species',  f.species);
-  setEl('sp-locality', f.locality);
-  setEl('sp-status',   STATUS_NAMES[f.status] + ' (' + f.status + ')');
-  setEl('detail-history',      f.history);
-  setEl('detail-conservation', f.conservation);
+  setEl('detail-common',     f.name);
+  setEl('detail-sci',        f.sci || (f.honorary ? 'Custom / Honorary' : ''));
+  setEl('detail-genus-bc',   f.genus || '—');
+  setEl('detail-species-bc', f.species || '—');
+  setEl('sp-common',   f.name);
+  setEl('sp-sci',      f.sci || '—');
+  setEl('sp-order',    '—');
+  setEl('sp-family',   '—');
+  setEl('sp-genus',    f.genus || '—');
+  setEl('sp-species',  f.species || '—');
+  setEl('sp-locality', f.locality || '—');
+  setEl('sp-status',   (STATUS_NAMES[f.status] || 'Unknown') + ' (' + f.status + ')');
 
   setHTML('detail-status-pill',
-    `<span class="status-pill status-${f.status.toLowerCase()}">⬤ ${STATUS_NAMES[f.status]}</span>`);
+    `<span class="status-pill status-${f.status.toLowerCase()}">⬤ ${STATUS_NAMES[f.status] || 'Unknown'}</span>`);
 
-  // OpenSea link — search by name since we don't have contract address
+  // OpenSea direct link to this specific token
   const buyBtn = document.getElementById('detail-buy-btn');
   if (buyBtn) buyBtn.onclick = () =>
-    window.open(`https://opensea.io/collection/cryptofish?search[stringTraits][0][name]=Species&search[stringTraits][0][values][0]=${encodeURIComponent(f.species)}`, '_blank');
+    window.open(`https://opensea.io/assets/ethereum/0x9ef31ce8cca614e7aff3c1b883740e8d2728fe91/${f.tokenId}`, '_blank');
 
-  // collection context stats
-  const sameGenus    = FISH_DATA.filter(x => x.genus    === f.genus).length;
-  const sameLocality = FISH_DATA.filter(x => x.locality === f.locality).length;
-  const sameStatus   = FISH_DATA.filter(x => x.status   === f.status).length;
+  setEl('detail-price', '—');
+  setEl('detail-usd', '');
+
+  // Collection context stats
+  const sameGenus    = f.genus ? FISH_DATA.filter(x => x.genus === f.genus).length : 0;
+  const sameLocality = f.locality ? FISH_DATA.filter(x => x.locality === f.locality).length : 0;
+  const sameStatus   = FISH_DATA.filter(x => x.status === f.status).length;
   const ctx = document.getElementById('detail-context');
-  if (ctx) ctx.innerHTML =
-    `<strong>${sameGenus}</strong> in genus <em>${f.genus}</em> &nbsp;·&nbsp; ` +
-    `<strong>${sameLocality}</strong> from ${f.locality} &nbsp;·&nbsp; ` +
-    `<strong>${sameStatus}</strong> ${STATUS_NAMES[f.status]}`;
+  if (ctx) {
+    const parts = [];
+    if (f.genus)    parts.push(`<strong>${sameGenus}</strong> in genus <em>${escapeHTML(f.genus)}</em>`);
+    if (f.locality) parts.push(`<strong>${sameLocality}</strong> from ${escapeHTML(f.locality)}`);
+    parts.push(`<strong>${sameStatus}</strong> ${STATUS_NAMES[f.status] || 'Unknown'}`);
+    ctx.innerHTML = parts.join(' &nbsp;·&nbsp; ');
+  }
+
+  const histEl = document.getElementById('detail-history');
+  const consEl = document.getElementById('detail-conservation');
+  if (histEl) histEl.textContent = f.honorary
+    ? `Custom honorary token created for ${f.honorary}.`
+    : (f.sci ? `${f.genus} ${f.species}, found in ${f.locality || 'its native habitat'}.` : '');
+  if (consEl) consEl.textContent = f.status && STATUS_NAMES[f.status]
+    ? `IUCN Red List status: ${STATUS_NAMES[f.status]} (${f.status}).`
+    : '';
 
   showPage('detail');
 }
@@ -348,18 +358,18 @@ function navFish(dir) {
 }
 
 // ── Library ───────────────────────────────────────
-function getAllLibraryFish() {
-  return [...FISH_DATA, ...generatePlaceholders(80, 0)];
-}
-
 function getFilteredFish() {
-  let fish = getAllLibraryFish();
+  let fish = FISH_DATA;
   if (currentSearch) {
+    const q = currentSearch;
     fish = fish.filter(f =>
-      f.common.toLowerCase().includes(currentSearch) ||
-      f.sci.toLowerCase().includes(currentSearch) ||
-      f.genus.toLowerCase().includes(currentSearch) ||
-      f.id.includes(currentSearch)
+      f.name.toLowerCase().includes(q) ||
+      f.sci.toLowerCase().includes(q) ||
+      f.genus.toLowerCase().includes(q) ||
+      f.species.toLowerCase().includes(q) ||
+      f.locality.toLowerCase().includes(q) ||
+      f.id.includes(q) ||
+      String(f.tokenId).includes(q)
     );
   }
   if (activeFilters.status.length)
@@ -367,15 +377,13 @@ function getFilteredFish() {
   if (activeFilters.genera.length)
     fish = fish.filter(f => activeFilters.genera.includes(f.genus));
   if (activeFilters.locality.length)
-    fish = fish.filter(f => activeFilters.locality.some(l => f.locality?.includes(l)));
+    fish = fish.filter(f => activeFilters.locality.some(l => f.locality === l));
 
-  const so = { CR:0, EN:1, VU:2, NT:3, DD:4, LC:5 };
+  const so = { CR:0, EN:1, VU:2, NT:3, DD:4, LC:5, NE:6, EW:7, EX:8, '?':9 };
   switch (currentSort) {
-    case 'price-asc':  fish.sort((a,b) => parseFloat(a.price)-parseFloat(b.price)); break;
-    case 'price-desc': fish.sort((a,b) => parseFloat(b.price)-parseFloat(a.price)); break;
-    case 'alpha':      fish.sort((a,b) => a.common.localeCompare(b.common));         break;
-    case 'status':     fish.sort((a,b) => (so[a.status]??9)-(so[b.status]??9));     break;
-    default:           fish.sort((a,b) => parseInt(a.id)-parseInt(b.id));
+    case 'alpha':  fish = [...fish].sort((a,b) => a.name.localeCompare(b.name)); break;
+    case 'status': fish = [...fish].sort((a,b) => (so[a.status]??9)-(so[b.status]??9)); break;
+    default:       fish = [...fish].sort((a,b) => a.tokenId - b.tokenId);
   }
   return fish;
 }
@@ -385,35 +393,43 @@ function renderLibrary() {
   const countEl = document.getElementById('lib-count');
   if (!grid) return;
 
-  const fish      = getFilteredFish();
+  const allFish   = getFilteredFish();
   const isList    = currentView === 'list';
+  const showCount = (libraryPage + 1) * PAGE_SIZE;
+  const fish      = allFish.slice(0, showCount);
+
   grid.className  = 'fish-grid' + (isList ? ' list-view' : '');
 
   grid.innerHTML = fish.map((f, i) => {
-    const realIdx  = FISH_DATA.findIndex(x => x.id === f.id);
-    const clickIdx = realIdx >= 0 ? realIdx : Math.min(i, FISH_DATA.length - 1);
+    const idx = f.tokenId - 1;
     return `
-      <div class="fish-card animate-card" style="--card-delay:${(i % 20) * 0.03}s" onclick="showFish(${clickIdx})">
+      <div class="fish-card animate-card" style="--card-delay:${(i % 20) * 0.03}s" onclick="showFish(${idx})">
         <div class="fish-card-art">
           <div class="fish-card-token">#${f.id}</div>
-          <div class="fish-card-status-dot" style="background:${STATUS_COLORS[f.status]||'#999'}" title="${STATUS_NAMES[f.status]||''}"></div>
-          <div class="fish-card-emoji">${f.emoji}</div>
+          <div class="fish-card-status-dot" style="background:${STATUS_COLORS[f.status]||'#999'}" title="${STATUS_NAMES[f.status]||'Unknown'}"></div>
+          ${f.image ? `<img src="${encodeURI(f.image)}" alt="${escapeHTML(f.name)}" class="fish-card-img" loading="lazy">` : '<div class="fish-card-emoji">🐟</div>'}
         </div>
         <div class="fish-card-body">
-          <div class="fish-card-common">${f.common}</div>
-          <div class="fish-card-sci">${f.sci}</div>
+          <div class="fish-card-common">${escapeHTML(f.name)}</div>
+          <div class="fish-card-sci">${f.sci ? escapeHTML(f.sci) : (f.honorary ? 'Custom' : '')}</div>
           <div class="fish-card-footer">
-            <div class="fish-card-locality">${f.locality?.split(' ')[0]||'—'}</div>
-            <div class="fish-card-price">${f.price} ETH</div>
+            <div class="fish-card-locality">${escapeHTML(f.locality || '—')}</div>
+            <div class="fish-card-status-label">${f.status}</div>
           </div>
         </div>
       </div>`;
   }).join('');
 
-  if (countEl) {
-    const total = getAllLibraryFish().length;
-    countEl.textContent = `Showing ${fish.length} of 2,165 fish`;
+  if (fish.length < allFish.length) {
+    grid.innerHTML += `<div class="load-more-wrap"><button class="btn-primary load-more-btn" onclick="loadMoreLibrary()">Load more (${allFish.length - fish.length} remaining)</button></div>`;
   }
+
+  if (countEl) countEl.textContent = `Showing ${fish.length} of ${allFish.length} fish`;
+}
+
+function loadMoreLibrary() {
+  libraryPage++;
+  renderLibrary();
 }
 
 function toggleFilter(el, type, val) {
@@ -421,12 +437,14 @@ function toggleFilter(el, type, val) {
   const arr = activeFilters[type];
   const i   = arr.indexOf(val);
   if (i > -1) arr.splice(i, 1); else arr.push(val);
+  libraryPage = 0;
   renderLibrary();
 }
 
 function clearFilters() {
-  activeFilters = { status:[], genera:[], locality:[], listed:[] };
+  activeFilters = { status:[], genera:[], locality:[] };
   currentSearch = '';
+  libraryPage = 0;
   document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
   const searchInput = document.getElementById('library-search');
   if (searchInput) searchInput.value = '';
@@ -439,7 +457,7 @@ function filterPills(containerId, query) {
     p.classList.toggle('hidden', !!q && !p.textContent.toLowerCase().includes(q)));
 }
 
-function sortLibrary(val) { currentSort = val; renderLibrary(); }
+function sortLibrary(val) { currentSort = val; libraryPage = 0; renderLibrary(); }
 
 function setView(view) {
   currentView = view;
@@ -464,7 +482,33 @@ function exploreLocality(name) {
 
 function searchLibrary(query) {
   currentSearch = query.toLowerCase().trim();
+  libraryPage = 0;
   renderLibrary();
+}
+
+// ── Dynamic Filter Pills ──────────────────────────
+function buildFilterPills() {
+  // Genera sorted by count
+  const genCounts = {};
+  FISH_DATA.forEach(f => { if (f.genus) genCounts[f.genus] = (genCounts[f.genus]||0) + 1; });
+  const topGenera = Object.entries(genCounts).sort((a,b) => b[1] - a[1]);
+  const genEl = document.getElementById('genera-filters');
+  if (genEl) {
+    genEl.innerHTML = topGenera.map(([g]) =>
+      `<div class="filter-pill" onclick="toggleFilter(this,'genera','${escapeHTML(g)}')">${escapeHTML(g)}</div>`
+    ).join('');
+  }
+
+  // Localities sorted by count
+  const locCounts = {};
+  FISH_DATA.forEach(f => { if (f.locality) locCounts[f.locality] = (locCounts[f.locality]||0) + 1; });
+  const topLocs = Object.entries(locCounts).sort((a,b) => b[1] - a[1]);
+  const locEl = document.getElementById('locality-filters');
+  if (locEl) {
+    locEl.innerHTML = topLocs.map(([l]) =>
+      `<div class="filter-pill" onclick="toggleFilter(this,'locality','${l.replace(/'/g,"&#39;")}')">${escapeHTML(l)}</div>`
+    ).join('');
+  }
 }
 
 // ── Scroll Reveal ─────────────────────────────────
@@ -477,26 +521,51 @@ function initScrollReveal() {
   document.querySelectorAll('.reveal:not(.revealed)').forEach(el => obs.observe(el));
 }
 
+// ── Hero cards with real NFT art ──────────────────
+function renderHeroCards() {
+  const heroGrid = document.querySelector('.hero-fish-grid');
+  if (!heroGrid) return;
+  const picks = [199, 499, 799, 1099].map(i => FISH_DATA[i]).filter(Boolean);
+  if (picks.length < 4) return;
+  heroGrid.innerHTML = `
+    <div class="hero-fish-card large" onclick="showFish(${picks[0].tokenId - 1})">
+      <div class="fish-img-wrap large-wrap"><img src="${encodeURI(picks[0].image)}" alt="${escapeHTML(picks[0].name)}" loading="lazy"></div>
+      <div class="fish-card-info">
+        <div class="fish-card-name">${escapeHTML(picks[0].name)}</div>
+        <div class="fish-card-sci">${escapeHTML(picks[0].sci)}</div>
+      </div>
+    </div>
+    ${picks.slice(1).map(f => `
+    <div class="hero-fish-card" onclick="showFish(${f.tokenId - 1})">
+      <div class="fish-img-wrap"><img src="${encodeURI(f.image)}" alt="${escapeHTML(f.name)}" loading="lazy"></div>
+      <div class="fish-card-info">
+        <div class="fish-card-name">${escapeHTML(f.name)}</div>
+        <div class="fish-card-sci">${escapeHTML(f.sci)}</div>
+      </div>
+    </div>`).join('')}`;
+}
+
 // ── DOMContentLoaded ──────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
-  // Render immediately with static data
-  renderSalesFeed(RECENT_SALES);
+  buildFilterPills();
+  renderHeroCards();
+  renderSalesFeed(RECENT_SALES.map(s => ({
+    ...s,
+    image: FISH_DATA[s.idx]?.image || '',
+    name: FISH_DATA[s.idx] ? escapeHTML(FISH_DATA[s.idx].name) : s.name,
+  })));
   renderLibrary();
   renderFOTD();
   initScrollReveal();
 
-  // Fetch live data in parallel
   await Promise.allSettled([fetchEthPrice(), fetchCollectionStats()]);
-  // Re-render FOTD now that ETH price is available for USD conversion
   renderFOTD();
   fetchRecentSales();
 
-  // Periodic refreshes
-  setInterval(fetchEthPrice,        60_000);   // every 60s
-  setInterval(fetchCollectionStats, 300_000);  // every 5m
-  setInterval(fetchRecentSales,     120_000);  // every 2m
+  setInterval(fetchEthPrice,        60_000);
+  setInterval(fetchCollectionStats, 300_000);
+  setInterval(fetchRecentSales,     120_000);
 
-  // Simulated sale flashes (UX liveliness between real fetches)
   const scheduleSale = () => {
     const ms = 20000 + Math.random() * 40000;
     setTimeout(() => { simulateLiveSale(); scheduleSale(); }, ms);

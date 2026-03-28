@@ -228,10 +228,11 @@ nav {
 .hero-fish-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); border-color: var(--border2); }
 .hero-fish-card.large { grid-column: span 2; }
 .fish-img-wrap {
-  background: var(--bg2); padding: 20px;
-  display: flex; align-items: center; justify-content: center; font-size: 40px; line-height: 1;
+  background: var(--bg2); padding: 0;
+  display: flex; align-items: center; justify-content: center; overflow: hidden;
 }
-.large-wrap { font-size: 72px; padding: 36px; }
+.fish-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.large-wrap { min-height: 180px; }
 .fish-card-info { padding: 12px 14px; }
 .fish-card-name { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
 .fish-card-sci { font-size: 11px; color: var(--text2); font-style: italic; }
@@ -259,12 +260,13 @@ nav {
 .fotd-art {
   background: linear-gradient(145deg,#e4eff8,#d0e4f0);
   display: flex; align-items: center; justify-content: center;
-  font-size: 110px; line-height: 1; position: relative; padding: 40px;
+  line-height: 1; position: relative; padding: 0; overflow: hidden;
 }
 .fotd-emoji {
   animation: fotdFloat 4s ease-in-out infinite;
-  display: block;
+  display: block; width: 100%; height: 100%;
 }
+.fotd-emoji img { width: 100%; height: 100%; object-fit: cover; display: block; }
 @keyframes fotdFloat {
   0%,100% { transform: translateY(0); }
   50%      { transform: translateY(-8px); }
@@ -299,7 +301,8 @@ nav {
 .sales-list::-webkit-scrollbar { width: 4px; }
 .sales-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 .sales-loading { padding: 24px; text-align: center; color: var(--text3); font-size: 13px; }
-.sale-fish-icon { font-size: 28px; flex-shrink: 0; line-height: 1; }
+.sale-fish-icon { font-size: 28px; flex-shrink: 0; line-height: 1; width: 36px; height: 36px; border-radius: 6px; overflow: hidden; }
+.sale-fish-icon img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .sale-info { flex: 1; min-width: 0; }
 .sale-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sale-detail { font-size: 11px; color: var(--text3); margin-top: 1px; }
@@ -391,13 +394,15 @@ nav {
 .fish-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); border-color: var(--border2); }
 .fish-grid.list-view .fish-card { border-radius: 0; transform: none !important; box-shadow: none !important; display: flex; flex-direction: row; align-items: center; border-bottom: 1px solid var(--border); border-left: none; border-right: none; border-top: none; }
 .fish-grid.list-view .fish-card:first-child { border-top: 1px solid var(--border); }
-.fish-grid.list-view .fish-card-art { padding: 10px; font-size: 28px; flex-shrink: 0; width: 56px; }
+.fish-grid.list-view .fish-card-art { padding: 0; flex-shrink: 0; width: 56px; height: 56px; }
 .fish-grid.list-view .fish-card-body { display: flex; align-items: center; gap: 24px; flex: 1; padding: 10px 12px 10px 0; }
 .fish-grid.list-view .fish-card-common { font-size: 14px; min-width: 160px; }
 .fish-grid.list-view .fish-card-sci { display: none; }
 .fish-grid.list-view .fish-card-footer { margin-left: auto; }
 
-.fish-card-art { background: var(--bg2); padding: 20px; text-align: center; font-size: 48px; line-height: 1; position: relative; }
+.fish-card-art { background: var(--bg2); padding: 0; text-align: center; line-height: 1; position: relative; overflow: hidden; aspect-ratio: 1; }
+.fish-card-art img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s var(--ease-out); }
+.fish-card:hover .fish-card-art img { transform: scale(1.06); }
 .fish-card-emoji { transition: transform .3s var(--ease-out); display: block; }
 .fish-card:hover .fish-card-emoji { transform: scale(1.12); }
 .fish-card-token { position: absolute; top: 7px; left: 8px; font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text3); }
@@ -408,6 +413,9 @@ nav {
 .fish-card-footer { display: flex; align-items: center; justify-content: space-between; }
 .fish-card-locality { font-size: 10px; color: var(--text3); }
 .fish-card-price { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--accent); }
+
+/* Load more */
+.load-more-wrap { grid-column: 1 / -1; text-align: center; padding: 32px 0; }
 
 /* ── Globe ─────────────────────────────────────── */
 .globe-layout { position: relative; height: calc(100vh - 56px); display: flex; }
@@ -453,10 +461,11 @@ nav {
 .detail-art {
   background: linear-gradient(145deg,var(--bg2),#dce8f0);
   border-radius: var(--radius-lg); border: 1px solid var(--border);
-  padding: 56px 40px; text-align: center; font-size: 130px; line-height: 1;
+  padding: 0; text-align: center; overflow: hidden;
   margin-bottom: 12px;
   animation: detailArtIn .5s var(--ease-out) both;
 }
+.detail-art img { width: 100%; height: auto; display: block; }
 @keyframes detailArtIn { from { opacity:0; transform: scale(.9); } to { opacity:1; transform: none; } }
 .detail-token { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text3); margin-bottom: 10px; letter-spacing: .5px; }
 .detail-price-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
@@ -557,7 +566,7 @@ nav {
   .locality-popover { left: 16px; right: 16px; width: auto; }
   .detail-layout { grid-template-columns: 1fr; gap: 32px; padding: 24px 20px 60px; }
   .detail-art-wrap { position: static; }
-  .detail-art { font-size: 90px; padding: 40px; }
+  .detail-art { padding: 0; }
   .nemo-hero { padding: 48px 20px 40px; }
   .nemo-stats-bar { padding: 0 20px; }
   .nemo-sections { padding: 40px 20px 60px; }
