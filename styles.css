@@ -1,3 +1,65 @@
+.nemo-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  padding: 40px 32px 32px 32px;
+  margin: 40px auto 0 auto;
+  max-width: 800px;
+}
+.nemo-section-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 26px;
+  margin-bottom: 18px;
+  color: var(--accent);
+}
+.nemo-list {
+  margin: 18px 0 18px 18px;
+  padding-left: 0;
+  color: var(--text2);
+  font-size: 15px;
+  line-height: 1.7;
+}
+.nemo-list li {
+  margin-bottom: 8px;
+  list-style: disc inside;
+}
+.nemo-prose {
+  margin-bottom: 18px;
+  font-size: 16px;
+  color: var(--text2);
+}
+.nemo-hero {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 60px 32px 0 32px;
+  text-align: center;
+}
+.nemo-links {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  margin-top: 18px;
+}
+.nemo-link {
+  font-size: 15px;
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+  border-bottom: 1px solid var(--accent);
+  padding-bottom: 2px;
+  transition: color .15s;
+}
+.nemo-link.primary {
+  color: white;
+  background: var(--accent);
+  border-radius: 6px;
+  padding: 7px 18px;
+  border-bottom: none;
+}
+.nemo-link:hover {
+  color: var(--text);
+}
 /* ================================================
    CryptoFish — styles.css
    Clean modern editorial + polished animations
@@ -263,6 +325,7 @@ nav {
   display: flex; align-items: center; justify-content: center;
   line-height: 1; position: relative; padding: 0; overflow: hidden;
   width: 220px; height: 220px;
+  box-shadow: none;
 }
 .fotd-emoji {
   animation: fotdFloat 4s ease-in-out infinite;

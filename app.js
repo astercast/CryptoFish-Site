@@ -1,3 +1,10 @@
+// Auto-refresh Fish of the Day and stats every 5 minutes
+setInterval(() => {
+  renderFOTD();
+  fetchCollectionStats();
+  fetchRecentSales();
+  fetchTopSales();
+}, 5 * 60 * 1000);
 // ================================================
 // CryptoFish — app.js
 // Navigation, library, detail, live data

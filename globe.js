@@ -18,6 +18,10 @@ function latLonToXYZ(lat, lon, r) {
 }
 
 function initGlobe() {
+  // Always allow re-init for layout fixes
+  if (globeRenderer && globeRenderer.dispose) globeRenderer.dispose();
+  globeInitialized = false;
+  // ...existing code...
   if (globeInitialized) return;
   globeInitialized = true;
 
