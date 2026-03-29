@@ -43,13 +43,20 @@ function initGlobe() {
   globeGroup = new THREE.Group();
   globeScene.add(globeGroup);
 
-  // Globe sphere
+
+  // Globe sphere with soft glow
   const sphereGeo = new THREE.SphereGeometry(1, 72, 72);
   const sphereMat = new THREE.MeshPhongMaterial({
-    color: 0xc8dce8, emissive: 0x0a1a2a, emissiveIntensity: 0.25,
-    shininess: 12, transparent: true, opacity: 0.96,
+    color: 0xc8dce8, emissive: 0x0a1a2a, emissiveIntensity: 0.32,
+    shininess: 18, transparent: true, opacity: 0.97,
   });
-  globeGroup.add(new THREE.Mesh(sphereGeo, sphereMat));
+  const globeMesh = new THREE.Mesh(sphereGeo, sphereMat);
+  globeGroup.add(globeMesh);
+  // Add subtle glow
+  const glowGeo = new THREE.SphereGeometry(1.04, 48, 48);
+  const glowMat = new THREE.MeshBasicMaterial({ color: 0xb8d8f0, transparent: true, opacity: 0.13 });
+  const glowMesh = new THREE.Mesh(glowGeo, glowMat);
+  globeGroup.add(glowMesh);
 
   // Grid lines
   const gridMat = new THREE.LineBasicMaterial({ color: 0x9ab8cc, transparent: true, opacity: 0.18 });
@@ -78,20 +85,27 @@ function initGlobe() {
   fill.position.set(-3, -1, -2);
   globeScene.add(fill);
 
-  // Locality dots + pulse rings
+  // Locality dots + pulse rings + glow
   const dotMeshes = [];
   LOCALITIES.forEach((loc, i) => {
     const radius = 0.022 + Math.sqrt(loc.count / 10000) * 0.06;
     const color  = new THREE.Color(loc.color);
-    const dot    = new THREE.Mesh(
-      new THREE.SphereGeometry(radius, 10, 10),
+    // Main dot
+    const dot = new THREE.Mesh(
+      new THREE.SphereGeometry(radius, 12, 12),
       new THREE.MeshBasicMaterial({ color })
     );
     dot.position.copy(latLonToXYZ(loc.lat, loc.lon, 1.03));
     dot.userData.localityIndex = i;
     globeGroup.add(dot);
     dotMeshes.push(dot);
-
+    // Dot glow
+    const dotGlow = new THREE.Mesh(
+      new THREE.SphereGeometry(radius * 1.7, 16, 16),
+      new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.18 })
+    );
+    dotGlow.position.copy(latLonToXYZ(loc.lat, loc.lon, 1.03));
+    globeGroup.add(dotGlow);
     // Pulse ring
     const ring = new THREE.Mesh(
       new THREE.RingGeometry(radius * 1.5, radius * 2.0, 20),
@@ -215,8 +229,7 @@ function showPopover(loc) {
   }
   // Popover size
   const popW = 320, popH = 320;
-  // Clamp to viewport
-  const pad = 16;
+  const pad = 18;
   x = Math.max(pad, Math.min(x, window.innerWidth  - popW - pad));
   y = Math.max(pad, Math.min(y, window.innerHeight - popH - pad));
   pop.style.left = x + 'px';
@@ -225,6 +238,10 @@ function showPopover(loc) {
   pop.style.maxWidth = '96vw';
   pop.style.position = 'fixed';
   pop.classList.add('visible');
+  // Add glassy effect
+  pop.style.backdropFilter = 'blur(12px)';
+  pop.style.boxShadow = '0 8px 40px 0 rgba(14,92,140,0.13)';
+  pop.style.border = '1.5px solid #dbeafe';
 }
   // Track last mouse click for popover positioning
   canvas.addEventListener('mousedown', e => {
@@ -249,4 +266,12 @@ function renderLocalityList() {
       </div>
       <div class="locality-arrow">›</div>
     </div>`).join('');
+  // Add glassy effect to sidebar
+  const sidebar = document.querySelector('.globe-sidebar');
+  if (sidebar) {
+    sidebar.style.backdropFilter = 'blur(12px)';
+    sidebar.style.background = 'rgba(255,255,255,0.82)';
+    sidebar.style.border = '1.5px solid #dbeafe';
+    sidebar.style.boxShadow = '0 4px 32px 0 rgba(14,92,140,0.10)';
+  }
 }
