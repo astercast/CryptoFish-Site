@@ -1,3 +1,61 @@
+/* --- Clickable Elements: Modern Micro-Interactions & Accessibility --- */
+.nav-link, .nav-cta, .btn-primary, .btn-secondary, .filter-pill, .view-btn, .fish-card, .hero-fish-card, .sale-item, .top-sale-card, .detail-nav-btn, .nemo-link, .footer-links a, .pop-explore-btn, .locality-item, .popover-fish {
+  outline: none;
+  transition: box-shadow .16s, border-color .16s, background .16s, color .16s, transform .16s;
+}
+.nav-link:focus-visible, .nav-cta:focus-visible, .btn-primary:focus-visible, .btn-secondary:focus-visible, .filter-pill:focus-visible, .view-btn:focus-visible, .fish-card:focus-visible, .hero-fish-card:focus-visible, .sale-item:focus-visible, .top-sale-card:focus-visible, .detail-nav-btn:focus-visible, .nemo-link:focus-visible, .footer-links a:focus-visible, .pop-explore-btn:focus-visible, .locality-item:focus-visible, .popover-fish:focus-visible {
+  box-shadow: 0 0 0 3px var(--accent), 0 2px 12px 0 rgba(14,92,140,0.10);
+  border-color: var(--accent);
+  z-index: 2;
+}
+.nav-link:active, .btn-primary:active, .btn-secondary:active, .filter-pill:active, .view-btn:active, .fish-card:active, .hero-fish-card:active, .sale-item:active, .top-sale-card:active, .detail-nav-btn:active, .nemo-link:active, .footer-links a:active, .pop-explore-btn:active, .locality-item:active, .popover-fish:active {
+  transform: scale(0.97);
+  filter: brightness(0.97);
+}
+.btn-primary, .btn-secondary, .pop-explore-btn, .load-more-btn {
+  box-shadow: 0 2px 12px 0 rgba(14,92,140,0.08);
+}
+.btn-primary:hover, .btn-secondary:hover, .pop-explore-btn:hover, .load-more-btn:hover {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+  box-shadow: 0 4px 24px 0 rgba(14,92,140,0.13);
+}
+.filter-pill:focus-visible, .filter-pill:hover {
+  background: #e4eff8;
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.view-btn:focus-visible, .view-btn:hover {
+  background: #e4eff8;
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.fish-card:focus-visible, .fish-card:hover, .hero-fish-card:focus-visible, .hero-fish-card:hover, .sale-item:focus-visible, .sale-item:hover, .top-sale-card:focus-visible, .top-sale-card:hover {
+  box-shadow: 0 4px 24px 0 rgba(14,92,140,0.13);
+  border-color: var(--accent);
+  background: #f8f7f4;
+}
+.detail-nav-btn:focus-visible, .detail-nav-btn:hover {
+  background: #e4eff8;
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.nemo-link:focus-visible, .nemo-link:hover, .footer-links a:focus-visible, .footer-links a:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: #e4eff8;
+}
+.locality-item:focus-visible, .locality-item:hover {
+  background: #e4eff8;
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.popover-fish:focus-visible, .popover-fish:hover {
+  background: #dbeafe;
+  color: var(--accent);
+  transform: scale(1.12);
+}
 /* --- Globe Page Overhaul --- */
 .globe-layout {
   display: flex;
