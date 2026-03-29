@@ -307,8 +307,8 @@
 ════════════════════════════════════════════════ -->
 <div id="page-detail" class="page">
   <div class="detail-layout">
-    <div class="detail-art-wrap">
-      <div class="detail-art" id="detail-art">🐠</div>
+    <div class="detail-art-wrap animate-fadein" style="animation-delay:.05s">
+      <div class="detail-art" id="detail-art" aria-label="Fish art">🐠</div>
       <div class="detail-token" id="detail-token">Token #—</div>
       <div class="detail-price-box">
         <div>
@@ -316,14 +316,14 @@
           <div class="detail-price" id="detail-price">— ETH</div>
           <div class="detail-price-usd" id="detail-usd">— USD</div>
         </div>
-        <button class="detail-buy-btn" id="detail-buy-btn">Buy on OpenSea</button>
+        <button class="detail-buy-btn" id="detail-buy-btn" aria-label="Buy this fish on OpenSea">Buy on OpenSea</button>
       </div>
       <div class="detail-collection-context" id="detail-context"></div>
     </div>
 
-    <div class="detail-body">
+    <div class="detail-body animate-fadein" style="animation-delay:.12s">
       <div class="detail-breadcrumb">
-        <span onclick="showPage('library')">Library</span>
+        <span onclick="showPage('library')" tabindex="0" aria-label="Back to Library">Library</span>
         <span class="bc-sep">›</span>
         <span id="detail-genus-bc">—</span>
         <span class="bc-sep">›</span>
@@ -333,7 +333,7 @@
       <div class="detail-scientific" id="detail-sci">—</div>
       <div id="detail-status-pill" style="margin-bottom:24px"></div>
 
-      <div class="specimen-card">
+      <div class="specimen-card animate-fadein" style="animation-delay:.18s">
         <div class="specimen-row"><div class="specimen-key">Common Name</div><div class="specimen-val" id="sp-common">—</div></div>
         <div class="specimen-row"><div class="specimen-key">Scientific</div><div class="specimen-val specimen-italic" id="sp-sci">—</div></div>
         <div class="specimen-row"><div class="specimen-key">Order</div><div class="specimen-val" id="sp-order">—</div></div>
@@ -344,16 +344,16 @@
         <div class="specimen-row last"><div class="specimen-key">IUCN Status</div><div class="specimen-val" id="sp-status">—</div></div>
       </div>
 
-      <h3 class="detail-section-title">Natural History</h3>
-      <p class="detail-prose" id="detail-history"></p>
+      <h3 class="detail-section-title animate-fadein" style="animation-delay:.24s">Natural History</h3>
+      <p class="detail-prose animate-fadein" style="animation-delay:.28s" id="detail-history"></p>
 
-      <h3 class="detail-section-title">Conservation Notes</h3>
-      <p class="detail-prose" id="detail-conservation"></p>
+      <h3 class="detail-section-title animate-fadein" style="animation-delay:.32s">Conservation Notes</h3>
+      <p class="detail-prose animate-fadein" style="animation-delay:.36s" id="detail-conservation"></p>
 
-      <div class="detail-nav">
-        <button class="detail-nav-btn" onclick="navFish(-1)">← Previous</button>
-        <button class="detail-nav-btn random" onclick="showFish(Math.floor(Math.random()*2166))">🎲 Random</button>
-        <button class="detail-nav-btn" onclick="navFish(1)">Next →</button>
+      <div class="detail-nav animate-fadein" style="animation-delay:.40s">
+        <button class="detail-nav-btn" onclick="navFish(-1)" aria-label="Previous fish">← Previous</button>
+        <button class="detail-nav-btn random" onclick="showFish(Math.floor(Math.random()*2166))" aria-label="Random fish">🎲 Random</button>
+        <button class="detail-nav-btn" onclick="navFish(1)" aria-label="Next fish">Next →</button>
       </div>
     </div>
   </div>
