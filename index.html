@@ -232,28 +232,28 @@
 <div id="page-library" class="page">
   <div class="library-layout">
     <div class="filter-sidebar" id="filter-sidebar">
-      <div class="filter-title">
-        Filters <span class="filter-clear" onclick="clearFilters()">Clear all</span>
+      <div class="filter-title animate-fadein" style="animation-delay:.05s">
+        Filters <span class="filter-clear" onclick="clearFilters()" tabindex="0" aria-label="Clear all filters">Clear all</span>
       </div>
-      <div class="filter-group">
+      <div class="filter-group animate-fadein" style="animation-delay:.10s">
         <div class="filter-group-label">Conservation Status</div>
         <div class="filter-pills" id="status-filters">
-          <div class="filter-pill" onclick="toggleFilter(this,'status','LC')">LC</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'status','NT')">NT</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'status','VU')">VU</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'status','EN')">EN</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'status','CR')">CR</div>
-          <div class="filter-pill" onclick="toggleFilter(this,'status','DD')">DD</div>
+          <div class="filter-pill" onclick="toggleFilter(this,'status','LC')" tabindex="0" aria-label="Filter by Least Concern">LC</div>
+          <div class="filter-pill" onclick="toggleFilter(this,'status','NT')" tabindex="0" aria-label="Filter by Near Threatened">NT</div>
+          <div class="filter-pill" onclick="toggleFilter(this,'status','VU')" tabindex="0" aria-label="Filter by Vulnerable">VU</div>
+          <div class="filter-pill" onclick="toggleFilter(this,'status','EN')" tabindex="0" aria-label="Filter by Endangered">EN</div>
+          <div class="filter-pill" onclick="toggleFilter(this,'status','CR')" tabindex="0" aria-label="Filter by Critically Endangered">CR</div>
+          <div class="filter-pill" onclick="toggleFilter(this,'status','DD')" tabindex="0" aria-label="Filter by Data Deficient">DD</div>
         </div>
       </div>
-      <div class="filter-group">
+      <div class="filter-group animate-fadein" style="animation-delay:.15s">
         <div class="filter-group-label">Genera</div>
-        <input class="filter-search" placeholder="Search genera…" oninput="filterPills('genera-filters',this.value)">
+        <input class="filter-search" placeholder="Search genera…" oninput="filterPills('genera-filters',this.value)" aria-label="Search genera">
         <div class="filter-pills" id="genera-filters"></div>
       </div>
-      <div class="filter-group">
+      <div class="filter-group animate-fadein" style="animation-delay:.20s">
         <div class="filter-group-label">Locality</div>
-        <input class="filter-search" placeholder="Search locality…" oninput="filterPills('locality-filters',this.value)">
+        <input class="filter-search" placeholder="Search locality…" oninput="filterPills('locality-filters',this.value)" aria-label="Search locality">
         <div class="filter-pills" id="locality-filters"></div>
       </div>
 
@@ -261,15 +261,17 @@
 
     <div class="library-main">
       <div class="library-toolbar">
-        <button class="filter-toggle-btn" onclick="toggleFilterSidebar()">⚙ Filters</button>        <input class="filter-search library-search" id="library-search" placeholder="Search by name, species, or ID…" oninput="searchLibrary(this.value)">        <div class="library-count" id="lib-count">Loading…</div>
-        <select class="sort-select" onchange="sortLibrary(this.value)">
+        <button class="filter-toggle-btn animate-fadein" style="animation-delay:.25s" onclick="toggleFilterSidebar()" aria-label="Show/hide filters">⚙ Filters</button>
+        <input class="filter-search library-search animate-fadein" style="animation-delay:.30s" id="library-search" placeholder="Search by name, species, or ID…" oninput="searchLibrary(this.value)" aria-label="Search library">
+        <div class="library-count animate-fadein" style="animation-delay:.35s" id="lib-count">Loading…</div>
+        <select class="sort-select animate-fadein" style="animation-delay:.40s" onchange="sortLibrary(this.value)" aria-label="Sort library">
           <option value="id">Sort: Token ID</option>
           <option value="alpha">Sort: Species A–Z</option>
           <option value="status">Sort: Conservation</option>
         </select>
-        <div class="view-toggle">
-          <button class="view-btn active" id="grid-btn" onclick="setView('grid')">⊞</button>
-          <button class="view-btn" id="list-btn" onclick="setView('list')">☰</button>
+        <div class="view-toggle animate-fadein" style="animation-delay:.45s">
+          <button class="view-btn active" id="grid-btn" onclick="setView('grid')" aria-label="Grid view">⊞</button>
+          <button class="view-btn" id="list-btn" onclick="setView('list')" aria-label="List view">☰</button>
         </div>
       </div>
       <div class="fish-grid" id="fish-grid"></div>
