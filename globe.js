@@ -211,8 +211,10 @@ function focusLocality(idx) {
 function showPopover(loc) {
   document.getElementById('pop-title').textContent = loc.name;
   document.getElementById('pop-sub').textContent   = loc.sub + ' · ' + loc.count + ' CryptoFish';
-  document.getElementById('pop-fish').innerHTML    = loc.fish.map(f =>
-    `<div class="popover-fish">${f}</div>`).join('');
+  const fishList = Array.isArray(loc.fish) && loc.fish.length
+    ? loc.fish.map(f => `<div class="popover-fish">${f}</div>`).join('')
+    : '<div style="color:var(--text2);font-size:14px;padding:8px 0;">No fish data available for this locality.</div>';
+  document.getElementById('pop-fish').innerHTML = fishList;
   const exploreBtn = document.getElementById('pop-explore-btn');
   if (exploreBtn) exploreBtn.onclick = () => exploreLocality(loc.name);
 
