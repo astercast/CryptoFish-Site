@@ -54,14 +54,14 @@
     <div class="hero-text">
       <div class="hero-eyebrow reveal">2,166 Species · Ethereum · Since May 2025</div>
       <h1 class="hero-title reveal">Real Fish.<br><em>Rare Fish.</em></h1>
-      <p class="hero-sub reveal">
+      <p class="hero-sub reveal animate-fadein" style="animation-delay:.08s">
         Every CryptoFish is a real species, hand-crafted in pixel art and scientifically classified
         using Linnaean taxonomy — conservation status, genus, species, and locality
         encoded forever on-chain.
       </p>
-      <div class="hero-btns reveal">
-        <button class="btn-primary" onclick="showPage('library')">Explore the Library →</button>
-        <button class="btn-secondary" onclick="showPage('globe')">View the Globe</button>
+      <div class="hero-btns reveal animate-fadein" style="animation-delay:.16s">
+        <button class="btn-primary" onclick="showPage('library')" aria-label="Explore the Library">Explore the Library →</button>
+        <button class="btn-secondary" onclick="showPage('globe')" aria-label="View the Globe">View the Globe</button>
       </div>
     </div>
     <!-- Removed hero fish grid for a cleaner, info-focused homepage -->
@@ -107,7 +107,8 @@
     <div class="fotd-card reveal">
       <div class="fotd-art">
         <div class="fotd-badge">Today's Pick</div>
-        <div id="fotd-emoji" class="fotd-emoji">🐠</div>
+        <div id="fotd-emoji" class="fotd-emoji" aria-label="Fish of the Day image">🐠</div>
+        <a class="section-link" id="fotd-profile-link" tabindex="0" aria-label="View full Fish of the Day profile">View full profile →</a>
       </div>
       <div class="fotd-body">
         <div id="fotd-status" class="fotd-status"></div>

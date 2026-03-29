@@ -1,3 +1,10 @@
+@keyframes fadein {
+  from { opacity: 0; transform: translateY(18px) scale(0.98); }
+  to   { opacity: 1; transform: none; }
+}
+.animate-fadein {
+  animation: fadein .7s var(--ease-out) both;
+}
 /* --- Clickable Elements: Modern Micro-Interactions & Accessibility --- */
 .nav-link, .nav-cta, .btn-primary, .btn-secondary, .filter-pill, .view-btn, .fish-card, .hero-fish-card, .sale-item, .top-sale-card, .detail-nav-btn, .nemo-link, .footer-links a, .pop-explore-btn, .locality-item, .popover-fish {
   outline: none;
