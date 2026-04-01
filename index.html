@@ -1,990 +1,450 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CryptoFish — Real Fish. Rare Fish.</title>
-    <meta
-      name="description"
-      content="CryptoFish: 2,166 hand-crafted pixel art NFTs. Every fish is a real species, classified with Linnaean taxonomy and encoded on Ethereum."
-    />
-    <meta property="og:title" content="CryptoFish — Real Fish. Rare Fish." />
-    <meta
-      property="og:description"
-      content="2,166 hand-crafted pixel art NFTs. Real species. Linnaean taxonomy. Conservation status. Ethereum."
-    />
-    <meta
-      property="og:image"
-      content="https://i2c.seadn.io/ethereum/2bfbfbaa8f9a43a29c49de14cea2ff55/567540cb4397ede62334a90f4eb202/23567540cb4397ede62334a90f4eb202.gif"
-    />
-    <meta name="twitter:card" content="summary_large_image" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap"
-      rel="stylesheet"
-    />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <!-- ── NAV ──────────────────────────────────────── -->
-    <nav>
-      <div class="nav-logo" onclick="showPage('home')">
-        🐠 <span>Crypto</span>Fish
-      </div>
-      <div class="nav-links">
-        <button class="nav-link active" onclick="showPage('home')">Home</button>
-        <button class="nav-link" onclick="showPage('library')">Library</button>
-        <button class="nav-link" onclick="showPage('globe')">Globe</button>
-        <button class="nav-link" onclick="showPage('nemo')">About</button>
-      </div>
-      <div class="nav-right">
-        <div class="eth-ticker" id="nav-eth-price" title="Live ETH price">
-          <span class="eth-dot"></span><span id="nav-eth-val">…</span>
-        </div>
-        <button
-          class="nav-cta"
-          onclick="
-            window.open('https://opensea.io/collection/cryptofish', '_blank')
-          "
-        >
-          OpenSea ↗
-        </button>
-        <button
-          class="nav-hamburger"
-          onclick="toggleMobileNav()"
-          aria-label="Menu"
-        >
-          <span></span><span></span><span></span>
-        </button>
-      </div>
-    </nav>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CryptoFish — Real Fish. Rare Fish.</title>
+<meta name="description" content="CryptoFish: 2,166 hand-crafted pixel art NFTs. Every fish is a real species, classified with Linnaean taxonomy and encoded on Ethereum.">
+<meta property="og:title" content="CryptoFish — Real Fish. Rare Fish.">
+<meta property="og:description" content="2,166 hand-crafted pixel art NFTs. Real species. Linnaean taxonomy. Conservation status. Ethereum.">
+<meta property="og:image" content="https://i2c.seadn.io/ethereum/2bfbfbaa8f9a43a29c49de14cea2ff55/567540cb4397ede62334a90f4eb202/23567540cb4397ede62334a90f4eb202.gif">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
 
-    <div class="mobile-nav" id="mobile-nav">
-      <button class="mobile-nav-link" onclick="showPage('home')">Home</button>
-      <button class="mobile-nav-link" onclick="showPage('library')">
-        Library
-      </button>
-      <button class="mobile-nav-link" onclick="showPage('globe')">Globe</button>
-      <button class="mobile-nav-link" onclick="showPage('nemo')">About</button>
-      <button
-        class="mobile-nav-link primary"
-        onclick="
-          window.open('https://opensea.io/collection/cryptofish', '_blank')
-        "
-      >
-        View on OpenSea ↗
-      </button>
+<!-- ── NAV ──────────────────────────────────────── -->
+<nav>
+  <div class="nav-logo" onclick="showPage('home')">🐠 <span>Crypto</span>Fish</div>
+  <div class="nav-links">
+    <button class="nav-link active" onclick="showPage('home')">Home</button>
+    <button class="nav-link" onclick="showPage('library')">Library</button>
+    <button class="nav-link" onclick="showPage('globe')">Globe</button>
+    <button class="nav-link" onclick="showPage('nemo')">About Findurnemo</button>
+  </div>
+  <div class="nav-right">
+    <div class="eth-ticker" id="nav-eth-price" title="Live ETH price">
+      <span class="eth-dot"></span><span id="nav-eth-val">…</span>
     </div>
+    <button class="dark-toggle" id="dark-toggle" onclick="toggleDarkMode()" aria-label="Toggle dark mode">☽</button>
+    <button class="nav-cta" onclick="window.open('https://opensea.io/collection/cryptofish','_blank')">OpenSea ↗</button>
+    <button class="nav-hamburger" onclick="toggleMobileNav()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
 
-    <!-- ════════════════════════════════════════════════
+<div class="mobile-nav" id="mobile-nav">
+  <button class="mobile-nav-link" onclick="showPage('home')">Home</button>
+  <button class="mobile-nav-link" onclick="showPage('library')">Library</button>
+  <button class="mobile-nav-link" onclick="showPage('globe')">Globe</button>
+  <button class="mobile-nav-link" onclick="showPage('nemo')">About Findurnemo</button>
+  <button class="mobile-nav-link primary" onclick="window.open('https://opensea.io/collection/cryptofish','_blank')">View on OpenSea ↗</button>
+</div>
+
+<!-- ════════════════════════════════════════════════
      HOME
 ════════════════════════════════════════════════ -->
-    <div id="page-home" class="page active">
-      <!-- Hero -->
-      <div class="home-hero">
-        <div class="hero-text">
-          <div class="hero-eyebrow reveal">
-            2,166 Species · Ethereum · Since May 2025
-          </div>
-          <h1 class="hero-title reveal">Real Fish.<br /><em>Rare Fish.</em></h1>
-          <p
-            class="hero-sub reveal animate-fadein"
-            style="animation-delay: 0.08s"
-          >
-            Every CryptoFish is a real species, hand-crafted in pixel art and
-            scientifically classified using Linnaean taxonomy — conservation
-            status, genus, species, and locality encoded forever on-chain.
-          </p>
-          <div
-            class="hero-btns reveal animate-fadein"
-            style="animation-delay: 0.16s"
-          >
-            <button
-              class="btn-primary"
-              onclick="showPage('library')"
-              aria-label="Explore the Library"
-            >
-              Explore the Library →
-            </button>
-            <button
-              class="btn-secondary"
-              onclick="showPage('globe')"
-              aria-label="View the Globe"
-            >
-              View the Globe
-            </button>
-          </div>
-        </div>
-        <!-- Removed hero fish grid for a cleaner, info-focused homepage -->
+<div id="page-home" class="page active">
+
+  <!-- Hero -->
+  <div class="home-hero">
+    <div class="hero-text">
+      <div class="hero-eyebrow reveal">2,166 Species · Ethereum · Since May 2025</div>
+      <h1 class="hero-title reveal">Real Fish.<br><em>Rare Fish.</em></h1>
+      <p class="hero-sub reveal">
+        Every CryptoFish is a real species, hand-crafted in pixel art and scientifically classified
+        using Linnaean taxonomy — conservation status, genus, species, and locality
+        encoded forever on-chain.
+      </p>
+      <div class="hero-btns reveal">
+        <button class="btn-primary" onclick="showPage('library')">Explore the Library →</button>
+        <button class="btn-secondary" onclick="showPage('globe')">View the Globe</button>
       </div>
-
-      <!-- Stats Bar — IDs match renderStatsBar() -->
-      <div class="stats-bar">
-        <div class="stats-inner">
-          <div class="stat-item">
-            <div class="stat-label">Floor Price</div>
-            <div class="stat-value">
-              <span id="stat-floor" data-countup="0.064">0.064</span
-              ><span class="stat-unit"> ETH</span>
-            </div>
-            <div class="stat-sub" id="stat-floor-usd">— USD</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-label">Total Volume</div>
-            <div class="stat-value">
-              <span id="stat-volume" data-countup="706.66">706.7</span
-              ><span class="stat-unit"> ETH</span>
-            </div>
-            <div class="stat-sub" id="stat-vol-usd">— USD</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-label">Unique Holders</div>
-            <div class="stat-value">
-              <span id="stat-holders" data-countup="596">596</span>
-            </div>
-            <div class="stat-sub" id="stat-holders-sub">27.5% of supply</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-label">Items</div>
-            <div class="stat-value">
-              <span id="stat-items" data-countup="2166">2,166</span>
-            </div>
-            <div class="stat-sub" id="stat-listed-sub">3.4% listed</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-label">Avg Sale Price</div>
-            <div class="stat-value">
-              <span id="stat-offer">0.050</span
-              ><span class="stat-unit"> ETH</span>
-            </div>
-            <div class="stat-sub" id="stat-offer-usd">— USD</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Fish of the Day — populated by renderFOTD() -->
-      <div class="section">
-        <div class="section-header reveal">
-          <div class="section-title">Fish of the Day</div>
-          <a class="section-link" id="fotd-profile-link">View full profile →</a>
-        </div>
-        <div class="fotd-card reveal">
-          <div class="fotd-art">
-            <div class="fotd-badge">Today's Pick</div>
-            <div
-              id="fotd-emoji"
-              class="fotd-emoji"
-              aria-label="Fish of the Day image"
-            >
-              🐠
-            </div>
-            <a
-              class="section-link"
-              id="fotd-profile-link"
-              tabindex="0"
-              aria-label="View full Fish of the Day profile"
-              >View full profile →</a
-            >
-          </div>
-          <div class="fotd-body">
-            <div id="fotd-status" class="fotd-status"></div>
-            <div class="fotd-name" id="fotd-name">—</div>
-            <div class="fotd-sci" id="fotd-sci">—</div>
-            <div class="fotd-meta">
-              <div class="fotd-meta-item">
-                <div class="fotd-meta-label">Genera</div>
-                <div class="fotd-meta-value" id="fotd-genera">—</div>
-              </div>
-              <div class="fotd-meta-item">
-                <div class="fotd-meta-label">Family</div>
-                <div class="fotd-meta-value" id="fotd-family">—</div>
-              </div>
-              <div class="fotd-meta-item">
-                <div class="fotd-meta-label">Locality</div>
-                <div class="fotd-meta-value" id="fotd-locality">—</div>
-              </div>
-              <div class="fotd-meta-item">
-                <div class="fotd-meta-label">Token</div>
-                <div class="fotd-meta-value" id="fotd-token">—</div>
-              </div>
-            </div>
-            <div class="fotd-desc" id="fotd-desc">Loading…</div>
-            <div class="fotd-actions">
-              <button class="btn-primary" id="fotd-view-btn">
-                View Full Profile →
-              </button>
-              <button class="btn-secondary" id="fotd-buy-btn">
-                Buy on OpenSea
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <hr class="divider" />
-
-      <!-- Market Activity -->
-      <div class="section">
-        <div class="section-header reveal">
-          <div class="section-title">Market Activity</div>
-        </div>
-        <div class="sales-grid">
-          <div class="sales-feed reveal">
-            <div class="sales-feed-header">
-              <div class="live-dot"></div>
-              Recent Sales
-              <span class="sales-live-label">live</span>
-            </div>
-            <div class="sales-list" id="sales-list">
-              <div class="sales-loading">Loading sales…</div>
-            </div>
-          </div>
-          <div class="reveal">
-            <div class="sub-section-title" style="margin-bottom: 16px">
-              All-Time Top Sales
-            </div>
-            <div class="top-sales-grid">
-              <!-- Top sales will be rendered dynamically by JS -->
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <hr class="divider" />
-
-      <!-- Conservation -->
-      <div class="section">
-        <div class="section-header reveal">
-          <div class="section-title">Conservation in the Collection</div>
-          <a class="section-link" onclick="showPage('library')"
-            >Filter by status →</a
-          >
-        </div>
-        <div class="conservation-grid reveal">
-          <div class="donut-wrap">
-            <svg
-              class="donut-svg"
-              viewBox="0 0 160 160"
-              width="160"
-              height="160"
-            >
-              <circle
-                cx="80"
-                cy="80"
-                r="60"
-                fill="none"
-                stroke="#e2ddd8"
-                stroke-width="20"
-              />
-              <circle
-                class="donut-seg"
-                cx="80"
-                cy="80"
-                r="60"
-                fill="none"
-                stroke="#2d7a4f"
-                stroke-width="20"
-                stroke-dasharray="171 206"
-                stroke-dashoffset="0"
-              />
-              <circle
-                class="donut-seg"
-                cx="80"
-                cy="80"
-                r="60"
-                fill="none"
-                stroke="#557799"
-                stroke-width="20"
-                stroke-dasharray="145 232"
-                stroke-dashoffset="-171"
-              />
-              <circle
-                class="donut-seg"
-                cx="80"
-                cy="80"
-                r="60"
-                fill="none"
-                stroke="#7a4a2d"
-                stroke-width="20"
-                stroke-dasharray="20 357"
-                stroke-dashoffset="-316"
-              />
-              <circle
-                class="donut-seg"
-                cx="80"
-                cy="80"
-                r="60"
-                fill="none"
-                stroke="#5c1515"
-                stroke-width="20"
-                stroke-dasharray="13 364"
-                stroke-dashoffset="-336"
-              />
-              <circle
-                class="donut-seg"
-                cx="80"
-                cy="80"
-                r="60"
-                fill="none"
-                stroke="#999"
-                stroke-width="20"
-                stroke-dasharray="12 365"
-                stroke-dashoffset="-349"
-              />
-              <circle
-                class="donut-seg"
-                cx="80"
-                cy="80"
-                r="60"
-                fill="none"
-                stroke="#7a2d2d"
-                stroke-width="20"
-                stroke-dasharray="9 368"
-                stroke-dashoffset="-361"
-              />
-              <circle
-                class="donut-seg"
-                cx="80"
-                cy="80"
-                r="60"
-                fill="none"
-                stroke="#7a6d2d"
-                stroke-width="20"
-                stroke-dasharray="7 370"
-                stroke-dashoffset="-370"
-              />
-            </svg>
-            <div class="donut-center">
-              <div class="donut-center-num">2,166</div>
-              <div class="donut-center-label">TOTAL</div>
-            </div>
-          </div>
-          <div class="conservation-list">
-            <div class="cons-row">
-              <div class="cons-dot" style="background: #2d7a4f"></div>
-              <div class="cons-label">Least Concern (LC)</div>
-              <div class="cons-bar-wrap">
-                <div
-                  class="cons-bar"
-                  style="width: 0%; background: #2d7a4f"
-                  data-width="45"
-                ></div>
-              </div>
-              <div class="cons-count">980</div>
-            </div>
-            <div class="cons-row">
-              <div class="cons-dot" style="background: #557799"></div>
-              <div class="cons-label">Not Evaluated / Unknown</div>
-              <div class="cons-bar-wrap">
-                <div
-                  class="cons-bar"
-                  style="width: 0%; background: #557799"
-                  data-width="39"
-                ></div>
-              </div>
-              <div class="cons-count">839</div>
-            </div>
-            <div class="cons-row">
-              <div class="cons-dot" style="background: #7a4a2d"></div>
-              <div class="cons-label">Vulnerable (VU)</div>
-              <div class="cons-bar-wrap">
-                <div
-                  class="cons-bar"
-                  style="width: 0%; background: #7a4a2d"
-                  data-width="5"
-                ></div>
-              </div>
-              <div class="cons-count">114</div>
-            </div>
-            <div class="cons-row">
-              <div class="cons-dot" style="background: #5c1515"></div>
-              <div class="cons-label">Critically Endangered (CR)</div>
-              <div class="cons-bar-wrap">
-                <div
-                  class="cons-bar"
-                  style="width: 0%; background: #5c1515"
-                  data-width="3"
-                ></div>
-              </div>
-              <div class="cons-count">73</div>
-            </div>
-            <div class="cons-row">
-              <div class="cons-dot" style="background: #999"></div>
-              <div class="cons-label">Data Deficient (DD)</div>
-              <div class="cons-bar-wrap">
-                <div
-                  class="cons-bar"
-                  style="width: 0%; background: #999"
-                  data-width="3"
-                ></div>
-              </div>
-              <div class="cons-count">67</div>
-            </div>
-            <div class="cons-row">
-              <div class="cons-dot" style="background: #7a2d2d"></div>
-              <div class="cons-label">Endangered (EN)</div>
-              <div class="cons-bar-wrap">
-                <div
-                  class="cons-bar"
-                  style="width: 0%; background: #7a2d2d"
-                  data-width="2"
-                ></div>
-              </div>
-              <div class="cons-count">51</div>
-            </div>
-            <div class="cons-row">
-              <div class="cons-dot" style="background: #7a6d2d"></div>
-              <div class="cons-label">Near Threatened (NT)</div>
-              <div class="cons-bar-wrap">
-                <div
-                  class="cons-bar"
-                  style="width: 0%; background: #7a6d2d"
-                  data-width="2"
-                ></div>
-              </div>
-              <div class="cons-count">42</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <footer class="site-footer">
-        <div class="footer-inner">
-          <div class="footer-logo">🐠 <span>Crypto</span>Fish</div>
-          <div class="footer-links">
-            <a onclick="showPage('library')">Library</a>
-            <a onclick="showPage('globe')">Globe</a>
-            <a onclick="showPage('nemo')">About</a>
-            <a href="https://opensea.io/collection/cryptofish" target="_blank"
-              >OpenSea ↗</a
-            >
-            <a href="https://x.com/findurnemo" target="_blank">X / Twitter ↗</a>
-          </div>
-          <div class="footer-copy">© 2026 Findurnemo. All rights reserved.</div>
-        </div>
-      </footer>
     </div>
+    <div class="hero-fish-grid reveal" id="hero-fish-grid">
+      <!-- Populated dynamically by renderHeroCards() -->
+    </div>
+  </div>
 
-    <!-- ════════════════════════════════════════════════
+  <!-- Stats Bar — IDs match renderStatsBar() -->
+  <div class="stats-bar">
+    <div class="stats-inner">
+      <div class="stat-item">
+        <div class="stat-label">Floor Price</div>
+        <div class="stat-value"><span id="stat-floor" data-countup="0.064">0.064</span><span class="stat-unit"> ETH</span></div>
+        <div class="stat-sub" id="stat-floor-usd">— USD</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Total Volume</div>
+        <div class="stat-value"><span id="stat-volume" data-countup="706.66">706.7</span><span class="stat-unit"> ETH</span></div>
+        <div class="stat-sub" id="stat-vol-usd">— USD</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Unique Holders</div>
+        <div class="stat-value"><span id="stat-holders" data-countup="596">596</span></div>
+        <div class="stat-sub" id="stat-holders-sub">27.5% of supply</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Items</div>
+        <div class="stat-value"><span id="stat-items" data-countup="2166">2,166</span></div>
+        <div class="stat-sub" id="stat-listed-sub">3.4% listed</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-label">Avg Sale Price</div>
+        <div class="stat-value"><span id="stat-offer">0.050</span><span class="stat-unit"> ETH</span></div>
+        <div class="stat-sub" id="stat-offer-usd">— USD</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fish of the Day — populated by renderFOTD() -->
+  <div class="section">
+    <div class="section-header reveal">
+      <div class="section-title">Fish of the Day</div>
+      <a class="section-link" id="fotd-profile-link">View full profile →</a>
+    </div>
+    <div class="fotd-card reveal">
+      <div class="fotd-art">
+        <div class="fotd-badge">Today's Pick</div>
+        <div id="fotd-emoji" class="fotd-emoji">🐠</div>
+      </div>
+      <div class="fotd-body">
+        <div id="fotd-status" class="fotd-status"></div>
+        <div class="fotd-name" id="fotd-name">—</div>
+        <div class="fotd-sci" id="fotd-sci">—</div>
+        <div class="fotd-meta">
+          <div class="fotd-meta-item">
+            <div class="fotd-meta-label">Genera</div>
+            <div class="fotd-meta-value" id="fotd-genera">—</div>
+          </div>
+          <div class="fotd-meta-item">
+            <div class="fotd-meta-label">Locality</div>
+            <div class="fotd-meta-value" id="fotd-locality">—</div>
+          </div>
+          <div class="fotd-meta-item">
+            <div class="fotd-meta-label">Token</div>
+            <div class="fotd-meta-value" id="fotd-token">—</div>
+          </div>
+        </div>
+        <div class="fotd-desc" id="fotd-desc">Loading…</div>
+        <div class="fotd-actions">
+          <button class="btn-primary" id="fotd-view-btn">View Full Profile →</button>
+          <button class="btn-secondary" id="fotd-buy-btn">Buy on OpenSea</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- Market Activity -->
+  <div class="section">
+    <div class="section-header reveal">
+      <div class="section-title">Market Activity</div>
+    </div>
+    <div class="sales-grid">
+      <div class="sales-feed reveal">
+        <div class="sales-feed-header">
+          <div class="live-dot"></div> Recent Sales
+          <span class="sales-live-label">live</span>
+        </div>
+        <div class="sales-list" id="sales-list">
+          <div class="sales-loading">Loading sales…</div>
+        </div>
+      </div>
+      <div class="reveal">
+        <div class="sub-section-title" style="margin-bottom:16px">All-Time Top Sales</div>
+        <div class="top-sales-grid" id="top-sales-list">
+          <div style="grid-column:1/-1;padding:20px;text-align:center;color:var(--text3);font-size:13px">Loading top sales…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- Conservation -->
+  <div class="section">
+    <div class="section-header reveal">
+      <div class="section-title">Conservation in the Collection</div>
+      <a class="section-link" onclick="showPage('library')">Filter by status →</a>
+    </div>
+    <div class="conservation-grid reveal">
+      <div class="donut-wrap">
+        <svg class="donut-svg" viewBox="0 0 160 160" width="160" height="160">
+          <circle cx="80" cy="80" r="60" fill="none" stroke="#e2ddd8" stroke-width="20"/>
+          <circle class="donut-seg" cx="80" cy="80" r="60" fill="none" stroke="#2d7a4f" stroke-width="20"
+            stroke-dasharray="171 206" stroke-dashoffset="0"/>
+          <circle class="donut-seg" cx="80" cy="80" r="60" fill="none" stroke="#557799" stroke-width="20"
+            stroke-dasharray="145 232" stroke-dashoffset="-171"/>
+          <circle class="donut-seg" cx="80" cy="80" r="60" fill="none" stroke="#7a4a2d" stroke-width="20"
+            stroke-dasharray="20 357" stroke-dashoffset="-316"/>
+          <circle class="donut-seg" cx="80" cy="80" r="60" fill="none" stroke="#5c1515" stroke-width="20"
+            stroke-dasharray="13 364" stroke-dashoffset="-336"/>
+          <circle class="donut-seg" cx="80" cy="80" r="60" fill="none" stroke="#999" stroke-width="20"
+            stroke-dasharray="12 365" stroke-dashoffset="-349"/>
+          <circle class="donut-seg" cx="80" cy="80" r="60" fill="none" stroke="#7a2d2d" stroke-width="20"
+            stroke-dasharray="9 368" stroke-dashoffset="-361"/>
+          <circle class="donut-seg" cx="80" cy="80" r="60" fill="none" stroke="#7a6d2d" stroke-width="20"
+            stroke-dasharray="7 370" stroke-dashoffset="-370"/>
+        </svg>
+        <div class="donut-center">
+          <div class="donut-center-num">2,166</div>
+          <div class="donut-center-label">TOTAL</div>
+        </div>
+      </div>
+      <div class="conservation-list">
+        <div class="cons-row"><div class="cons-dot" style="background:#2d7a4f"></div><div class="cons-label">Least Concern (LC)</div><div class="cons-bar-wrap"><div class="cons-bar" style="width:0%;background:#2d7a4f" data-width="45"></div></div><div class="cons-count">980</div></div>
+        <div class="cons-row"><div class="cons-dot" style="background:#557799"></div><div class="cons-label">Not Evaluated / Unknown</div><div class="cons-bar-wrap"><div class="cons-bar" style="width:0%;background:#557799" data-width="39"></div></div><div class="cons-count">839</div></div>
+        <div class="cons-row"><div class="cons-dot" style="background:#7a4a2d"></div><div class="cons-label">Vulnerable (VU)</div><div class="cons-bar-wrap"><div class="cons-bar" style="width:0%;background:#7a4a2d" data-width="5"></div></div><div class="cons-count">114</div></div>
+        <div class="cons-row"><div class="cons-dot" style="background:#5c1515"></div><div class="cons-label">Critically Endangered (CR)</div><div class="cons-bar-wrap"><div class="cons-bar" style="width:0%;background:#5c1515" data-width="3"></div></div><div class="cons-count">73</div></div>
+        <div class="cons-row"><div class="cons-dot" style="background:#999"></div><div class="cons-label">Data Deficient (DD)</div><div class="cons-bar-wrap"><div class="cons-bar" style="width:0%;background:#999" data-width="3"></div></div><div class="cons-count">67</div></div>
+        <div class="cons-row"><div class="cons-dot" style="background:#7a2d2d"></div><div class="cons-label">Endangered (EN)</div><div class="cons-bar-wrap"><div class="cons-bar" style="width:0%;background:#7a2d2d" data-width="2"></div></div><div class="cons-count">51</div></div>
+        <div class="cons-row"><div class="cons-dot" style="background:#7a6d2d"></div><div class="cons-label">Near Threatened (NT)</div><div class="cons-bar-wrap"><div class="cons-bar" style="width:0%;background:#7a6d2d" data-width="2"></div></div><div class="cons-count">42</div></div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-logo">🐠 <span>Crypto</span>Fish</div>
+      <div class="footer-links">
+        <a onclick="showPage('library')">Library</a>
+        <a onclick="showPage('globe')">Globe</a>
+        <a onclick="showPage('nemo')">About</a>
+        <a href="https://opensea.io/collection/cryptofish" target="_blank">OpenSea ↗</a>
+        <a href="https://x.com/findurnemo" target="_blank">X / Twitter ↗</a>
+      </div>
+      <div class="footer-copy">© 2026 Findurnemo. All rights reserved.</div>
+    </div>
+  </footer>
+</div>
+
+<!-- ════════════════════════════════════════════════
      LIBRARY
 ════════════════════════════════════════════════ -->
-    <div id="page-library" class="page">
-      <div class="library-layout">
-        <div class="filter-sidebar" id="filter-sidebar">
-          <div
-            class="filter-title animate-fadein"
-            style="animation-delay: 0.05s"
-          >
-            Filters
-            <span
-              class="filter-clear"
-              onclick="clearFilters()"
-              tabindex="0"
-              aria-label="Clear all filters"
-              >Clear all</span
-            >
-          </div>
-          <div
-            class="filter-group animate-fadein"
-            style="animation-delay: 0.1s"
-          >
-            <div class="filter-group-label">Conservation Status</div>
-            <div class="filter-pills" id="status-filters">
-              <div
-                class="filter-pill"
-                onclick="toggleFilter(this, 'status', 'LC')"
-                tabindex="0"
-                aria-label="Filter by Least Concern"
-              >
-                LC
-              </div>
-              <div
-                class="filter-pill"
-                onclick="toggleFilter(this, 'status', 'NT')"
-                tabindex="0"
-                aria-label="Filter by Near Threatened"
-              >
-                NT
-              </div>
-              <div
-                class="filter-pill"
-                onclick="toggleFilter(this, 'status', 'VU')"
-                tabindex="0"
-                aria-label="Filter by Vulnerable"
-              >
-                VU
-              </div>
-              <div
-                class="filter-pill"
-                onclick="toggleFilter(this, 'status', 'EN')"
-                tabindex="0"
-                aria-label="Filter by Endangered"
-              >
-                EN
-              </div>
-              <div
-                class="filter-pill"
-                onclick="toggleFilter(this, 'status', 'CR')"
-                tabindex="0"
-                aria-label="Filter by Critically Endangered"
-              >
-                CR
-              </div>
-              <div
-                class="filter-pill"
-                onclick="toggleFilter(this, 'status', 'DD')"
-                tabindex="0"
-                aria-label="Filter by Data Deficient"
-              >
-                DD
-              </div>
-            </div>
-          </div>
-          <div
-            class="filter-group animate-fadein"
-            style="animation-delay: 0.15s"
-          >
-            <div class="filter-group-label">Genera</div>
-            <input
-              class="filter-search"
-              placeholder="Search genera…"
-              oninput="filterPills('genera-filters', this.value)"
-              aria-label="Search genera"
-            />
-            <div class="filter-pills" id="genera-filters"></div>
-          </div>
-          <div
-            class="filter-group animate-fadein"
-            style="animation-delay: 0.2s"
-          >
-            <div class="filter-group-label">Locality</div>
-            <input
-              class="filter-search"
-              placeholder="Search locality…"
-              oninput="filterPills('locality-filters', this.value)"
-              aria-label="Search locality"
-            />
-            <div class="filter-pills" id="locality-filters"></div>
-          </div>
-        </div>
-
-        <div class="library-main">
-          <div class="library-toolbar">
-            <button
-              class="filter-toggle-btn animate-fadein"
-              style="animation-delay: 0.25s"
-              onclick="toggleFilterSidebar()"
-              aria-label="Show/hide filters"
-            >
-              ⚙ Filters
-            </button>
-            <input
-              class="filter-search library-search animate-fadein"
-              style="animation-delay: 0.3s"
-              id="library-search"
-              placeholder="Search by name, species, or ID…"
-              oninput="searchLibrary(this.value)"
-              aria-label="Search library"
-            />
-            <div
-              class="library-count animate-fadein"
-              style="animation-delay: 0.35s"
-              id="lib-count"
-            >
-              Loading…
-            </div>
-            <select
-              class="sort-select animate-fadein"
-              style="animation-delay: 0.4s"
-              onchange="sortLibrary(this.value)"
-              aria-label="Sort library"
-            >
-              <option value="id">Sort: Token ID</option>
-              <option value="alpha">Sort: Species A–Z</option>
-              <option value="status">Sort: Conservation</option>
-            </select>
-            <div
-              class="view-toggle animate-fadein"
-              style="animation-delay: 0.45s"
-            >
-              <button
-                class="view-btn active"
-                id="grid-btn"
-                onclick="setView('grid')"
-                aria-label="Grid view"
-              >
-                ⊞
-              </button>
-              <button
-                class="view-btn"
-                id="list-btn"
-                onclick="setView('list')"
-                aria-label="List view"
-              >
-                ☰
-              </button>
-            </div>
-          </div>
-          <div class="fish-grid" id="fish-grid"></div>
-        </div>
+<div id="page-library" class="page">
+  <div class="library-layout">
+    <div class="filter-sidebar" id="filter-sidebar">
+      <div class="filter-title">
+        Filters <span class="filter-clear" onclick="clearFilters()">Clear all</span>
       </div>
+      <div class="filter-group">
+        <div class="filter-group-label">Conservation Status</div>
+        <div class="filter-pills" id="status-filters"></div>
+      </div>
+      <div class="filter-group">
+        <div class="filter-group-label">Genera</div>
+        <input class="filter-search" placeholder="Search genera…" oninput="filterPills('genera-filters',this.value)">
+        <div class="filter-pills" id="genera-filters"></div>
+      </div>
+      <div class="filter-group">
+        <div class="filter-group-label">Locality</div>
+        <input class="filter-search" placeholder="Search locality…" oninput="filterPills('locality-filters',this.value)">
+        <div class="filter-pills" id="locality-filters"></div>
+      </div>
+
     </div>
 
-    <!-- ════════════════════════════════════════════════
+    <div class="library-main">
+      <div class="library-toolbar">
+        <button class="filter-toggle-btn" onclick="toggleFilterSidebar()">⚙ Filters</button>        <input class="filter-search library-search" id="library-search" placeholder="Search by name, species, or ID…" oninput="searchLibrary(this.value)">        <div class="library-count" id="lib-count">Loading…</div>
+        <select class="sort-select" onchange="sortLibrary(this.value)">
+          <option value="id">Sort: Token ID</option>
+          <option value="alpha">Sort: Species A–Z</option>
+          <option value="status">Sort: Conservation</option>
+        </select>
+        <div class="view-toggle">
+          <button class="view-btn active" id="grid-btn" onclick="setView('grid')">⊞</button>
+          <button class="view-btn" id="list-btn" onclick="setView('list')">☰</button>
+        </div>
+      </div>
+      <div class="fish-grid" id="fish-grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
      GLOBE
 ════════════════════════════════════════════════ -->
-    <div id="page-globe" class="page">
-      <div class="globe-layout">
-        <canvas id="globe-canvas"></canvas>
-        <div class="locality-popover" id="locality-popover">
-          <button class="popover-close" onclick="closePopover()">×</button>
-          <div class="popover-title" id="pop-title">—</div>
-          <div class="popover-sub" id="pop-sub">—</div>
-          <div class="popover-fish-grid" id="pop-fish"></div>
-          <button class="btn-primary pop-explore-btn" id="pop-explore-btn">
-            Explore all fish from here →
-          </button>
-        </div>
-        <div class="globe-sidebar">
-          <div class="globe-sidebar-header">
-            <div class="globe-sidebar-title">Fish Localities</div>
-            <div class="globe-sidebar-sub">
-              Drag · Scroll to zoom · Click a dot
-            </div>
-          </div>
-          <div class="locality-list" id="locality-list"></div>
-        </div>
-      </div>
+<div id="page-globe" class="page">
+  <div class="globe-layout">
+    <canvas id="globe-canvas"></canvas>
+    <div class="locality-popover" id="locality-popover">
+      <button class="popover-close" onclick="closePopover()">×</button>
+      <div class="popover-title" id="pop-title">—</div>
+      <div class="popover-sub" id="pop-sub">—</div>
+      <div class="popover-fish-grid" id="pop-fish"></div>
+      <button class="btn-primary pop-explore-btn" id="pop-explore-btn">Explore all fish from here →</button>
     </div>
+    <div class="globe-sidebar">
+      <div class="globe-sidebar-header">
+        <div class="globe-sidebar-title">Fish Localities</div>
+        <div class="globe-sidebar-sub">Drag · Scroll to zoom · Click a dot</div>
+      </div>
+      <div class="locality-list" id="locality-list"></div>
+    </div>
+  </div>
+</div>
 
-    <!-- ════════════════════════════════════════════════
+<!-- ════════════════════════════════════════════════
      FISH DETAIL
 ════════════════════════════════════════════════ -->
-    <div id="page-detail" class="page">
-      <div class="detail-layout">
-        <div
-          class="detail-art-wrap animate-fadein"
-          style="animation-delay: 0.05s"
-        >
-          <div class="detail-art" id="detail-art" aria-label="Fish art">🐠</div>
-          <div class="detail-token" id="detail-token">Token #—</div>
-          <div class="detail-price-box">
-            <div>
-              <div class="detail-price-label">Current Price</div>
-              <div class="detail-price" id="detail-price">— ETH</div>
-              <div class="detail-price-usd" id="detail-usd">— USD</div>
-            </div>
-            <button
-              class="detail-buy-btn"
-              id="detail-buy-btn"
-              aria-label="Buy this fish on OpenSea"
-            >
-              Buy on OpenSea
-            </button>
-          </div>
-          <div class="detail-collection-context" id="detail-context"></div>
+<div id="page-detail" class="page">
+  <div class="detail-layout">
+    <div class="detail-art-wrap">
+      <div class="detail-art" id="detail-art">🐠</div>
+      <div class="detail-token" id="detail-token">Token #—</div>
+      <div class="detail-price-box">
+        <div>
+          <div class="detail-price-label">Current Price</div>
+          <div class="detail-price" id="detail-price">— ETH</div>
+          <div class="detail-price-usd" id="detail-usd">— USD</div>
         </div>
-
-        <div class="detail-body animate-fadein" style="animation-delay: 0.12s">
-          <div class="detail-breadcrumb">
-            <span
-              onclick="showPage('library')"
-              tabindex="0"
-              aria-label="Back to Library"
-              >Library</span
-            >
-            <span class="bc-sep">›</span>
-            <span id="detail-genus-bc">—</span>
-            <span class="bc-sep">›</span>
-            <span class="bc-italic" id="detail-species-bc">—</span>
-          </div>
-          <div class="detail-common" id="detail-common">—</div>
-          <div class="detail-scientific" id="detail-sci">—</div>
-          <div id="detail-status-pill" style="margin-bottom: 24px"></div>
-
-          <div
-            class="specimen-card animate-fadein"
-            style="animation-delay: 0.18s"
-          >
-            <div class="specimen-row">
-              <div class="specimen-key">Common Name</div>
-              <div class="specimen-val" id="sp-common">—</div>
-            </div>
-            <div class="specimen-row">
-              <div class="specimen-key">Scientific</div>
-              <div class="specimen-val specimen-italic" id="sp-sci">—</div>
-            </div>
-            <div class="specimen-row">
-              <div class="specimen-key">Order</div>
-              <div class="specimen-val" id="sp-order">—</div>
-            </div>
-            <div class="specimen-row">
-              <div class="specimen-key">Family</div>
-              <div class="specimen-val" id="sp-family">—</div>
-            </div>
-            <div class="specimen-row">
-              <div class="specimen-key">Genus</div>
-              <div class="specimen-val specimen-italic" id="sp-genus">—</div>
-            </div>
-            <div class="specimen-row">
-              <div class="specimen-key">Species</div>
-              <div class="specimen-val specimen-italic" id="sp-species">—</div>
-            </div>
-            <div class="specimen-row">
-              <div class="specimen-key">Locality</div>
-              <div class="specimen-val" id="sp-locality">—</div>
-            </div>
-            <div class="specimen-row last">
-              <div class="specimen-key">IUCN Status</div>
-              <div class="specimen-val" id="sp-status">—</div>
-            </div>
-          </div>
-
-          <h3
-            class="detail-section-title animate-fadein"
-            style="animation-delay: 0.24s"
-          >
-            Natural History
-          </h3>
-          <p
-            class="detail-prose animate-fadein"
-            style="animation-delay: 0.28s"
-            id="detail-history"
-          ></p>
-
-          <h3
-            class="detail-section-title animate-fadein"
-            style="animation-delay: 0.32s"
-          >
-            Conservation Notes
-          </h3>
-          <p
-            class="detail-prose animate-fadein"
-            style="animation-delay: 0.36s"
-            id="detail-conservation"
-          ></p>
-
-          <div class="detail-nav animate-fadein" style="animation-delay: 0.4s">
-            <button
-              class="detail-nav-btn"
-              onclick="navFish(-1)"
-              aria-label="Previous fish"
-            >
-              ← Previous
-            </button>
-            <button
-              class="detail-nav-btn random"
-              onclick="showFish(Math.floor(Math.random() * 2166))"
-              aria-label="Random fish"
-            >
-              🎲 Random
-            </button>
-            <button
-              class="detail-nav-btn"
-              onclick="navFish(1)"
-              aria-label="Next fish"
-            >
-              Next →
-            </button>
-          </div>
-        </div>
+        <button class="detail-buy-btn" id="detail-buy-btn">Buy on OpenSea</button>
       </div>
+      <div class="detail-collection-context" id="detail-context"></div>
     </div>
 
-    <!-- ════════════════════════════════════════════════
-     ABOUT
-═════════════════════════════════════════════════ -->
-    <div id="page-nemo" class="page">
-      <div class="nemo-hero animate-fadein" style="animation-delay: 0.05s">
-        <div
-          class="nemo-avatar reveal animate-fadein"
-          style="animation-delay: 0.08s"
-          aria-label="Findurnemo avatar"
-        >
-          🎣
-        </div>
-        <div
-          class="nemo-eyebrow reveal animate-fadein"
-          style="animation-delay: 0.12s"
-        >
-          Findurnemo · Pixel Artist
-        </div>
-        <h1
-          class="nemo-title reveal animate-fadein"
-          style="animation-delay: 0.16s"
-        >
-          About CryptoFish
-        </h1>
-        <p class="nemo-sub reveal animate-fadein" style="animation-delay: 0.2s">
-          CryptoFish is a hand-crafted pixel art NFT collection by Findurnemo,
-          celebrating real fish species and marine biodiversity. The project
-          began with 1/1s and small collections as early as 2021, evolving
-          through multiple contracts and culminating in the current 2,166-token
-          collection on Ethereum, launched May 2025.
-        </p>
-        <div
-          class="nemo-links reveal animate-fadein"
-          style="animation-delay: 0.24s"
-        >
-          <a
-            class="nemo-link primary"
-            href="https://x.com/findurnemo"
-            target="_blank"
-            aria-label="Findurnemo on X"
-            >@findurnemo on X</a
-          >
-          <a
-            class="nemo-link"
-            href="https://opensea.io/collection/cryptofish"
-            target="_blank"
-            aria-label="View CryptoFish on OpenSea"
-            >View on OpenSea</a
-          >
-        </div>
+    <div class="detail-body">
+      <div class="detail-breadcrumb">
+        <span onclick="showPage('library')">Library</span>
+        <span class="bc-sep">›</span>
+        <span id="detail-genus-bc">—</span>
+        <span class="bc-sep">›</span>
+        <span class="bc-italic" id="detail-species-bc">—</span>
+      </div>
+      <div class="detail-common" id="detail-common">—</div>
+      <div class="detail-scientific" id="detail-sci">—</div>
+      <div id="detail-status-pill" style="margin-bottom:24px"></div>
+
+      <div class="specimen-card">
+        <div class="specimen-row"><div class="specimen-key">Common Name</div><div class="specimen-val" id="sp-common">—</div></div>
+        <div class="specimen-row"><div class="specimen-key">Scientific</div><div class="specimen-val specimen-italic" id="sp-sci">—</div></div>
+        <div class="specimen-row"><div class="specimen-key">Genus</div><div class="specimen-val specimen-italic" id="sp-genus">—</div></div>
+        <div class="specimen-row"><div class="specimen-key">Species</div><div class="specimen-val specimen-italic" id="sp-species">—</div></div>
+        <div class="specimen-row"><div class="specimen-key">Locality</div><div class="specimen-val" id="sp-locality">—</div></div>
+        <div class="specimen-row last"><div class="specimen-key">IUCN Status</div><div class="specimen-val" id="sp-status">—</div></div>
       </div>
 
-      <div class="nemo-stats-bar animate-fadein" style="animation-delay: 0.28s">
-        <div class="nemo-stats-inner">
-          <div
-            class="nemo-stat reveal animate-fadein"
-            style="animation-delay: 0.3s"
-          >
-            <div class="nemo-stat-num">2,166</div>
-            <div class="nemo-stat-label">Fish</div>
-          </div>
-          <div
-            class="nemo-stat reveal animate-fadein"
-            style="animation-delay: 0.32s"
-          >
-            <div class="nemo-stat-num">1,700+</div>
-            <div class="nemo-stat-label">Species</div>
-          </div>
-          <div
-            class="nemo-stat reveal animate-fadein"
-            style="animation-delay: 0.34s"
-          >
-            <div class="nemo-stat-num">340+</div>
-            <div class="nemo-stat-label">Genera</div>
-          </div>
-          <div
-            class="nemo-stat reveal animate-fadein"
-            style="animation-delay: 0.36s"
-          >
-            <div class="nemo-stat-num">989</div>
-            <div class="nemo-stat-label">Localities</div>
-          </div>
-          <div
-            class="nemo-stat reveal animate-fadein"
-            style="animation-delay: 0.38s"
-          >
-            <div class="nemo-stat-num">706 ETH</div>
-            <div class="nemo-stat-label">Volume</div>
-          </div>
-        </div>
-      </div>
+      <h3 class="detail-section-title">Natural History</h3>
+      <p class="detail-prose" id="detail-history"></p>
 
-      <div
-        class="nemo-section reveal animate-fadein"
-        style="margin-top: 32px; animation-delay: 0.4s"
-      >
-        <div class="nemo-section-title">About CryptoFish</div>
-        <p class="nemo-prose">
-          CryptoFish is a collection of 2,166 hand-crafted pixel art NFTs, each
-          representing a real fish species. Every fish is unique, with rarity
-          based on both collection traits and real-world biology. Created by
-          Findurnemo, CryptoFish celebrates marine biodiversity and the beauty
-          of rare species.
-        </p>
-        <ul class="nemo-list">
-          <li>
-            Every CryptoFish is a real, scientifically classified species, with
-            genus, species, and locality encoded on-chain.
-          </li>
-          <li>
-            Rarity is not just about collection traits—many fish are rare in the
-            wild due to their conservation status, limited range, or unique
-            evolutionary history.
-          </li>
-          <li>
-            Some species are critically endangered or known from only a single
-            locality, making their digital representation as rare as their
-            real-world existence.
-          </li>
-          <li>
-            Traits like color, pattern, and locality are based on real biology,
-            not just random generation.
-          </li>
-          <li>
-            The collection includes over 1,700 species, 340+ genera, and nearly
-            1,000 localities, making it one of the most scientifically diverse
-            NFT projects.
-          </li>
-          <li>
-            Each fish is hand-drawn in pixel art, referencing real scientific
-            illustrations and field guides.
-          </li>
-          <li>
-            CryptoFish is a tribute to the diversity and fragility of aquatic
-            life, aiming to raise awareness for conservation through art and
-            technology.
-          </li>
-        </ul>
-        <p class="nemo-prose">
-          For more, follow
-          <a href="https://x.com/findurnemo" target="_blank">@findurnemo</a> and
-          explore the full collection on
-          <a href="https://opensea.io/collection/cryptofish" target="_blank"
-            >OpenSea</a
-          >.
-        </p>
-      </div>
+      <h3 class="detail-section-title">Conservation Notes</h3>
+      <p class="detail-prose" id="detail-conservation"></p>
 
-      <footer class="site-footer">
-        <div class="footer-inner">
-          <div class="footer-logo">🐠 <span>Crypto</span>Fish</div>
-          <div class="footer-links">
-            <a onclick="showPage('library')">Library</a>
-            <a onclick="showPage('globe')">Globe</a>
-            <a onclick="showPage('home')">Home</a>
-            <a href="https://opensea.io/collection/cryptofish" target="_blank"
-              >OpenSea ↗</a
-            >
-            <a href="https://x.com/findurnemo" target="_blank">X / Twitter ↗</a>
-          </div>
-          <div class="footer-copy">© 2026 Findurnemo. All rights reserved.</div>
-        </div>
-      </footer>
+      <div class="detail-nav">
+        <button class="detail-nav-btn" onclick="navFish(-1)">← Previous</button>
+        <button class="detail-nav-btn random" onclick="showFish(Math.floor(Math.random()*2166))">🎲 Random</button>
+        <button class="detail-nav-btn" onclick="navFish(1)">Next →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     ABOUT FINDURNEMO
+════════════════════════════════════════════════ -->
+<div id="page-nemo" class="page">
+  <div class="nemo-hero">
+    <div class="nemo-avatar reveal">🎣</div>
+    <div class="nemo-eyebrow reveal">Creator · Researcher · Pixel Artist</div>
+    <h1 class="nemo-title reveal">The Person Who Built an Aquarium on the Blockchain</h1>
+    <p class="nemo-sub reveal">
+      Findurnemo didn't just make NFTs. They built a living archive of marine biodiversity —
+      encoding real science into every single token, one species at a time.
+    </p>
+    <div class="nemo-links reveal">
+      <a class="nemo-link primary" href="https://x.com/findurnemo" target="_blank">Follow @findurnemo on X ↗</a>
+      <a class="nemo-link" href="https://opensea.io/collection/cryptofish" target="_blank">View Collection ↗</a>
+    </div>
+  </div>
+
+  <div class="nemo-stats-bar">
+    <div class="nemo-stats-inner">
+      <div class="nemo-stat reveal"><div class="nemo-stat-num">2,166</div><div class="nemo-stat-label">Fish Illustrated</div></div>
+      <div class="nemo-stat reveal"><div class="nemo-stat-num">1,700+</div><div class="nemo-stat-label">Unique Species</div></div>
+      <div class="nemo-stat reveal"><div class="nemo-stat-num">340+</div><div class="nemo-stat-label">Genera</div></div>
+      <div class="nemo-stat reveal"><div class="nemo-stat-num">989</div><div class="nemo-stat-label">Global Localities</div></div>
+      <div class="nemo-stat reveal"><div class="nemo-stat-num">706 ETH</div><div class="nemo-stat-label">Total Volume</div></div>
+    </div>
+  </div>
+
+  <div class="nemo-sections">
+    <div class="nemo-section reveal">
+      <div class="nemo-section-num">01 — The Origin</div>
+      <div class="nemo-section-title">It started with an obsession with fish.</div>
+      <p class="nemo-prose">Long before Web3, Findurnemo was deep in the world of ichthyology — the scientific study of fish. The beauty of Linnaean taxonomy, the romance of geographic locality data, the moral weight of conservation status: these weren't abstract concepts. They were an obsession.</p>
+      <p class="nemo-prose">When the NFT space emerged as a medium for digital art and archival, the idea crystallized: what if you could encode a real fish species — its full scientific classification, its home waters, its conservation status — into a single on-chain token? What if the rarity of the NFT mirrored the rarity of the animal?</p>
+      <p class="nemo-prose">CryptoFish was born from that question. Not as a speculative asset, but as a permanent record.</p>
     </div>
 
-    <script src="data.js"></script>
-    <script src="globe.js"></script>
-    <script src="app.js"></script>
+    <div class="nemo-section reveal">
+      <div class="nemo-section-num">02 — The Research</div>
+      <div class="nemo-section-title">Every fish took hours before a single pixel was drawn.</div>
+      <p class="nemo-prose">Each CryptoFish begins not in an art tool, but in scientific literature. Findurnemo cross-references multiple ichthyological databases — FishBase, the IUCN Red List, regional marine surveys — to confirm every taxonomic detail before classification. Order, family, genus, species, subspecies where applicable. Locality pinpointed to the specific reef system, lagoon, or sea where the species is most characteristically found.</p>
+      <p class="nemo-prose">Then comes the art. The pixel work is hand-crafted — not generated, not templated. Each fish's silhouette, coloration, and fin structure is studied from reference photographs and scientific illustrations before being translated into pixel art. The color morphs in the collection reflect real documented color variants of the species, not invented variations.</p>
+      <p class="nemo-prose">The conservation status is pulled directly from the most recent IUCN Red List assessment for each species. Critically Endangered fish are rare in the collection because they're rare in the world. That was always the design.</p>
+    </div>
 
-    <!-- Conservation bars — animate width when scrolled into view -->
-    <script>
-      (function () {
-        const obs = new IntersectionObserver(
-          (entries) => {
-            entries.forEach((e) => {
-              if (!e.isIntersecting) return;
-              e.target
-                .querySelectorAll(".cons-bar[data-width]")
-                .forEach((bar) => {
-                  const w = bar.dataset.width;
-                  setTimeout(() => {
-                    bar.style.width = w + "%";
-                  }, 80);
-                });
-              obs.unobserve(e.target);
-            });
-          },
-          { threshold: 0.2 },
-        );
-        document
-          .querySelectorAll(".conservation-grid")
-          .forEach((el) => obs.observe(el));
-      })();
-    </script>
-  </body>
+    <div class="nemo-section reveal">
+      <div class="nemo-section-num">03 — The Philosophy</div>
+      <div class="nemo-section-title">Preservation-first. Archival by design.</div>
+      <p class="nemo-prose">Most NFT collections treat rarity as an arbitrary game mechanic — a certain hat, a certain background color, algorithmically distributed to create scarcity. CryptoFish inverts this. Rarity is inherited from nature itself. A Critically Endangered species produces fewer tokens not because of an algorithm, but because that scarcity is real and demands acknowledgment.</p>
+      <p class="nemo-prose">The Linnaean system — developed by Carl Linnaeus in the 18th century and still the global standard for biological classification — provides the structural backbone of the entire collection's trait system. It's not a gimmick. It's a 270-year-old framework for understanding life on Earth, applied to a permanent digital ledger.</p>
+      <p class="nemo-prose">The goal is an archive that outlasts any single platform, marketplace, or trend: every fish species immortalized on-chain, with its full scientific identity intact.</p>
+    </div>
+
+    <div class="nemo-section reveal">
+      <div class="nemo-section-num">04 — The Timeline</div>
+      <div class="nemo-section-title">The making of a collection.</div>
+      <div class="nemo-timeline">
+        <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-date">Early 2024</div><div class="timeline-title">Concept &amp; Research Phase</div><div class="timeline-desc">Findurnemo begins compiling species lists, cross-referencing IUCN data, and establishing the taxonomic metadata framework for the collection.</div></div>
+        <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-date">Late 2024</div><div class="timeline-title">Pixel Art Production Begins</div><div class="timeline-desc">The first fish are illustrated. The hand-crafted pixel art process is established — each fish taking hours of research and illustration before completion.</div></div>
+        <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-date">May 2025</div><div class="timeline-title">Collection Launches on Ethereum</div><div class="timeline-desc">2,165 CryptoFish mint on Ethereum. The community responds immediately — 596 unique holders within weeks, 706 ETH in total volume.</div></div>
+        <div class="timeline-item"><div class="timeline-dot future"></div><div class="timeline-date">Ongoing</div><div class="timeline-title">The Archive Grows</div><div class="timeline-desc">Future drops, expanded species, and potential conservation partnerships are in development. The mission is far from complete.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-logo">🐠 <span>Crypto</span>Fish</div>
+      <div class="footer-links">
+        <a onclick="showPage('library')">Library</a>
+        <a onclick="showPage('globe')">Globe</a>
+        <a onclick="showPage('home')">Home</a>
+        <a href="https://opensea.io/collection/cryptofish" target="_blank">OpenSea ↗</a>
+        <a href="https://x.com/findurnemo" target="_blank">X / Twitter ↗</a>
+      </div>
+      <div class="footer-copy">© 2026 Findurnemo. All rights reserved.</div>
+    </div>
+  </footer>
+</div>
+
+<script src="data.js"></script>
+<script src="globe.js"></script>
+<script src="app.js"></script>
+
+<!-- Conservation bars — animate width when scrolled into view -->
+<script>
+  (function() {
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (!e.isIntersecting) return;
+        e.target.querySelectorAll('.cons-bar[data-width]').forEach(bar => {
+          const w = bar.dataset.width;
+          setTimeout(() => { bar.style.width = w + '%'; }, 80);
+        });
+        obs.unobserve(e.target);
+      });
+    }, { threshold: 0.2 });
+    document.querySelectorAll('.conservation-grid').forEach(el => obs.observe(el));
+  })();
+</script>
+</body>
 </html>
