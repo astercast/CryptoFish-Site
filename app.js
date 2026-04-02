@@ -103,53 +103,55 @@ function updatePriceDisplays() {
   if (navEl) navEl.textContent = liveEthPrice ? '$' + liveEthPrice.toLocaleString() : '—';
 }
 
-// ── Live: OpenSea Collection Stats ────────────────
+// ── Live: Collection Stats (Reservoir) ──────────────
+const RESERVOIR_HEADERS = { 'x-api-key': 'demo-api-key', accept: 'application/json' };
+const CF_CONTRACT = '0x9ef31ce8cca614e7aff3c1b883740e8d2728fe91';
+
 async function fetchCollectionStats() {
   try {
     const r = await fetch(
-      'https://api.opensea.io/api/v2/collections/cryptofish/stats',
-      { headers: { accept: 'application/json' }, cache: 'no-store' }
+      `https://api.reservoir.tools/collections/v7?id=${CF_CONTRACT}`,
+      { headers: RESERVOIR_HEADERS, cache: 'no-store' }
     );
     if (!r.ok) throw new Error(r.status);
     const d = await r.json();
-    const s = d.total ?? d;
+    const c = d.collections?.[0];
+    if (!c) throw new Error('no collection');
     liveCollection = {
-      floor_price:  s.floor_price   != null ? parseFloat(s.floor_price)   : null,
-      total_volume: s.volume        != null ? parseFloat(s.volume)        : null,
-      num_owners:   s.num_owners    != null ? parseInt(s.num_owners)      : null,
-      total_supply: s.count         != null ? parseInt(s.count)           : 2166,
-      listed_count: s.listed_count  != null ? parseInt(s.listed_count)    : null,
-      avg_price:    s.average_price != null ? parseFloat(s.average_price) : null,
+      floor_price:  c.floorAsk?.price?.amount?.decimal ?? null,
+      total_volume: c.volume?.allTime ?? null,
+      num_owners:   c.ownerCount     ?? null,
+      total_supply: c.tokenCount     ?? 2166,
+      listed_count: c.onSaleCount    ?? null,
+      avg_price:    c.volume?.['7day'] && c.tokenCount
+                      ? parseFloat((c.volume['7day'] / Math.max(c.tokenCount * 0.01, 1)).toFixed(4))
+                      : null,
     };
   } catch (e) {
-    console.warn('[OpenSea stats] failed:', e.message);
-    // Keep previously fetched data if available; otherwise leave null
+    console.warn('[Reservoir stats] failed:', e.message);
   }
   renderStatsBar();
 }
 
-// ── Live: OpenSea Recent Sales ────────────────────
+// ── Live: Recent Sales (Reservoir) ─────────────────
 async function fetchRecentSales() {
   try {
     const r = await fetch(
-      'https://api.opensea.io/api/v2/events/collection/cryptofish?event_type=sale&limit=50',
-      { headers: { accept: 'application/json' }, cache: 'no-store' }
+      `https://api.reservoir.tools/sales/v6?collection=${CF_CONTRACT}&limit=50&sortBy=time`,
+      { headers: RESERVOIR_HEADERS, cache: 'no-store' }
     );
     if (!r.ok) throw new Error(r.status);
-    const d  = await r.json();
-    const ev = d.asset_events ?? [];
+    const d = await r.json();
+    const ev = d.sales ?? [];
     if (!ev.length) throw new Error('empty');
 
-    const sales = ev.filter(e => {
-      const sym = (e.payment?.symbol || '').toUpperCase();
-      return !sym || sym === 'ETH' || sym === 'WETH';
-    }).map(e => {
-      const rawEth = e.payment ? parseInt(e.payment.quantity) / 1e18 : 0;
+    const sales = ev.map(e => {
+      const rawEth = e.price?.amount?.decimal;
       if (!rawEth) return null;
-      const eth   = rawEth.toFixed(4);
-      const rawId = e.nft?.identifier ?? '';
+      const eth   = parseFloat(rawEth).toFixed(4);
+      const rawId = e.token?.tokenId ?? '';
       const token = rawId ? '#' + String(rawId).padStart(4, '0') : '—';
-      const ts    = (e.closing_time ?? e.event_timestamp ?? 0) * 1000;
+      const ts    = (e.timestamp ?? 0) * 1000;
       const idx   = rawId ? parseInt(rawId) - 1 : -1;
       const f     = idx >= 0 ? FISH_DATA[idx] : null;
       return {
@@ -164,15 +166,14 @@ async function fetchRecentSales() {
       };
     }).filter(Boolean);
 
-    // Most recent first for the activity feed
+    // Most recent first for activity feed
     const byTime  = [...sales].sort((a, b) => b.ts - a.ts);
     renderSalesFeed(byTime);
-    // Highest price for the featured top-sales section (up to 9)
+    // Highest price for top-sales section (up to 9)
     const byPrice = [...sales].sort((a, b) => parseFloat(b.eth) - parseFloat(a.eth));
     renderTopSales(byPrice);
   } catch (e) {
-    console.warn('[OpenSea sales] failed:', e.message);
-    // No mock fallback — leave existing render or empty state
+    console.warn('[Reservoir sales] failed:', e.message);
     renderSalesFeed([]);
   }
 }
