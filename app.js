@@ -553,8 +553,8 @@ function initScrollReveal() {
 function renderHeroCards() {
   const heroGrid = document.getElementById('hero-fish-grid');
   if (!heroGrid) return;
-  const picks = [199, 499, 799, 1099].map(i => FISH_DATA[i]).filter(Boolean);
-  if (picks.length < 4) return;
+  const picks = [199, 499, 799].map(i => FISH_DATA[i]).filter(Boolean);
+  if (picks.length < 3) return;
   heroGrid.innerHTML = `
     <div class="hero-fish-card large" onclick="showFish(${picks[0].tokenId - 1})">
       <div class="fish-img-wrap large-wrap"><img src="${encodeURI(picks[0].image)}" alt="${escapeHTML(picks[0].name)}"></div>

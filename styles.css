@@ -279,8 +279,9 @@ nav {
 .fish-img-wrap {
   background: var(--bg2); padding: 0;
   display: flex; align-items: center; justify-content: center; overflow: hidden;
+  aspect-ratio: 1;
 }
-.fish-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.fish-img-wrap img { width: 100%; height: 100%; object-fit: contain; display: block; image-rendering: pixelated; image-rendering: crisp-edges; }
 .large-wrap { min-height: 180px; }
 .fish-card-info { padding: 12px 14px; }
 .fish-card-name { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
@@ -309,13 +310,13 @@ nav {
 .fotd-art {
   background: linear-gradient(145deg,#e4eff8,#d0e4f0);
   display: flex; align-items: center; justify-content: center;
-  line-height: 1; position: relative; padding: 0; overflow: hidden;
+  line-height: 1; position: relative; padding: 20px; overflow: hidden;
 }
 .fotd-emoji {
   animation: fotdFloat 4s ease-in-out infinite;
   display: block; width: 100%; height: 100%;
 }
-.fotd-emoji img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.fotd-emoji img { width: 100%; height: 100%; object-fit: contain; display: block; image-rendering: pixelated; image-rendering: crisp-edges; }
 @keyframes fotdFloat {
   0%,100% { transform: translateY(0); }
   50%      { transform: translateY(-8px); }
@@ -351,7 +352,7 @@ nav {
 .sales-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 .sales-loading { padding: 24px; text-align: center; color: var(--text3); font-size: 13px; }
 .sale-fish-icon { font-size: 28px; flex-shrink: 0; line-height: 1; width: 36px; height: 36px; border-radius: 6px; overflow: hidden; }
-.sale-fish-icon img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.sale-fish-icon img { width: 100%; height: 100%; object-fit: contain; display: block; image-rendering: pixelated; image-rendering: crisp-edges; }
 .sale-info { flex: 1; min-width: 0; }
 .sale-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sale-detail { font-size: 11px; color: var(--text3); margin-top: 1px; }
@@ -373,7 +374,7 @@ nav {
   min-height: 130px; overflow: hidden;
   display: flex; align-items: center; justify-content: center; padding: 0;
 }
-.top-sale-art img { width: 100%; height: 130px; object-fit: cover; display: block; }
+.top-sale-art img { width: 100%; height: 130px; object-fit: contain; display: block; image-rendering: pixelated; image-rendering: crisp-edges; }
 .top-sale-info { padding: 14px 16px; }
 .top-sale-name { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
 .top-sale-price { font-family: 'DM Mono', monospace; font-size: 20px; font-weight: 500; color: var(--accent); }
@@ -456,7 +457,7 @@ nav {
 .fish-grid.list-view .fish-card-footer { margin-left: auto; }
 
 .fish-card-art { background: var(--bg2); padding: 0; text-align: center; line-height: 1; position: relative; overflow: hidden; aspect-ratio: 1; }
-.fish-card-art img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s var(--ease-out); }
+.fish-card-art img { width: 100%; height: 100%; object-fit: contain; display: block; transition: transform .3s var(--ease-out); image-rendering: pixelated; image-rendering: crisp-edges; }
 .fish-card:hover .fish-card-art img { transform: scale(1.06); }
 .fish-card-emoji { transition: transform .3s var(--ease-out); display: block; }
 .fish-card:hover .fish-card-emoji { transform: scale(1.12); }
@@ -514,6 +515,7 @@ nav {
 }
 .popover-fish img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .popover-fish:hover { transform: scale(1.08); }
+.popover-fish img { width: 100%; height: 100%; object-fit: contain; display: block; image-rendering: pixelated; image-rendering: crisp-edges; }
 .popover-fish-empty { grid-column: 1/-1; padding: 16px; text-align: center; color: var(--text3); font-size: 12px; }
 .pop-explore-btn { width: 100%; font-size: 13px; }
 
@@ -528,7 +530,7 @@ nav {
   margin-bottom: 12px;
   animation: detailArtIn .5s var(--ease-out) both;
 }
-.detail-art img { width: 100%; height: auto; display: block; }
+.detail-art img { width: 100%; height: auto; display: block; image-rendering: pixelated; image-rendering: crisp-edges; }
 @keyframes detailArtIn { from { opacity:0; transform: scale(.9); } to { opacity:1; transform: none; } }
 .detail-token { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text3); margin-bottom: 10px; letter-spacing: .5px; }
 .detail-price-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
