@@ -43,7 +43,9 @@ function escapeHTML(str) {
 }
 
 // ── Navigation ────────────────────────────────────
-function showPage(page) {
+let _suppressPush = false;
+
+function showPage(page, { pushState = true, fishIdx = null } = {}) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
 
@@ -60,6 +62,16 @@ function showPage(page) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
   if (mobileNavOpen) toggleMobileNav();
   setTimeout(initScrollReveal, 50);
+
+  // History API
+  if (pushState && !_suppressPush) {
+    const state = { page };
+    if (fishIdx !== null) state.fishIdx = fishIdx;
+    const url = page === 'home' ? '/' : (page === 'detail' && fishIdx !== null)
+      ? `/?fish=${fishIdx + 1}`
+      : `/?page=${page}`;
+    history.pushState(state, '', url);
+  }
 }
 
 function toggleMobileNav() {
@@ -274,7 +286,7 @@ function renderFOTD() {
 }
 
 // ── Fish Detail ───────────────────────────────────
-function showFish(idx) {
+function showFish(idx, { pushState = true } = {}) {
   idx = Math.max(0, Math.min(FISH_DATA.length - 1, parseInt(idx) || 0));
   currentFishIndex = idx;
   const f = FISH_DATA[idx];
@@ -292,10 +304,10 @@ function showFish(idx) {
   setEl('detail-token',      'Token #' + f.id);
   setEl('detail-common',     f.name);
   setEl('detail-sci',        f.sci || (f.honorary ? 'Custom / Honorary' : ''));
-  setEl('detail-genus-bc',   f.genus || '—');
-  setEl('detail-species-bc', f.species || '—');
+  setEl('detail-genus-bc',   f.genus || (f.honorary ? 'Honorary' : '—'));
+  setEl('detail-species-bc', f.species || (f.honorary ? f.honorary : '—'));
   setEl('sp-common',   f.name);
-  setEl('sp-sci',      f.sci || '—');
+  setEl('sp-sci',      f.sci || (f.honorary ? 'Custom / Honorary' : '—'));
   setEl('sp-genus',    f.genus || '—');
   setEl('sp-species',  f.species || '—');
   setEl('sp-locality', f.locality || '—');
@@ -304,7 +316,6 @@ function showFish(idx) {
   setHTML('detail-status-pill',
     `<span class="status-pill status-${f.status.toLowerCase()}">⬤ ${STATUS_NAMES[f.status] || 'Unknown'}</span>`);
 
-  // OpenSea direct link to this specific token
   const buyBtn = document.getElementById('detail-buy-btn');
   if (buyBtn) buyBtn.onclick = () =>
     window.open(`https://opensea.io/assets/ethereum/0x9ef31ce8cca614e7aff3c1b883740e8d2728fe91/${f.tokenId}`, '_blank');
@@ -325,16 +336,54 @@ function showFish(idx) {
     ctx.innerHTML = parts.join(' &nbsp;·&nbsp; ');
   }
 
-  const histEl = document.getElementById('detail-history');
-  const consEl = document.getElementById('detail-conservation');
-  if (histEl) histEl.textContent = f.honorary
-    ? `Custom honorary token created for ${f.honorary}.`
-    : (f.sci ? `${f.genus} ${f.species}, found in ${f.locality || 'its native habitat'}.` : '');
-  if (consEl) consEl.textContent = f.status && STATUS_NAMES[f.status]
-    ? `IUCN Red List status: ${STATUS_NAMES[f.status]} (${f.status}).`
-    : '';
+  // Bio section heading
+  const bioHeading = document.getElementById('detail-bio-heading');
+  if (bioHeading) bioHeading.textContent = f.honorary && !f.genus ? 'About this Token' : 'About this Species';
 
-  showPage('detail');
+  // Show loading state immediately, then populate async
+  const bioEl = document.getElementById('detail-bio');
+  if (bioEl) bioEl.innerHTML = '<p class="detail-prose bio-loading">Loading species information…</p>';
+
+  // Conservation block
+  const consEl = document.getElementById('detail-conservation');
+  if (consEl) {
+    if (f.status && STATUS_NAMES[f.status] && f.status !== '?') {
+      const statusName = STATUS_NAMES[f.status];
+      const statusDesc = {
+        'CR': 'Critically Endangered species face an extremely high risk of extinction in the wild. This IUCN category requires evidence of a population decline of 80%+ over three generations, or a population estimated at under 250 mature individuals. Without intervention, extinction is a likely outcome for this species.',
+        'EN': 'Endangered species face a very high risk of extinction in the wild. The IUCN Endangered category indicates a severe population decline and restricted range. Active conservation programs and habitat protection are critical to preventing extinction.',
+        'VU': 'Vulnerable species face a high risk of extinction in the wild under current conditions. They have experienced significant population declines or are restricted to vulnerable habitat, and require monitoring and protection to prevent further decline.',
+        'NT': 'Near Threatened species are not currently threatened but are close to qualifying for a threatened category, or may do so without continued conservation measures. They are monitored closely for any signs of decline.',
+        'LC': 'Least Concern species have been evaluated and do not meet the criteria for more threatened categories. However, this designation does not mean the species faces no pressure — many LC species face habitat loss, collection pressure, or pollution that has not yet triggered a status change.',
+        'DD': 'Data Deficient means insufficient information exists to make a direct or indirect assessment of the species\' extinction risk. This is not a positive status — it means the species has not been studied enough to know if it is threatened.',
+        'NE': 'Not Evaluated — this species has not yet been assessed against IUCN criteria. Many freshwater and marine species fall into this category due to limited scientific survey coverage.',
+        'EW': 'Extinct in the Wild — this species survives only in captivity or as a naturalized population outside its historic range. Its natural ecosystem no longer supports a wild population.',
+        'EX': 'Extinct — this species is no longer known to exist anywhere on Earth. This is the final designation on the IUCN Red List, assigned only when exhaustive surveys confirm no surviving individuals.',
+      }[f.status] || '';
+      consEl.innerHTML = `<strong>IUCN Red List status: ${escapeHTML(statusName)} (${escapeHTML(f.status)})</strong>${statusDesc ? '<br><br>' + escapeHTML(statusDesc) : ''}`;
+    } else {
+      consEl.innerHTML = f.honorary ? 'Honorary tokens are not assessed for conservation status as they represent community members rather than species.' : 'Conservation status has not been formally evaluated for this species.';
+    }
+  }
+
+  // Async bio fetch (Wikipedia → rich fallback)
+  if (typeof fetchFishBio === 'function') {
+    fetchFishBio(f).then(result => {
+      const el = document.getElementById('detail-bio');
+      if (el && currentFishIndex === idx) el.innerHTML = result.html;
+    }).catch(() => {
+      const el = document.getElementById('detail-bio');
+      if (el && currentFishIndex === idx)
+        el.innerHTML = '<p class="detail-prose">Species information could not be loaded.</p>';
+    });
+  }
+
+  // Push browser history
+  if (pushState) {
+    history.pushState({ page: 'detail', fishIdx: idx }, '', `/?fish=${f.tokenId}`);
+  }
+
+  showPage('detail', { pushState: false });
 }
 
 function navFish(dir) {
@@ -626,8 +675,32 @@ function renderHeroCards() {
   }, 8000);
 }
 
+// ── popstate: back/forward button routing ─────────
+window.addEventListener('popstate', e => {
+  const state = e.state;
+  if (!state) { showPage('home', { pushState: false }); return; }
+  if (state.page === 'detail' && state.fishIdx != null) {
+    showFish(state.fishIdx, { pushState: false });
+  } else if (state.page) {
+    showPage(state.page, { pushState: false });
+  } else {
+    showPage('home', { pushState: false });
+  }
+});
+
 // ── DOMContentLoaded ──────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
+  // Handle deep-link URLs: /?fish=42 or /?page=globe etc.
+  const urlParams = new URLSearchParams(window.location.search);
+  const deepFish  = urlParams.get('fish');
+  const deepPage  = urlParams.get('page');
+
+  // Set initial history state so popstate works on first back press
+  const initState = deepFish ? { page: 'detail', fishIdx: parseInt(deepFish) - 1 }
+                  : deepPage ? { page: deepPage }
+                  : { page: 'home' };
+  history.replaceState(initState, '', window.location.href);
+
   // Restore saved theme
   const savedTheme = localStorage.getItem('cf-theme');
   if (savedTheme === 'dark') {
@@ -659,6 +732,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   try { renderLibrary(); }      catch(e) { console.error('[renderLibrary]', e); }
   try { renderFOTD(); }         catch(e) { console.error('[renderFOTD]', e); }
   initScrollReveal();
+
+  // Deep-link routing: open the correct page based on URL params
+  if (deepFish) {
+    const idx = parseInt(deepFish) - 1;
+    if (!isNaN(idx) && idx >= 0) showFish(idx, { pushState: false });
+  } else if (deepPage && ['library','globe','nemo'].includes(deepPage)) {
+    showPage(deepPage, { pushState: false });
+  }
 
   await Promise.allSettled([fetchEthPrice(), fetchCollectionStats()]);
   try { renderFOTD(); } catch(e) { console.error('[renderFOTD2]', e); }

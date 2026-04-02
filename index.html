@@ -11,7 +11,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://unpkg.com/globe.gl/dist/globe.gl.min.js"></script>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -273,7 +273,7 @@
 ════════════════════════════════════════════════ -->
 <div id="page-globe" class="page">
   <div class="globe-layout">
-    <canvas id="globe-canvas"></canvas>
+    <div id="globe-canvas"></div>
     <div class="locality-popover" id="locality-popover">
       <button class="popover-close" onclick="closePopover()">×</button>
       <div class="popover-title" id="pop-title">—</div>
@@ -331,11 +331,15 @@
         <div class="specimen-row last"><div class="specimen-key">IUCN Status</div><div class="specimen-val" id="sp-status">—</div></div>
       </div>
 
-      <h3 class="detail-section-title">Natural History</h3>
-      <p class="detail-prose" id="detail-history"></p>
+      <h3 class="detail-section-title" id="detail-bio-heading">About this Species</h3>
+      <div class="detail-bio" id="detail-bio">
+        <p class="detail-prose bio-loading">Loading species information…</p>
+      </div>
 
-      <h3 class="detail-section-title">Conservation Notes</h3>
-      <p class="detail-prose" id="detail-conservation"></p>
+      <h3 class="detail-section-title">Conservation Status</h3>
+      <div class="detail-bio" id="detail-conservation-block">
+        <p class="detail-prose" id="detail-conservation"></p>
+      </div>
 
       <div class="detail-nav">
         <button class="detail-nav-btn" onclick="navFish(-1)">← Previous</button>
@@ -428,6 +432,7 @@
 
 <script src="data.js"></script>
 <script src="globe.js"></script>
+<script src="bio.js"></script>
 <script src="app.js"></script>
 
 <!-- Conservation bars — animate width when scrolled into view -->

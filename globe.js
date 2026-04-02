@@ -1,41 +1,10 @@
 ﻿// ================================================
-// CryptoFish — globe.js  v2  (cartoon earth)
+// CryptoFish — globe.js  v3  (globe.gl)
 // ================================================
 
 let globeInitialized = false;
-let globeGroup, globeClouds, globeCamera, globeRenderer, globeScene;
-let globeAnimFrame;
-let locDotMeshes = [];
-let locDataArr   = [];
-
-// ── Continent polygons  [lon, lat] ───────────────
-const LANDMASSES = [
-  { col:'#5cb860', pts:[[-168,71],[-140,70],[-120,60],[-124,49],[-106,32],[-90,25],[-80,25],[-85,12],[-77,8],[-82,10],[-90,18],[-104,20],[-118,28],[-122,48],[-130,54],[-150,60],[-168,57]] },
-  { col:'#cce8f4', pts:[[-44,60],[-26,64],[-18,70],[-20,76],[-28,82],[-44,84],[-56,80],[-62,76],[-64,70],[-60,64],[-52,60]] },
-  { col:'#5cb860', pts:[[-80,12],[-60,12],[-50,4],[-35,-5],[-35,-10],[-38,-18],[-42,-22],[-45,-28],[-52,-34],[-58,-40],[-65,-42],[-68,-22],[-70,-18],[-75,-10],[-80,-5],[-78,2],[-76,8]] },
-  { col:'#5cb860', pts:[[-10,36],[-5,36],[0,38],[5,43],[10,44],[15,41],[18,40],[22,38],[28,42],[30,46],[28,50],[24,58],[20,56],[18,60],[26,68],[28,72],[20,70],[12,62],[8,58],[4,52],[2,50],[-2,48],[-5,44],[-10,36]] },
-  { col:'#5cb860', pts:[[-8,50],[-4,50],[-2,52],[0,54],[-2,58],[-6,58],[-8,54]] },
-  { col:'#5cb860', pts:[[-18,16],[-6,16],[0,12],[12,14],[20,12],[30,12],[38,20],[42,12],[48,10],[42,22],[36,22],[42,36],[36,38],[28,30],[18,36],[14,36],[12,26],[14,20],[20,10],[14,4],[14,-2],[18,-18],[22,-30],[18,-34],[28,-34],[34,-22],[40,-12],[40,-2],[36,4],[30,10],[24,12],[18,16],[10,22],[2,20],[-6,18],[-14,18]] },
-  { col:'#c9a84c', pts:[[36,22],[44,22],[50,24],[56,22],[60,22],[58,14],[54,12],[50,12],[44,10],[42,12],[38,18]] },
-  { col:'#5cb860', pts:[[66,24],[72,22],[78,8],[80,8],[84,10],[88,22],[80,24],[72,24]] },
-  { col:'#5cb860', pts:[[28,42],[36,48],[40,56],[50,60],[60,68],[80,72],[100,72],[130,68],[140,60],[140,46],[134,34],[130,30],[120,22],[110,18],[104,10],[100,2],[90,10],[80,14],[70,20],[64,24],[66,24],[72,24],[80,24],[88,22],[84,10],[80,8],[78,8],[72,22],[66,24],[60,22],[56,22],[50,24],[44,22],[42,22],[36,22],[38,18],[42,12],[36,20],[30,12],[28,42]] },
-  { col:'#5cb860', pts:[[100,72],[130,68],[150,70],[168,68],[180,68],[180,72],[150,74],[130,72]] },
-  { col:'#5cb860', pts:[[130,31],[132,34],[135,35],[138,38],[140,40],[142,46],[140,42],[138,36],[136,34],[134,32]] },
-  { col:'#5cb860', pts:[[118,8],[122,12],[124,18],[120,18],[118,12]] },
-  { col:'#5cb860', pts:[[109,7],[116,7],[118,4],[116,0],[114,-4],[110,-4],[108,-2],[108,4]] },
-  { col:'#5cb860', pts:[[95,5],[104,6],[108,2],[106,-2],[102,-4],[98,-4],[96,-2],[94,2]] },
-  { col:'#5cb860', pts:[[105,-6],[108,-7],[112,-8],[114,-8],[111,-8],[106,-8]] },
-  { col:'#5cb860', pts:[[120,-1],[124,-2],[122,-4],[120,-4],[118,-2]] },
-  { col:'#5cb860', pts:[[132,-4],[136,-6],[140,-6],[144,-6],[148,-8],[148,-10],[144,-8],[140,-8],[136,-8],[132,-6]] },
-  { col:'#5cb860', pts:[[114,-22],[120,-18],[129,-14],[136,-12],[140,-16],[144,-18],[148,-20],[152,-24],[154,-28],[152,-34],[148,-38],[144,-38],[138,-34],[132,-34],[126,-34],[118,-30]] },
-  { col:'#5cb860', pts:[[172,-34],[178,-37],[178,-40],[174,-40],[172,-37]] },
-  { col:'#5cb860', pts:[[168,-44],[172,-44],[172,-46],[170,-46],[168,-44]] },
-  { col:'#5cb860', pts:[[44,-12],[48,-18],[50,-22],[50,-26],[46,-25],[44,-22],[44,-18]] },
-  { col:'#5cb860', pts:[[80,10],[82,8],[82,6],[80,6],[79,8]] },
-  { col:'#daeef8', pts:[[-180,-70],[-150,-65],[-120,-64],[-90,-68],[-60,-64],[-30,-66],[0,-70],[30,-66],[60,-64],[90,-66],[120,-64],[150,-66],[180,-70],[180,-90],[-180,-90]] },
-  { col:'#daeef8', pts:[[-180,76],[-90,72],[0,74],[90,72],[180,76],[180,90],[-180,90]] },
-];
-
+let globeInstance    = null;
+let locDataArr       = [];
 // ── Locality → [lat, lon] ─────────────────────────
 const LOC_COORDS = {
   // Lake Malawi
@@ -297,200 +266,96 @@ function buildLocData() {
 }
 
 // ── Main init ─────────────────────────────────────
+
+// ── Init Globe (globe.gl) ─────────────────────────
 function initGlobe() {
   if (globeInitialized) return;
   globeInitialized = true;
 
-  const canvas = document.getElementById('globe-canvas');
-  if (!canvas) return;
+  const el = document.getElementById('globe-canvas');
+  if (!el) { globeInitialized = false; return; }
 
-  const W = canvas.offsetWidth  || canvas.parentElement?.offsetWidth  || 800;
-  const H = canvas.offsetHeight || canvas.parentElement?.offsetHeight || 600;
-
-  globeScene  = new THREE.Scene();
-  globeCamera = new THREE.PerspectiveCamera(42, W / H, 0.1, 1000);
-  globeCamera.position.z = 2.6;
-
-  globeRenderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-  globeRenderer.setSize(W, H);
-  globeRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  globeRenderer.setClearColor(0x000000, 0);
-
-  globeGroup = new THREE.Group();
-  globeScene.add(globeGroup);
-
-  // Earth sphere
-  const earthTex = createEarthTexture();
-  const sphereGeo = new THREE.SphereGeometry(1, 72, 72);
-  const sphereMat = new THREE.MeshPhongMaterial({
-    map:       earthTex,
-    specular:  new THREE.Color(0x224f6a),
-    shininess: 28,
-    bumpScale: 0.005,
-  });
-  globeGroup.add(new THREE.Mesh(sphereGeo, sphereMat));
-
-  // Lat/lon grid (subtle)
-  const gridMat = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.06 });
-  for (let lat = -75; lat <= 75; lat += 30) {
-    const pts = [];
-    for (let lon = 0; lon <= 360; lon += 5) pts.push(latLonToXYZ(lat, lon, 1.005));
-    globeGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), gridMat));
-  }
-  for (let lon = 0; lon < 360; lon += 30) {
-    const pts = [];
-    for (let lat = -90; lat <= 90; lat += 5) pts.push(latLonToXYZ(lat, lon, 1.005));
-    globeGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), gridMat));
-  }
-
-  // Cloud layer
-  const cloudTex = createCloudTexture();
-  const cloudGeo = new THREE.SphereGeometry(1.025, 48, 48);
-  const cloudMat = new THREE.MeshPhongMaterial({
-    map: cloudTex, transparent: true, opacity: 0.55,
-    depthWrite: false, blending: THREE.AdditiveBlending,
-  });
-  globeClouds = new THREE.Mesh(cloudGeo, cloudMat);
-  globeGroup.add(globeClouds);
-
-  // Atmosphere glow
-  const atmGeo = new THREE.SphereGeometry(1.10, 48, 48);
-  const atmMat = new THREE.MeshPhongMaterial({
-    color: 0x88ccff, emissive: 0x2266aa, emissiveIntensity: 0.15,
-    transparent: true, opacity: 0.12, side: THREE.BackSide,
-  });
-  globeScene.add(new THREE.Mesh(atmGeo, atmMat));
-
-  // Inner glow rim
-  const rimGeo = new THREE.SphereGeometry(1.04, 48, 48);
-  const rimMat = new THREE.MeshPhongMaterial({
-    color: 0x44aaff, emissive: 0x1144aa, emissiveIntensity: 0.08,
-    transparent: true, opacity: 0.06, side: THREE.BackSide,
-  });
-  globeScene.add(new THREE.Mesh(rimGeo, rimMat));
-
-  // Lighting — warm sun from upper-right, cool fill from opposite
-  globeScene.add(new THREE.AmbientLight(0xffeedd, 0.55));
-  const sun = new THREE.DirectionalLight(0xfff4e0, 1.1);
-  sun.position.set(5, 3, 4);
-  globeScene.add(sun);
-  const fill = new THREE.DirectionalLight(0x88bbdd, 0.35);
-  fill.position.set(-4, -2, -3);
-  globeScene.add(fill);
-
-  // Fish locality dots
   locDataArr = buildLocData();
-  locDotMeshes = [];
+  locDataArr.forEach((loc, i) => { loc.hue = (i * 47) % 360; });
 
-  locDataArr.forEach((loc, i) => {
-    const maxCount = locDataArr[0].count;
-    const r        = 0.018 + (Math.log(loc.count + 1) / Math.log(maxCount + 1)) * 0.045;
-    const hue      = (i * 47) % 360;
-    const color    = new THREE.Color(`hsl(${hue},80%,62%)`);
+  if (!window.Globe) {
+    console.error('[CryptoFish] Globe library not loaded');
+    globeInitialized = false;
+    return;
+  }
 
-    const dot = new THREE.Mesh(
-      new THREE.SphereGeometry(r, 10, 10),
-      new THREE.MeshBasicMaterial({ color })
+  const W = el.offsetWidth  || el.parentElement?.offsetWidth  || 600;
+  const H = el.offsetHeight || el.parentElement?.offsetHeight || 500;
+
+  globeInstance = Globe()
+    .width(W).height(H)
+    .backgroundColor('rgba(0,0,0,0)')
+    .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+    .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
+    .atmosphereColor('#aad4f5')
+    .atmosphereAltitude(0.18)
+    .pointsData(locDataArr)
+    .pointLat(d => d.lat)
+    .pointLng(d => d.lon)
+    .pointAltitude(0.015)
+    .pointRadius(d => 0.35 + (Math.log(d.count + 1) / Math.log(260)) * 1.5)
+    .pointColor(d => `hsl(${d.hue},85%,65%)`)
+    .pointResolution(14)
+    .onPointClick(d => { _focusByData(d); showPopover(d); })
+    .onGlobeClick(() => closePopover())
+    .pointLabel(d =>
+      `<div style="background:rgba(15,15,30,.82);color:#fff;padding:7px 11px;border-radius:10px;font-family:Inter,sans-serif;font-size:12px;white-space:nowrap"><b>${d.name}</b><br>${d.count} CryptoFish</div>`
     );
-    dot.position.copy(latLonToXYZ(loc.lat, loc.lon, 1.025));
-    dot.userData = { locIdx: i };
-    globeGroup.add(dot);
-    locDotMeshes.push(dot);
 
-    // Pulse ring
-    const ring = new THREE.Mesh(
-      new THREE.RingGeometry(r * 1.6, r * 2.2, 20),
-      new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.3, side: THREE.DoubleSide })
-    );
-    ring.position.copy(latLonToXYZ(loc.lat, loc.lon, 1.026));
-    ring.lookAt(ring.position.clone().multiplyScalar(2));
-    dot.userData.ring = ring;
-    globeGroup.add(ring);
-  });
+  globeInstance(el);
 
-  // Interaction
-  let mouseDown = false, isDragging = false, prevX = 0, prevY = 0;
-  let autoRotate = true;
+  // Auto-rotate
+  globeInstance.controls().autoRotate      = true;
+  globeInstance.controls().autoRotateSpeed = 0.38;
+  globeInstance.controls().enableDamping   = true;
+
   let autoTimer;
-  const resumeAuto = () => { clearTimeout(autoTimer); autoTimer = setTimeout(() => { autoRotate = true; }, 3500); };
+  const stopAuto   = () => { globeInstance.controls().autoRotate = false; clearTimeout(autoTimer); };
+  const resumeAuto = () => { clearTimeout(autoTimer); autoTimer = setTimeout(() => { if (globeInstance) globeInstance.controls().autoRotate = true; }, 3600); };
 
-  canvas.addEventListener('mousedown', e => { mouseDown = true; isDragging = false; prevX = e.clientX; prevY = e.clientY; autoRotate = false; });
-  window.addEventListener('mousemove', e => {
-    if (!mouseDown) return;
-    const dx = e.clientX - prevX, dy = e.clientY - prevY;
-    if (Math.abs(dx) > 2 || Math.abs(dy) > 2) isDragging = true;
-    globeGroup.rotation.y += dx * 0.007;
-    globeGroup.rotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, globeGroup.rotation.x + dy * 0.004));
-    prevX = e.clientX; prevY = e.clientY;
-  });
-  window.addEventListener('mouseup', () => { mouseDown = false; resumeAuto(); });
-
-  let tx = 0, ty = 0;
-  canvas.addEventListener('touchstart', e => { tx = e.touches[0].clientX; ty = e.touches[0].clientY; autoRotate = false; }, { passive: true });
-  canvas.addEventListener('touchmove', e => {
-    const dx = e.touches[0].clientX - tx, dy = e.touches[0].clientY - ty;
-    globeGroup.rotation.y += dx * 0.007;
-    globeGroup.rotation.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, globeGroup.rotation.x + dy * 0.004));
-    tx = e.touches[0].clientX; ty = e.touches[0].clientY;
-  }, { passive: true });
-  canvas.addEventListener('touchend', resumeAuto);
-
-  canvas.addEventListener('wheel', e => {
-    globeCamera.position.z = Math.max(1.6, Math.min(5.0, globeCamera.position.z + e.deltaY * 0.003));
-    e.preventDefault();
-  }, { passive: false });
-
-  const raycaster = new THREE.Raycaster();
-  const mouse     = new THREE.Vector2();
-  canvas.addEventListener('click', e => {
-    if (isDragging) return;
-    const rect = canvas.getBoundingClientRect();
-    mouse.x = ((e.clientX - rect.left) / rect.width)  *  2 - 1;
-    mouse.y = -((e.clientY - rect.top)  / rect.height) *  2 + 1;
-    raycaster.setFromCamera(mouse, globeCamera);
-    const hits = raycaster.intersectObjects(locDotMeshes);
-    if (hits.length) focusLocality(hits[0].object.userData.locIdx);
-    else closePopover();
-  });
+  el.addEventListener('mousedown',  stopAuto);
+  el.addEventListener('touchstart', stopAuto, { passive: true });
+  window.addEventListener('mouseup',    resumeAuto);
+  window.addEventListener('touchend',   resumeAuto);
 
   window.addEventListener('resize', () => {
-    const w = canvas.offsetWidth, h = canvas.offsetHeight;
-    if (w && h) { globeCamera.aspect = w/h; globeCamera.updateProjectionMatrix(); globeRenderer.setSize(w, h); }
+    if (!globeInstance) return;
+    const w = el.offsetWidth, h = el.offsetHeight;
+    if (w && h) globeInstance.width(w).height(h);
   });
-
-  let tick = 0;
-  function animate() {
-    globeAnimFrame = requestAnimationFrame(animate);
-    tick += 0.012;
-    if (autoRotate) globeGroup.rotation.y += 0.0012;
-    if (globeClouds) globeClouds.rotation.y += 0.0003;
-    locDotMeshes.forEach((dot, i) => {
-      if (dot.userData.ring) dot.userData.ring.material.opacity = 0.15 + Math.sin(tick + i * 1.1) * 0.15;
-    });
-    globeRenderer.render(globeScene, globeCamera);
-  }
-  animate();
 
   renderLocalityList();
 }
 
-// ── Popover / sidebar ─────────────────────────────
-function focusLocality(idx) {
-  const loc = locDataArr[idx];
-  if (!loc) return;
+function _focusByData(d) {
+  const idx = locDataArr.indexOf(d);
   document.querySelectorAll('.locality-item').forEach((el, i) => el.classList.toggle('active', i === idx));
   const items = document.querySelectorAll('.locality-item');
   if (items[idx]) items[idx].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  if (globeInstance) globeInstance.pointOfView({ lat: d.lat, lng: d.lon, altitude: 1.6 }, 900);
+}
+
+// ── Public: focus by sidebar index ────────────────
+function focusLocality(idx) {
+  const loc = locDataArr[idx];
+  if (!loc) return;
+  _focusByData(loc);
   showPopover(loc);
 }
 
+// ── Popover ───────────────────────────────────────
 function showPopover(loc) {
   document.getElementById('pop-title').textContent = loc.name;
-  document.getElementById('pop-sub').textContent   = loc.count + ' CryptoFish · ' + loc.lat.toFixed(1) + ', ' + loc.lon.toFixed(1);
+  document.getElementById('pop-sub').textContent   = `${loc.count} CryptoFish · ${loc.lat.toFixed(1)}°, ${loc.lon.toFixed(1)}°`;
   const fishArr = loc.fish || [];
   document.getElementById('pop-fish').innerHTML = fishArr.length
     ? fishArr.map(f => `<div class="popover-fish"><img src="${f.image}" alt="${f.name}" title="${f.name}" onclick="event.stopPropagation();showFish(${f.tokenId - 1})" loading="lazy"></div>`).join('')
-    : '<div class="popover-fish-empty">No fish mapped to this spot yet</div>';
+    : '<div class="popover-fish-empty">No images mapped to this spot yet</div>';
   const btn = document.getElementById('pop-explore-btn');
   if (btn) btn.onclick = () => exploreLocality(loc.name);
   document.getElementById('locality-popover').classList.add('visible');
@@ -501,14 +366,13 @@ function closePopover() {
   document.querySelectorAll('.locality-item').forEach(el => el.classList.remove('active'));
 }
 
+// ── Sidebar list ──────────────────────────────────
 function renderLocalityList() {
   const el = document.getElementById('locality-list');
-  if (!el) return;
-  // Group by rough region for better display
-  const top40 = locDataArr.slice(0, 40);
-  el.innerHTML = top40.map((l, i) => `
+  if (!el || !locDataArr.length) return;
+  el.innerHTML = locDataArr.slice(0, 60).map((l, i) => `
     <div class="locality-item" onclick="focusLocality(${i})">
-      <div class="locality-dot" style="background:hsl(${(i*47)%360},70%,55%)"></div>
+      <div class="locality-dot" style="background:hsl(${l.hue},70%,55%)"></div>
       <div class="locality-info">
         <div class="locality-name">${l.name}</div>
         <div class="locality-count">${l.count} fish</div>
@@ -517,5 +381,4 @@ function renderLocalityList() {
     </div>`).join('');
 }
 
-// Keep exploreLocality accessible from app.js
-function buildLocalityFish() {}   // no-op, data now built in buildLocData()
+function buildLocalityFish() {} // no-op
