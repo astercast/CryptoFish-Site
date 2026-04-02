@@ -68,7 +68,7 @@ function toggleMobileNav() {
   if (nav) nav.classList.toggle('open', mobileNavOpen);
 }
 
-// ── Live: ETH Price (CoinGecko) ───────────────────
+// ── Live: ETH Price (CoinGecko → CryptoCompare) ─────────────────
 async function fetchEthPrice() {
   try {
     const r = await fetch(
@@ -77,22 +77,30 @@ async function fetchEthPrice() {
     );
     if (!r.ok) throw new Error(r.status);
     const d = await r.json();
-    liveEthPrice = d.ethereum?.usd;
-    updatePriceDisplays();
-  } catch (e) {
-    console.warn('[ETH price] fallback:', e.message);
-    liveEthPrice = liveEthPrice || 2065;
-    updatePriceDisplays();
+    if (!d.ethereum?.usd) throw new Error('no price');
+    liveEthPrice = d.ethereum.usd;
+  } catch {
+    try {
+      const r2 = await fetch('https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=USD', { cache: 'no-store' });
+      if (!r2.ok) throw new Error(r2.status);
+      const d2 = await r2.json();
+      if (!d2.USD) throw new Error('no price');
+      liveEthPrice = d2.USD;
+    } catch (e2) {
+      console.warn('[ETH price] both APIs failed:', e2.message);
+      // Keep previous value if available, otherwise stays null
+    }
   }
+  updatePriceDisplays();
 }
 
 function updatePriceDisplays() {
   const c = liveCollection;
-  setEl('stat-vol-usd',   '≈ ' + fmtUSD(c?.total_volume ?? 706.66));
-  setEl('stat-floor-usd', '≈ ' + fmtUSD(c?.floor_price ?? 0.064));
-  setEl('stat-offer-usd', '≈ ' + fmtUSD(c?.avg_price ?? 0.05));
+  setEl('stat-vol-usd',   c?.total_volume != null && liveEthPrice ? '≈ ' + fmtUSD(c.total_volume) : '—');
+  setEl('stat-floor-usd', c?.floor_price  != null && liveEthPrice ? '≈ ' + fmtUSD(c.floor_price)  : '—');
+  setEl('stat-offer-usd', c?.avg_price    != null && liveEthPrice ? '≈ ' + fmtUSD(c.avg_price)    : '—');
   const navEl = document.getElementById('nav-eth-val');
-  if (navEl && liveEthPrice) navEl.textContent = '$' + liveEthPrice.toLocaleString();
+  if (navEl) navEl.textContent = liveEthPrice ? '$' + liveEthPrice.toLocaleString() : '—';
 }
 
 // ── Live: OpenSea Collection Stats ────────────────
@@ -106,20 +114,16 @@ async function fetchCollectionStats() {
     const d = await r.json();
     const s = d.total ?? d;
     liveCollection = {
-      floor_price:  parseFloat(s.floor_price  ?? 0.064),
-      total_volume: parseFloat(s.volume       ?? 706.66),
-      num_owners:   parseInt(s.num_owners     ?? 596),
-      total_supply: parseInt(s.count          ?? 2166),
-      listed_count: s.listed_count ? parseInt(s.listed_count) : null,
-      avg_price:    parseFloat(s.average_price ?? 0.05),
+      floor_price:  s.floor_price   != null ? parseFloat(s.floor_price)   : null,
+      total_volume: s.volume        != null ? parseFloat(s.volume)        : null,
+      num_owners:   s.num_owners    != null ? parseInt(s.num_owners)      : null,
+      total_supply: s.count         != null ? parseInt(s.count)           : 2166,
+      listed_count: s.listed_count  != null ? parseInt(s.listed_count)    : null,
+      avg_price:    s.average_price != null ? parseFloat(s.average_price) : null,
     };
   } catch (e) {
-    console.warn('[OpenSea stats] fallback:', e.message);
-    liveCollection = liveCollection || {
-      floor_price: 0.064, total_volume: 706.66,
-      num_owners: 596, total_supply: 2166,
-      listed_count: null, avg_price: 0.05,
-    };
+    console.warn('[OpenSea stats] failed:', e.message);
+    // Keep previously fetched data if available; otherwise leave null
   }
   renderStatsBar();
 }
@@ -128,7 +132,7 @@ async function fetchCollectionStats() {
 async function fetchRecentSales() {
   try {
     const r = await fetch(
-      'https://api.opensea.io/api/v2/events/collection/cryptofish?event_type=sale&limit=20',
+      'https://api.opensea.io/api/v2/events/collection/cryptofish?event_type=sale&limit=50',
       { headers: { accept: 'application/json' }, cache: 'no-store' }
     );
     if (!r.ok) throw new Error(r.status);
@@ -140,33 +144,36 @@ async function fetchRecentSales() {
       const sym = (e.payment?.symbol || '').toUpperCase();
       return !sym || sym === 'ETH' || sym === 'WETH';
     }).map(e => {
-      const eth   = e.payment ? (parseInt(e.payment.quantity) / 1e18).toFixed(4) : '0.064';
+      const rawEth = e.payment ? parseInt(e.payment.quantity) / 1e18 : 0;
+      if (!rawEth) return null;
+      const eth   = rawEth.toFixed(4);
       const rawId = e.nft?.identifier ?? '';
       const token = rawId ? '#' + String(rawId).padStart(4, '0') : '—';
       const ts    = (e.closing_time ?? e.event_timestamp ?? 0) * 1000;
-      const idx   = rawId ? parseInt(rawId) - 1 : 0;
-      const f     = FISH_DATA[idx];
+      const idx   = rawId ? parseInt(rawId) - 1 : -1;
+      const f     = idx >= 0 ? FISH_DATA[idx] : null;
       return {
         image: f?.image || '',
-        name:  f ? escapeHTML(f.name) : ('CryptoFish #' + rawId),
+        name:  f ? escapeHTML(f.name) : ('CryptoFish ' + (rawId ? token : '—')),
         token,
         eth,
         usd:   fmtUSD(eth),
         time:  timeAgo(ts),
-        idx,
+        ts,
+        idx:   idx >= 0 ? idx : 0,
       };
-    });
-    renderSalesFeed(sales);
-    renderTopSales(sales);
+    }).filter(Boolean);
+
+    // Most recent first for the activity feed
+    const byTime  = [...sales].sort((a, b) => b.ts - a.ts);
+    renderSalesFeed(byTime);
+    // Highest price for the featured top-sales section (up to 9)
+    const byPrice = [...sales].sort((a, b) => parseFloat(b.eth) - parseFloat(a.eth));
+    renderTopSales(byPrice);
   } catch (e) {
-    console.warn('[OpenSea sales] fallback:', e.message);
-    const fallback = RECENT_SALES.map(s => ({
-      ...s,
-      image: FISH_DATA[s.idx]?.image || '',
-      name: FISH_DATA[s.idx] ? escapeHTML(FISH_DATA[s.idx].name) : s.name,
-    }));
-    renderSalesFeed(fallback);
-    renderTopSales(fallback);
+    console.warn('[OpenSea sales] failed:', e.message);
+    // No mock fallback — leave existing render or empty state
+    renderSalesFeed([]);
   }
 }
 
@@ -175,18 +182,18 @@ function renderStatsBar() {
   const c = liveCollection;
   if (!c) return;
 
-  setEl('stat-floor',  fmt(c.floor_price, 3));
-  setEl('stat-volume', c.total_volume.toLocaleString(undefined, { maximumFractionDigits: 1 }));
-  setEl('stat-holders',c.num_owners?.toLocaleString() ?? '—');
-  setEl('stat-items',  c.total_supply?.toLocaleString() ?? '2,166');
-  setEl('stat-offer',  fmt(c.avg_price, 3));
+  setEl('stat-floor',  c.floor_price  != null ? fmt(c.floor_price, 3) : '—');
+  setEl('stat-volume', c.total_volume != null ? c.total_volume.toLocaleString(undefined, { maximumFractionDigits: 1 }) : '—');
+  setEl('stat-holders',c.num_owners   != null ? c.num_owners.toLocaleString() : '—');
+  setEl('stat-items',  c.total_supply != null ? c.total_supply.toLocaleString() : '2,166');
+  setEl('stat-offer',  c.avg_price    != null ? fmt(c.avg_price, 3) : '—');
 
   const floorEl   = document.getElementById('stat-floor');
   const volumeEl  = document.getElementById('stat-volume');
   const holdersEl = document.getElementById('stat-holders');
   const itemsEl   = document.getElementById('stat-items');
-  if (floorEl)   floorEl.dataset.countup   = String(c.floor_price);
-  if (volumeEl)  volumeEl.dataset.countup  = String(c.total_volume);
+  if (floorEl   && c.floor_price  != null) floorEl.dataset.countup   = String(c.floor_price);
+  if (volumeEl  && c.total_volume != null) volumeEl.dataset.countup  = String(c.total_volume);
   if (holdersEl && c.num_owners)   holdersEl.dataset.countup = String(c.num_owners);
   if (itemsEl   && c.total_supply) itemsEl.dataset.countup   = String(c.total_supply);
 
@@ -214,8 +221,10 @@ function renderStatsBar() {
 // ── Render: Sales Feed ────────────────────────────
 function renderSalesFeed(sales) {
   const el = document.getElementById('sales-list');
-  if (!el) return;
-  el.innerHTML = sales.map((s, i) => `
+  if (!el) return;  if (!sales.length) {
+    el.innerHTML = '<div class="sales-loading">Loading recent activity…</div>';
+    return;
+  }  el.innerHTML = sales.map((s, i) => `
     <div class="sale-item" style="animation-delay:${i * 0.04}s" onclick="showFish(${s.idx ?? 0})">
       <div class="sale-fish-icon">${s.image ? `<img src="${encodeURI(s.image)}" alt="" loading="lazy">` : '🐟'}</div>
       <div class="sale-info">
@@ -494,37 +503,54 @@ function toggleDarkMode() {
 }
 
 // ── Dynamic Filter Pills ──────────────────────────
+function showMorePills(containerId, btnId) {
+  const container = document.getElementById(containerId);
+  const btn       = document.getElementById(btnId);
+  if (!container || !btn) return;
+  const hidden = container.querySelector('.filter-pills-hidden');
+  if (hidden) {
+    hidden.querySelectorAll('.filter-pill').forEach(p => container.insertBefore(p, btn));
+    hidden.remove();
+  }
+  btn.remove();
+}
+
 function buildFilterPills() {
-  // Status — built from actual data, conservation-severity order
-  const statusOrder = ['CR','EN','VU','NT','LC','DD','NE','EX','EW','?'];
-  const statusSet   = new Set(FISH_DATA.map(f => f.status).filter(Boolean));
+  // Status — full names, conservation-severity order
+  const statusOrder  = ['CR','EN','VU','NT','LC','DD','NE','EX','EW','?'];
+  const statusCounts = {};
+  FISH_DATA.forEach(f => { if (f.status) statusCounts[f.status] = (statusCounts[f.status]||0)+1; });
   const statEl = document.getElementById('status-filters');
   if (statEl) {
-    statEl.innerHTML = statusOrder.filter(s => statusSet.has(s)).map(s =>
-      `<div class="filter-pill" onclick="toggleFilter(this,'status','${s}')">${s}</div>`
+    statEl.innerHTML = statusOrder.filter(s => statusCounts[s]).map(s =>
+      `<div class="filter-pill" onclick="toggleFilter(this,'status','${s}')">${STATUS_NAMES[s]||s}<span class="pill-count">${statusCounts[s]}</span></div>`
     ).join('');
   }
 
-  // Genera sorted by count
+  // Genera sorted by count, top 20 + show-more
   const genCounts = {};
-  FISH_DATA.forEach(f => { if (f.genus) genCounts[f.genus] = (genCounts[f.genus]||0) + 1; });
-  const topGenera = Object.entries(genCounts).sort((a,b) => b[1] - a[1]);
+  FISH_DATA.forEach(f => { if (f.genus) genCounts[f.genus] = (genCounts[f.genus]||0)+1; });
+  const topGenera = Object.entries(genCounts).sort((a,b) => b[1]-a[1]);
   const genEl = document.getElementById('genera-filters');
   if (genEl) {
-    genEl.innerHTML = topGenera.map(([g]) =>
-      `<div class="filter-pill" onclick="toggleFilter(this,'genera','${escapeHTML(g)}')">${escapeHTML(g)}</div>`
-    ).join('');
+    const vis  = topGenera.slice(0, 20);
+    const rest = topGenera.slice(20);
+    genEl.innerHTML =
+      vis.map(([g,c]) => `<div class="filter-pill" onclick="toggleFilter(this,'genera','${escapeHTML(g)}')">${escapeHTML(g)}<span class="pill-count">${c}</span></div>`).join('') +
+      (rest.length ? `<div class="filter-pill pill-show-more" id="genera-more-btn" onclick="showMorePills('genera-filters','genera-more-btn')">+${rest.length} more</div><div class="filter-pills-hidden">${rest.map(([g,c])=>`<div class="filter-pill" onclick="toggleFilter(this,'genera','${escapeHTML(g)}')">${escapeHTML(g)}<span class="pill-count">${c}</span></div>`).join('')}</div>` : '');
   }
 
-  // Localities sorted by count
+  // Localities sorted by count, top 20 + show-more
   const locCounts = {};
-  FISH_DATA.forEach(f => { if (f.locality) locCounts[f.locality] = (locCounts[f.locality]||0) + 1; });
-  const topLocs = Object.entries(locCounts).sort((a,b) => b[1] - a[1]);
+  FISH_DATA.forEach(f => { if (f.locality) locCounts[f.locality] = (locCounts[f.locality]||0)+1; });
+  const topLocs = Object.entries(locCounts).sort((a,b) => b[1]-a[1]);
   const locEl = document.getElementById('locality-filters');
   if (locEl) {
-    locEl.innerHTML = topLocs.map(([l]) =>
-      `<div class="filter-pill" onclick="toggleFilter(this,'locality','${l.replace(/'/g,"&#39;")}')">${escapeHTML(l)}</div>`
-    ).join('');
+    const vis  = topLocs.slice(0, 20);
+    const rest = topLocs.slice(20);
+    locEl.innerHTML =
+      vis.map(([l,c]) => `<div class="filter-pill" onclick="toggleFilter(this,'locality','${l.replace(/'/g,"&#39;")}')">${escapeHTML(l)}<span class="pill-count">${c}</span></div>`).join('') +
+      (rest.length ? `<div class="filter-pill pill-show-more" id="locality-more-btn" onclick="showMorePills('locality-filters','locality-more-btn')">+${rest.length} more</div><div class="filter-pills-hidden">${rest.map(([l,c])=>`<div class="filter-pill" onclick="toggleFilter(this,'locality','${l.replace(/'/g,"&#39;")}')">${escapeHTML(l)}<span class="pill-count">${c}</span></div>`).join('')}</div>` : '');
   }
 }
 
@@ -549,28 +575,54 @@ function initScrollReveal() {
 }
 
 
-// ── Hero cards with real NFT art ──────────────────
+// ── Hero cards: random picks, rotate every 8s ────────────────
+let heroRotateInterval = null;
+
 function renderHeroCards() {
   const heroGrid = document.getElementById('hero-fish-grid');
   if (!heroGrid) return;
-  const picks = [199, 499, 799].map(i => FISH_DATA[i]).filter(Boolean);
-  if (picks.length < 3) return;
-  heroGrid.innerHTML = `
-    <div class="hero-fish-card large animate-card" style="--card-delay:.05s" onclick="showFish(${picks[0].tokenId - 1})">
-      <div class="fish-img-wrap large-wrap"><img src="${encodeURI(picks[0].image)}" alt="${escapeHTML(picks[0].name)}"></div>
-      <div class="fish-card-info">
-        <div class="fish-card-name">${escapeHTML(picks[0].name)}</div>
-        <div class="fish-card-sci">${escapeHTML(picks[0].sci)}</div>
+  const withImg = FISH_DATA.filter(f => f.image);
+  if (withImg.length < 3) return;
+
+  function pickRandom3() {
+    const pool = [...withImg];
+    const picks = [];
+    while (picks.length < 3) {
+      picks.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
+    }
+    return picks;
+  }
+
+  function renderPicks(picks) {
+    heroGrid.innerHTML = `
+      <div class="hero-fish-card large animate-card" style="--card-delay:.05s" onclick="showFish(${picks[0].tokenId - 1})">
+        <div class="fish-img-wrap large-wrap"><img src="${encodeURI(picks[0].image)}" alt="${escapeHTML(picks[0].name)}"></div>
+        <div class="fish-card-info">
+          <div class="fish-card-name">${escapeHTML(picks[0].name)}</div>
+          <div class="fish-card-sci">${escapeHTML(picks[0].sci)}</div>
+        </div>
       </div>
-    </div>
-    ${picks.slice(1).map((f, i) => `
-    <div class="hero-fish-card animate-card" style="--card-delay:${(i + 2) * 0.08}s" onclick="showFish(${f.tokenId - 1})">
-      <div class="fish-img-wrap"><img src="${encodeURI(f.image)}" alt="${escapeHTML(f.name)}"></div>
-      <div class="fish-card-info">
-        <div class="fish-card-name">${escapeHTML(f.name)}</div>
-        <div class="fish-card-sci">${escapeHTML(f.sci)}</div>
-      </div>
-    </div>`).join('')}`;
+      ${picks.slice(1).map((f, i) => `
+      <div class="hero-fish-card animate-card" style="--card-delay:${(i + 2) * 0.08}s" onclick="showFish(${f.tokenId - 1})">
+        <div class="fish-img-wrap"><img src="${encodeURI(f.image)}" alt="${escapeHTML(f.name)}"></div>
+        <div class="fish-card-info">
+          <div class="fish-card-name">${escapeHTML(f.name)}</div>
+          <div class="fish-card-sci">${escapeHTML(f.sci)}</div>
+        </div>
+      </div>`).join('')}`;
+  }
+
+  renderPicks(pickRandom3());
+
+  if (heroRotateInterval) clearInterval(heroRotateInterval);
+  heroRotateInterval = setInterval(() => {
+    heroGrid.style.transition = 'opacity .35s';
+    heroGrid.style.opacity    = '0';
+    setTimeout(() => {
+      renderPicks(pickRandom3());
+      heroGrid.style.opacity = '1';
+    }, 360);
+  }, 8000);
 }
 
 // ── DOMContentLoaded ──────────────────────────────
@@ -601,13 +653,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   try { buildFilterPills(); }   catch(e) { console.error('[buildFilterPills]', e); }
   try { renderHeroCards(); }    catch(e) { console.error('[renderHeroCards]', e); }
-  try {
-    renderTopSales(RECENT_SALES.map(s => ({
-      ...s,
-      image: FISH_DATA[s.idx]?.image || '',
-      name: FISH_DATA[s.idx] ? escapeHTML(FISH_DATA[s.idx].name) : s.name,
-    })));
-  } catch(e) { console.error('[renderTopSales]', e); }
+  try { renderTopSales([]); }   catch(e) { console.error('[renderTopSales]', e); }
+  try { renderSalesFeed([]); }  catch(e) { console.error('[renderSalesFeed]', e); }
   try { renderLibrary(); }      catch(e) { console.error('[renderLibrary]', e); }
   try { renderFOTD(); }         catch(e) { console.error('[renderFOTD]', e); }
   initScrollReveal();
