@@ -501,7 +501,7 @@ function buildFilterPills() {
   const statEl = document.getElementById('status-filters');
   if (statEl) {
     statEl.innerHTML = statusOrder.filter(s => statusSet.has(s)).map(s =>
-      `<div class="filter-pill" onclick="toggleFilter(this,'status','${s}'">${s}</div>`
+      `<div class="filter-pill" onclick="toggleFilter(this,'status','${s}')">${s}</div>`
     ).join('');
   }
 
@@ -547,7 +547,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ── Hero cards with real NFT art ──────────────────
 function renderHeroCards() {
-  const heroGrid = document.querySelector('.hero-fish-grid');
+  const heroGrid = document.getElementById('hero-fish-grid');
   if (!heroGrid) return;
   const picks = [199, 499, 799, 1099].map(i => FISH_DATA[i]).filter(Boolean);
   if (picks.length < 4) return;
