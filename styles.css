@@ -46,10 +46,10 @@ body {
   transition: background-color .25s ease, color .25s ease;
 }
 
-/* ── Image lazy-load fade-in ───────────────────── */
-img { transition: opacity .3s ease; }
-img[loading="lazy"] { opacity: 0; }
-img[loading="lazy"].loaded { opacity: 1; }
+/* ── Image fade-in on load ─────────────────────── */
+img { opacity: 1; transition: opacity .3s ease; }
+img.loading { opacity: 0; }
+img.loaded  { opacity: 1; }
 
 /* ── Button active micro-animation ─────────────── */
 .btn-primary:active { opacity: .9; transform: scale(.98); }

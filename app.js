@@ -530,20 +530,24 @@ function buildFilterPills() {
 
 // ── Scroll Reveal ─────────────────────────────────
 function initScrollReveal() {
+  // Immediately reveal anything already in the viewport
+  document.querySelectorAll('.reveal:not(.revealed)').forEach(el => {
+    const r = el.getBoundingClientRect();
+    if (r.bottom > 0 && r.top < window.innerHeight) el.classList.add('revealed');
+  });
+  // Use IntersectionObserver for the rest (below the fold)
+  if (!('IntersectionObserver' in window)) {
+    document.querySelectorAll('.reveal').forEach(el => el.classList.add('revealed'));
+    return;
+  }
   const obs = new IntersectionObserver(entries => {
     entries.forEach(e => {
       if (e.isIntersecting) { e.target.classList.add('revealed'); obs.unobserve(e.target); }
     });
-  }, { threshold: 0.08, rootMargin: '0px 0px -32px 0px' });
+  }, { threshold: 0, rootMargin: '0px 0px -20px 0px' });
   document.querySelectorAll('.reveal:not(.revealed)').forEach(el => obs.observe(el));
 }
 
-// ── Lazy image fade-in ────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  document.addEventListener('load', e => {
-    if (e.target.tagName === 'IMG') e.target.classList.add('loaded');
-  }, true);
-});
 
 // ── Hero cards with real NFT art ──────────────────
 function renderHeroCards() {
@@ -553,7 +557,7 @@ function renderHeroCards() {
   if (picks.length < 4) return;
   heroGrid.innerHTML = `
     <div class="hero-fish-card large" onclick="showFish(${picks[0].tokenId - 1})">
-      <div class="fish-img-wrap large-wrap"><img src="${encodeURI(picks[0].image)}" alt="${escapeHTML(picks[0].name)}" loading="lazy"></div>
+      <div class="fish-img-wrap large-wrap"><img src="${encodeURI(picks[0].image)}" alt="${escapeHTML(picks[0].name)}"></div>
       <div class="fish-card-info">
         <div class="fish-card-name">${escapeHTML(picks[0].name)}</div>
         <div class="fish-card-sci">${escapeHTML(picks[0].sci)}</div>
@@ -561,7 +565,7 @@ function renderHeroCards() {
     </div>
     ${picks.slice(1).map(f => `
     <div class="hero-fish-card" onclick="showFish(${f.tokenId - 1})">
-      <div class="fish-img-wrap"><img src="${encodeURI(f.image)}" alt="${escapeHTML(f.name)}" loading="lazy"></div>
+      <div class="fish-img-wrap"><img src="${encodeURI(f.image)}" alt="${escapeHTML(f.name)}"></div>
       <div class="fish-card-info">
         <div class="fish-card-name">${escapeHTML(f.name)}</div>
         <div class="fish-card-sci">${escapeHTML(f.sci)}</div>
@@ -579,20 +583,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (btn) btn.textContent = '☀';
   }
 
-  buildFilterPills();
-  renderHeroCards();
-  // Show RECENT_SALES as placeholder until live data loads
-  renderTopSales(RECENT_SALES.map(s => ({
-    ...s,
-    image: FISH_DATA[s.idx]?.image || '',
-    name: FISH_DATA[s.idx] ? escapeHTML(FISH_DATA[s.idx].name) : s.name,
-  })));
-  renderLibrary();
-  renderFOTD();
+  try { buildFilterPills(); }   catch(e) { console.error('[buildFilterPills]', e); }
+  try { renderHeroCards(); }    catch(e) { console.error('[renderHeroCards]', e); }
+  try {
+    renderTopSales(RECENT_SALES.map(s => ({
+      ...s,
+      image: FISH_DATA[s.idx]?.image || '',
+      name: FISH_DATA[s.idx] ? escapeHTML(FISH_DATA[s.idx].name) : s.name,
+    })));
+  } catch(e) { console.error('[renderTopSales]', e); }
+  try { renderLibrary(); }      catch(e) { console.error('[renderLibrary]', e); }
+  try { renderFOTD(); }         catch(e) { console.error('[renderFOTD]', e); }
   initScrollReveal();
 
   await Promise.allSettled([fetchEthPrice(), fetchCollectionStats()]);
-  renderFOTD();
+  try { renderFOTD(); } catch(e) { console.error('[renderFOTD2]', e); }
   fetchRecentSales();
 
   setInterval(fetchEthPrice,        60_000);
