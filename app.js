@@ -556,15 +556,15 @@ function renderHeroCards() {
   const picks = [199, 499, 799].map(i => FISH_DATA[i]).filter(Boolean);
   if (picks.length < 3) return;
   heroGrid.innerHTML = `
-    <div class="hero-fish-card large" onclick="showFish(${picks[0].tokenId - 1})">
+    <div class="hero-fish-card large animate-card" style="--card-delay:.05s" onclick="showFish(${picks[0].tokenId - 1})">
       <div class="fish-img-wrap large-wrap"><img src="${encodeURI(picks[0].image)}" alt="${escapeHTML(picks[0].name)}"></div>
       <div class="fish-card-info">
         <div class="fish-card-name">${escapeHTML(picks[0].name)}</div>
         <div class="fish-card-sci">${escapeHTML(picks[0].sci)}</div>
       </div>
     </div>
-    ${picks.slice(1).map(f => `
-    <div class="hero-fish-card" onclick="showFish(${f.tokenId - 1})">
+    ${picks.slice(1).map((f, i) => `
+    <div class="hero-fish-card animate-card" style="--card-delay:${(i + 2) * 0.08}s" onclick="showFish(${f.tokenId - 1})">
       <div class="fish-img-wrap"><img src="${encodeURI(f.image)}" alt="${escapeHTML(f.name)}"></div>
       <div class="fish-card-info">
         <div class="fish-card-name">${escapeHTML(f.name)}</div>
@@ -582,6 +582,22 @@ document.addEventListener('DOMContentLoaded', async () => {
     const btn = document.getElementById('dark-toggle');
     if (btn) btn.textContent = '☀';
   }
+
+  // Nav scroll shadow
+  const nav = document.querySelector('nav');
+  if (nav) {
+    window.addEventListener('scroll', () => {
+      nav.classList.toggle('scrolled', window.scrollY > 10);
+    }, { passive: true });
+  }
+
+  // Lazy-image progressive fade
+  document.addEventListener('load', e => {
+    if (e.target.tagName === 'IMG') {
+      e.target.classList.remove('loading');
+      e.target.classList.add('loaded');
+    }
+  }, true);
 
   try { buildFilterPills(); }   catch(e) { console.error('[buildFilterPills]', e); }
   try { renderHeroCards(); }    catch(e) { console.error('[renderHeroCards]', e); }
@@ -603,4 +619,21 @@ document.addEventListener('DOMContentLoaded', async () => {
   setInterval(fetchEthPrice,        60_000);
   setInterval(fetchCollectionStats, 300_000);
   setInterval(fetchRecentSales,     120_000);
+
+  // Ripple effect on .btn-primary clicks
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('.btn-primary');
+    if (!btn) return;
+    const r = btn.getBoundingClientRect();
+    const ripple = document.createElement('span');
+    ripple.style.cssText = `
+      position:absolute;border-radius:50%;transform:scale(0);animation:ripple .5s linear;
+      background:rgba(255,255,255,.28);pointer-events:none;
+      width:${Math.max(r.width,r.height) * 2}px;height:${Math.max(r.width,r.height) * 2}px;
+      left:${e.clientX - r.left - Math.max(r.width,r.height)}px;
+      top:${e.clientY - r.top  - Math.max(r.width,r.height)}px;
+    `;
+    btn.appendChild(ripple);
+    ripple.addEventListener('animationend', () => ripple.remove());
+  });
 });
