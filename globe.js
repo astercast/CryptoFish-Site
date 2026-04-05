@@ -277,6 +277,68 @@ function buildLocData() {
   return locs;
 }
 
+// ── Zoom-adaptive clustering ──────────────────────
+let currentClusters = [];
+let lastAlt         = -1;
+let clusterRafId    = null;
+
+function clusterLocs(locs, threshDeg) {
+  const used     = new Array(locs.length).fill(false);
+  const clusters = [];
+  for (let i = 0; i < locs.length; i++) {
+    if (used[i]) continue;
+    const base    = locs[i];
+    const members = [base];
+    used[i] = true;
+    for (let j = i + 1; j < locs.length; j++) {
+      if (used[j]) continue;
+      if (Math.abs(locs[j].lat - base.lat) < threshDeg &&
+          Math.abs(locs[j].lon - base.lon) < threshDeg) {
+        members.push(locs[j]);
+        used[j] = true;
+      }
+    }
+    const total = members.reduce((s, m) => s + m.count, 0);
+    const lat   = members.reduce((s, m) => s + m.lat * m.count, 0) / total;
+    const lon   = members.reduce((s, m) => s + m.lon * m.count, 0) / total;
+    const fish  = [];
+    const seen  = new Set();
+    for (const m of members)
+      for (const f of m.fish)
+        if (!seen.has(f.tokenId) && fish.length < 8) { fish.push(f); seen.add(f.tokenId); }
+    clusters.push({
+      lat, lon, count: total, fish,
+      hue:       members[0].hue,
+      isCluster: members.length > 1,
+      size:      members.length,
+      name:      members.length === 1
+        ? members[0].name
+        : members[0].name + (members.length > 1 ? ` +${members.length - 1}` : ''),
+      locs:   members,
+      nearby: members.length === 1 ? (members[0].nearby || []) : [],
+    });
+  }
+  return clusters;
+}
+
+function updateGlobeClusters() {
+  if (!globeInstance) return;
+  const alt = globeInstance.pointOfView().altitude ?? 2.5;
+  if (Math.abs(alt - lastAlt) < 0.04) return;
+  lastAlt = alt;
+  const thresh = Math.max(0.04, alt * 0.55);
+  currentClusters = clusterLocs(locDataArr, thresh);
+  globeInstance.pointsData(currentClusters);
+}
+
+function scheduleClusterUpdate() {
+  if (clusterRafId) return;
+  clusterRafId = requestAnimationFrame(() => {
+    clusterRafId = null;
+    updateGlobeClusters();
+  });
+}
+
 // ── Main init ─────────────────────────────────────
 
 // ── Init Globe (globe.gl) ─────────────────────────
@@ -306,20 +368,23 @@ function initGlobe() {
     .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
     .atmosphereColor('#aad4f5')
     .atmosphereAltitude(0.18)
-    .pointsData(locDataArr)
+    .pointsData([])
     .pointLat(d => d.lat)
     .pointLng(d => d.lon)
-    .pointAltitude(0.015)
-    .pointRadius(d => 0.35 + (Math.log(d.count + 1) / Math.log(260)) * 1.5)
-    .pointColor(d => `hsl(${d.hue},85%,65%)`)
-    .pointResolution(14)
+    .pointAltitude(d => d.isCluster ? 0.025 : 0.012)
+    .pointRadius(d => {
+      const base = Math.log(Math.min(d.count, 80) + 1) / Math.log(81);
+      return d.isCluster ? 0.42 + base * 0.85 : 0.22 + base * 0.6;
+    })
+    .pointColor(d => d.isCluster ? `hsl(${d.hue},58%,72%)` : `hsl(${d.hue},88%,62%)`)
+    .pointResolution(12)
     .onPointClick(d => { _focusByData(d); showPopover(d); })
     .onGlobeClick(() => closePopover())
     .pointLabel(d => {
-      const nearbyStr = d.nearby?.length
-        ? `<div style="margin-top:5px;border-top:1px solid rgba(255,255,255,.2);padding-top:5px;font-size:10px;color:rgba(255,255,255,.65)">${d.nearby.length} nearby: ${d.nearby.slice(0,3).map(n => n.name).join(', ')}${d.nearby.length > 3 ? '…' : ''}</div>`
-        : '';
-      return `<div style="background:rgba(15,15,30,.88);color:#fff;padding:8px 12px;border-radius:10px;font-family:Inter,sans-serif;font-size:12px;white-space:nowrap;max-width:240px"><b>${d.name}</b><br>${d.count} CryptoFish${nearbyStr}</div>`;
+      const sub = d.isCluster
+        ? `${d.size} localities · ${d.count} fish`
+        : `${d.count} CryptoFish`;
+      return `<div style="background:rgba(15,15,30,.88);color:#fff;padding:8px 12px;border-radius:10px;font-family:Inter,sans-serif;font-size:12px;max-width:220px"><b>${d.name}</b><br><span style="opacity:.75">${sub}</span></div>`;
     });
 
   globeInstance(el);
@@ -344,52 +409,85 @@ function initGlobe() {
     if (w && h) globeInstance.width(w).height(h);
   });
 
+  // Zoom-adaptive clustering
+  globeInstance.controls().addEventListener('change', scheduleClusterUpdate);
+  updateGlobeClusters();
+
   renderLocalityList();
 }
 
 function _focusByData(d) {
-  const idx = locDataArr.indexOf(d);
+  // Works for both clusters and single raw locs
+  const primaryLoc = d.locs ? d.locs[0] : d;
+  const idx = locDataArr.indexOf(primaryLoc);
   document.querySelectorAll('.locality-item').forEach((el, i) => el.classList.toggle('active', i === idx));
   const items = document.querySelectorAll('.locality-item');
   if (items[idx]) items[idx].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  if (globeInstance) globeInstance.pointOfView({ lat: d.lat, lng: d.lon, altitude: 1.6 }, 900);
+  // Clusters zoom in deep enough to start splitting them
+  const curAlt = globeInstance?.pointOfView().altitude ?? 2.5;
+  const targetAlt = d.isCluster ? Math.max(0.35, curAlt * 0.42) : 1.4;
+  if (globeInstance) globeInstance.pointOfView({ lat: d.lat, lng: d.lon, altitude: targetAlt }, 900);
 }
 
 // ── Public: focus by sidebar index ────────────────
 function focusLocality(idx) {
   const loc = locDataArr[idx];
   if (!loc) return;
-  _focusByData(loc);
-  showPopover(loc);
+  // Wrap raw loc so showPopover can treat it uniformly
+  const item = { ...loc, isCluster: false, size: 1, locs: [loc], nearby: loc.nearby || [] };
+  _focusByData(item);
+  showPopover(item);
 }
 
 // ── Popover ───────────────────────────────────────
-function showPopover(loc) {
-  document.getElementById('pop-title').textContent = loc.name;
-  document.getElementById('pop-sub').textContent   = `${loc.count} CryptoFish · ${loc.lat.toFixed(1)}°, ${loc.lon.toFixed(1)}°`;
-  const fishArr = loc.fish || [];
+function showPopover(item) {
+  const isCluster = item.isCluster && item.locs.length > 1;
+
+  document.getElementById('pop-title').textContent = isCluster
+    ? item.locs[0].name + ' area'
+    : item.locs[0].name;
+  document.getElementById('pop-sub').textContent = isCluster
+    ? `${item.size} localities · ${item.count} CryptoFish total`
+    : `${item.count} CryptoFish · ${item.locs[0].lat.toFixed(1)}°, ${item.locs[0].lon.toFixed(1)}°`;
+
+  const fishArr = item.fish || [];
   document.getElementById('pop-fish').innerHTML = fishArr.length
     ? fishArr.map(f => `<div class="popover-fish"><img src="${f.image}" alt="${f.name}" title="${f.name}" onclick="event.stopPropagation();showFish(${f.tokenId - 1})" loading="lazy"></div>`).join('')
-    : '<div class="popover-fish-empty">No images mapped to this spot yet</div>';
-  const btn = document.getElementById('pop-explore-btn');
-  if (btn) btn.onclick = () => exploreLocality(loc.name);
+    : '<div class="popover-fish-empty">No images available</div>';
 
-  // Nearby localities list
   const nearbyEl = document.getElementById('pop-nearby');
   if (nearbyEl) {
-    if (loc.nearby && loc.nearby.length) {
+    if (isCluster) {
+      nearbyEl.innerHTML =
+        `<div class="pop-nearby-label">Localities in this area — zoom in to separate</div>` +
+        `<div class="pop-nearby-list">` +
+        item.locs.map(loc => {
+          const locIdx = locDataArr.indexOf(loc);
+          return `<button class="pop-nearby-btn" onclick="focusLocality(${locIdx})">${loc.name} <span class="pop-nearby-count">${loc.count}</span></button>`;
+        }).join('') +
+        `</div>`;
+      nearbyEl.style.display = '';
+    } else if (item.nearby && item.nearby.length) {
       nearbyEl.innerHTML =
         `<div class="pop-nearby-label">Nearby localities</div>` +
         `<div class="pop-nearby-list">` +
-        loc.nearby.slice(0, 8).map((n, i) => {
-          const idx = locDataArr.indexOf(n);
-          return `<button class="pop-nearby-btn" onclick="focusLocality(${idx})">${n.name} <span class="pop-nearby-count">${n.count}</span></button>`;
+        item.nearby.slice(0, 8).map(n => {
+          const nIdx = locDataArr.indexOf(n);
+          return `<button class="pop-nearby-btn" onclick="focusLocality(${nIdx})">${n.name} <span class="pop-nearby-count">${n.count}</span></button>`;
         }).join('') +
         `</div>`;
       nearbyEl.style.display = '';
     } else {
       nearbyEl.style.display = 'none';
     }
+  }
+
+  const btn = document.getElementById('pop-explore-btn');
+  if (btn) {
+    btn.textContent = isCluster ? 'Explore all fish from this area →' : 'Explore all fish from here →';
+    btn.onclick = isCluster
+      ? () => exploreLocalities(item.locs.map(l => l.name))
+      : () => exploreLocality(item.locs[0].name);
   }
 
   document.getElementById('locality-popover').classList.add('visible');

@@ -614,6 +614,16 @@ function exploreLocality(name) {
   renderLibrary();
 }
 
+function exploreLocalities(names) {
+  clearFilters();
+  names.forEach(n => activeFilters.locality.push(n));
+  document.querySelectorAll('#locality-filters .filter-pill').forEach(p => {
+    if (names.some(n => p.textContent.startsWith(n))) p.classList.add('active');
+  });
+  showPage('library');
+  renderLibrary();
+}
+
 function searchLibrary(query) {
   currentSearch = query.toLowerCase().trim();
   libraryPage = 0;
