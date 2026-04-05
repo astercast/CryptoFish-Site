@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<link rel="icon" type="image/avif" href="logo.avif">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CryptoFish - Real Fish. Rare Fish.</title>
 <meta name="description" content="CryptoFish: 2,166 hand-crafted pixel art NFTs. Every fish is a real species, classified with Linnaean taxonomy and encoded on Ethereum.">
@@ -18,7 +19,7 @@
 
 <!-- â”€â”€ NAV â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
 <nav>
-  <div class="nav-logo" onclick="showPage('home')">ðŸ  <span>Crypto</span>Fish</div>
+  <div class="nav-logo" onclick="showPage('home')"><img src="logo.avif" alt="" class="nav-logo-img"><span>Crypto</span>Fish</div>
   <div class="nav-links">
     <button class="nav-link active" onclick="showPage('home')">Home</button>
     <button class="nav-link" onclick="showPage('library')">Library</button>
@@ -27,10 +28,10 @@
   </div>
   <div class="nav-right">
     <div class="eth-ticker" id="nav-eth-price" title="Live ETH price">
-      <span class="eth-dot"></span><span id="nav-eth-val">â€¦</span>
+      <span class="eth-dot"></span><span id="nav-eth-val">&hellip;</span>
     </div>
-    <button class="dark-toggle" id="dark-toggle" onclick="toggleDarkMode()" aria-label="Toggle dark mode">â˜½</button>
-    <button class="nav-cta" onclick="window.open('https://opensea.io/collection/cryptofish','_blank')">OpenSea â†—</button>
+    <button class="dark-toggle" id="dark-toggle" onclick="toggleDarkMode()" aria-label="Toggle dark mode">&#9789;</button>
+    <button class="nav-cta" onclick="window.open('https://opensea.io/collection/cryptofish','_blank')">OpenSea &#8599;</button>
     <button class="nav-hamburger" onclick="toggleMobileNav()" aria-label="Menu">
       <span></span><span></span><span></span>
     </button>
@@ -42,7 +43,7 @@
   <button class="mobile-nav-link" onclick="showPage('library')">Library</button>
   <button class="mobile-nav-link" onclick="showPage('globe')">Globe</button>
   <button class="mobile-nav-link" onclick="showPage('nemo')">About FindUrNemo</button>
-  <button class="mobile-nav-link primary" onclick="window.open('https://opensea.io/collection/cryptofish','_blank')">View on OpenSea â†—</button>
+  <button class="mobile-nav-link primary" onclick="window.open('https://opensea.io/collection/cryptofish','_blank')">View on OpenSea &#8599;</button>
 </div>
 
 <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
@@ -53,7 +54,7 @@
   <!-- Hero -->
   <div class="home-hero">
     <div class="hero-text">
-      <div class="hero-eyebrow reveal">2,166 Species Â· Ethereum Â· Since May 2025</div>
+      <div class="hero-eyebrow reveal">2,166 Species &middot; Ethereum &middot; Since May 2025</div>
       <h1 class="hero-title reveal">Real Fish.<br><em>Rare Fish.</em></h1>
       <p class="hero-sub reveal">
         Every CryptoFish is a real species, hand-crafted in pixel art and scientifically classified
@@ -61,7 +62,7 @@
         encoded forever on-chain.
       </p>
       <div class="hero-btns reveal">
-        <button class="btn-primary" onclick="showPage('library')">Explore the Library â†’</button>
+        <button class="btn-primary" onclick="showPage('library')">Explore the Library &#8594;</button>
         <button class="btn-secondary" onclick="showPage('globe')">View the Globe</button>
       </div>
     </div>
@@ -105,12 +106,12 @@
   <div class="section">
     <div class="section-header reveal">
       <div class="section-title">Fish of the Day</div>
-      <a class="section-link" id="fotd-profile-link">View full profile â†’</a>
+      <a class="section-link" id="fotd-profile-link">View full profile &#8594;</a>
     </div>
     <div class="fotd-card reveal">
       <div class="fotd-art">
         <div class="fotd-badge">Today's Pick</div>
-        <div id="fotd-emoji" class="fotd-emoji">ðŸ </div>
+        <div id="fotd-emoji" class="fotd-emoji"></div>
       </div>
       <div class="fotd-body">
         <div id="fotd-status" class="fotd-status"></div>
@@ -130,9 +131,9 @@
             <div class="fotd-meta-value" id="fotd-token"></div>
           </div>
         </div>
-        <div class="fotd-desc" id="fotd-desc">Loadingâ€¦</div>
+        <div class="fotd-desc" id="fotd-desc">Loading&hellip;</div>
         <div class="fotd-actions">
-          <button class="btn-primary" id="fotd-view-btn">View Full Profile â†’</button>
+          <button class="btn-primary" id="fotd-view-btn">View Full Profile &#8594;</button>
           <button class="btn-secondary" id="fotd-buy-btn">Buy on OpenSea</button>
         </div>
       </div>
@@ -153,13 +154,13 @@
           <span class="sales-live-label">live</span>
         </div>
         <div class="sales-list" id="sales-list">
-          <div class="sales-loading">Loading salesâ€¦</div>
+          <div class="sales-loading">Loading sales&hellip;</div>
         </div>
       </div>
       <div class="reveal">
         <div class="sub-section-title" style="margin-bottom:16px">All-Time Top Sales</div>
         <div class="top-sales-grid" id="top-sales-list">
-          <div style="grid-column:1/-1;padding:20px;text-align:center;color:var(--text3);font-size:13px">Loading top salesâ€¦</div>
+          <div style="grid-column:1/-1;padding:20px;text-align:center;color:var(--text3);font-size:13px">Loading top sales&hellip;</div>
         </div>
       </div>
     </div>
@@ -171,7 +172,7 @@
   <div class="section">
     <div class="section-header reveal">
       <div class="section-title">Conservation in the Collection</div>
-      <a class="section-link" onclick="showPage('library')">Filter by status â†’</a>
+      <a class="section-link" onclick="showPage('library')">Filter by status &#8594;</a>
     </div>
     <div class="conservation-grid reveal">
       <div class="donut-wrap">
@@ -211,15 +212,15 @@
 
   <footer class="site-footer">
     <div class="footer-inner">
-      <div class="footer-logo">ðŸ  <span>Crypto</span>Fish</div>
+      <div class="footer-logo"><img src="logo.avif" alt="" class="nav-logo-img"><span>Crypto</span>Fish</div>
       <div class="footer-links">
         <a onclick="showPage('library')">Library</a>
         <a onclick="showPage('globe')">Globe</a>
         <a onclick="showPage('nemo')">About</a>
-        <a href="https://opensea.io/collection/cryptofish" target="_blank">OpenSea â†—</a>
-        <a href="https://x.com/findurnemo" target="_blank">X / Twitter â†—</a>
+        <a href="https://opensea.io/collection/cryptofish" target="_blank">OpenSea &#8599;</a>
+        <a href="https://x.com/findurnemo" target="_blank">X / Twitter &#8599;</a>
       </div>
-      <div class="footer-copy">Â© 2026 Findurnemo. All rights reserved.</div>
+      <div class="footer-copy">&copy; 2026 FindUrNemo. All rights reserved.</div>
     </div>
   </footer>
 </div>
@@ -239,12 +240,12 @@
       </div>
       <div class="filter-group">
         <div class="filter-group-label">Genera</div>
-        <input class="filter-search" placeholder="Search generaâ€¦" oninput="filterPills('genera-filters',this.value)">
+        <input class="filter-search" placeholder="Search genera&hellip;" oninput="filterPills('genera-filters',this.value)">
         <div class="filter-pills" id="genera-filters"></div>
       </div>
       <div class="filter-group">
         <div class="filter-group-label">Locality</div>
-        <input class="filter-search" placeholder="Search localityâ€¦" oninput="filterPills('locality-filters',this.value)">
+        <input class="filter-search" placeholder="Search locality&hellip;" oninput="filterPills('locality-filters',this.value)">
         <div class="filter-pills" id="locality-filters"></div>
       </div>
 
@@ -252,15 +253,15 @@
 
     <div class="library-main">
       <div class="library-toolbar">
-        <button class="filter-toggle-btn" onclick="toggleFilterSidebar()">âš™ Filters</button>        <input class="filter-search library-search" id="library-search" placeholder="Search by name, species, or IDâ€¦" oninput="searchLibrary(this.value)">        <div class="library-count" id="lib-count">Loadingâ€¦</div>
+        <button class="filter-toggle-btn" onclick="toggleFilterSidebar()">&#9881; Filters</button>        <input class="filter-search library-search" id="library-search" placeholder="Search by name, species, or ID&hellip;" oninput="searchLibrary(this.value)">        <div class="library-count" id="lib-count">Loading&hellip;</div>
         <select class="sort-select" onchange="sortLibrary(this.value)">
           <option value="id">Sort: Token ID</option>
-          <option value="alpha">Sort: Species Aâ€“Z</option>
+          <option value="alpha">Sort: Species A&ndash;Z</option>
           <option value="status">Sort: Conservation</option>
         </select>
         <div class="view-toggle">
-          <button class="view-btn active" id="grid-btn" onclick="setView('grid')">âŠž</button>
-          <button class="view-btn" id="list-btn" onclick="setView('list')">â˜°</button>
+          <button class="view-btn active" id="grid-btn" onclick="setView('grid')">&#8862;</button>
+          <button class="view-btn" id="list-btn" onclick="setView('list')">&#9776;</button>
         </div>
       </div>
       <div class="fish-grid" id="fish-grid"></div>
@@ -279,12 +280,12 @@
       <div class="popover-title" id="pop-title"></div>
       <div class="popover-sub" id="pop-sub"></div>
       <div class="popover-fish-grid" id="pop-fish"></div>
-      <button class="btn-primary pop-explore-btn" id="pop-explore-btn">Explore all fish from here â†’</button>
+      <button class="btn-primary pop-explore-btn" id="pop-explore-btn">Explore all fish from here &#8594;</button>
     </div>
     <div class="globe-sidebar">
       <div class="globe-sidebar-header">
         <div class="globe-sidebar-title">Fish Localities</div>
-        <div class="globe-sidebar-sub">Drag Â· Scroll to zoom Â· Click a dot</div>
+        <div class="globe-sidebar-sub">Drag &middot; Scroll to zoom &middot; Click a dot</div>
       </div>
       <div class="locality-list" id="locality-list"></div>
     </div>
@@ -297,7 +298,7 @@
 <div id="page-detail" class="page">
   <div class="detail-layout">
     <div class="detail-art-wrap">
-      <div class="detail-art" id="detail-art">ðŸ </div>
+      <div class="detail-art" id="detail-art"></div>
       <div class="detail-token" id="detail-token">Token #</div>
       <div class="detail-price-box">
         <div>
@@ -313,9 +314,9 @@
     <div class="detail-body">
       <div class="detail-breadcrumb">
         <span onclick="showPage('library')">Library</span>
-        <span class="bc-sep">â€º</span>
+        <span class="bc-sep">&#8250;</span>
         <span id="detail-genus-bc"></span>
-        <span class="bc-sep">â€º</span>
+        <span class="bc-sep">&#8250;</span>
         <span class="bc-italic" id="detail-species-bc"></span>
       </div>
       <div class="detail-common" id="detail-common"></div>
@@ -333,7 +334,7 @@
 
       <h3 class="detail-section-title" id="detail-bio-heading">About this Species</h3>
       <div class="detail-bio" id="detail-bio">
-        <p class="detail-prose bio-loading">Loading species informationâ€¦</p>
+        <p class="detail-prose bio-loading">Loading species information&hellip;</p>
       </div>
 
       <h3 class="detail-section-title">Conservation Status</h3>
@@ -342,9 +343,9 @@
       </div>
 
       <div class="detail-nav">
-        <button class="detail-nav-btn" onclick="navFish(-1)">â† Previous</button>
-        <button class="detail-nav-btn random" onclick="showFish(Math.floor(Math.random()*2166))">ðŸŽ² Random</button>
-        <button class="detail-nav-btn" onclick="navFish(1)">Next â†’</button>
+        <button class="detail-nav-btn" onclick="navFish(-1)">&#8592; Previous</button>
+        <button class="detail-nav-btn random" onclick="showFish(Math.floor(Math.random()*2166))">&#127922; Random</button>
+        <button class="detail-nav-btn" onclick="navFish(1)">Next &#8594;</button>
       </div>
     </div>
   </div>
@@ -422,7 +423,7 @@
 
   <footer class="site-footer">
     <div class="footer-inner">
-      <div class="footer-logo">&#128032; <span>Crypto</span>Fish</div>
+      <div class="footer-logo"><img src="logo.avif" alt="" class="nav-logo-img"><span>Crypto</span>Fish</div>
       <div class="footer-links">
         <a onclick="showPage('library')">Library</a>
         <a onclick="showPage('globe')">Globe</a>
