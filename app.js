@@ -163,7 +163,50 @@ function updatePriceDisplays() {
 const BLOCKSCOUT = 'https://eth.blockscout.com/api/v2';
 const CF_CONTRACT = '0x9ef31ce8cca614e7aff3c1b883740e8d2728fe91';
 
+// ── IndexedDB cache ─────────────────────────────────
+const IDB_NAME = 'CryptoFishCache';
+const IDB_VER  = 1;
+
+function _openIDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(IDB_NAME, IDB_VER);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains('api')) db.createObjectStore('api');
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror   = () => reject(req.error);
+  });
+}
+
+async function idbGet(key, maxAgeMs = 300_000) {
+  try {
+    const db = await _openIDB();
+    return await new Promise(resolve => {
+      const tx  = db.transaction('api', 'readonly');
+      const req = tx.objectStore('api').get(key);
+      req.onsuccess = () => {
+        const v = req.result;
+        resolve(v && (Date.now() - v.ts < maxAgeMs) ? v.data : null);
+      };
+      req.onerror = () => resolve(null);
+    });
+  } catch { return null; }
+}
+
+async function idbSet(key, data) {
+  try {
+    const db = await _openIDB();
+    const tx = db.transaction('api', 'readwrite');
+    tx.objectStore('api').put({ data, ts: Date.now() }, key);
+  } catch {}
+}
+
 async function fetchCollectionStats() {
+  // Serve from cache (10 min TTL)
+  const cached = await idbGet('stats', 10 * 60_000);
+  if (cached) { liveCollection = cached; renderStatsBar(); }
+
   try {
     const r = await fetch(`${BLOCKSCOUT}/tokens/${CF_CONTRACT}`, { cache: 'no-store' });
     if (!r.ok) throw new Error(r.status);
@@ -176,68 +219,109 @@ async function fetchCollectionStats() {
       listed_count: null,
       avg_price:    null,
     };
+    await idbSet('stats', liveCollection);
   } catch (e) {
-    console.warn('[Blockscout stats] failed:', e.message);
-    liveCollection = { floor_price: null, total_volume: null, num_owners: null, total_supply: 2166, listed_count: null, avg_price: null };
+    console.warn('[Blockscout stats]', e.message);
+    if (!liveCollection) {
+      const stale = await idbGet('stats', Infinity);
+      liveCollection = stale || { floor_price: null, total_volume: null, num_owners: null, total_supply: 2166, listed_count: null, avg_price: null };
+    }
   }
   renderStatsBar();
 }
 
-// ── Live: Recent Sales (Blockscout) ─────────────────
+// ── Live: Recent Sales (Blockscout + IDB cache) ─────
 const SALE_METHODS = ['fulfillBasicOrder', 'fulfillAdvancedOrder', 'matchOrders', 'matchAdvancedOrders'];
 
+function _transferToSale(t, ethWei) {
+  const rawId = t.total?.token_id ?? '';
+  const idx   = rawId ? parseInt(rawId) - 1 : -1;
+  const f     = idx >= 0 ? FISH_DATA[idx] : null;
+  const eth   = (parseFloat(ethWei) / 1e18).toFixed(4);
+  const token = rawId ? '#' + String(rawId).padStart(4, '0') : '';
+  const ts    = new Date(t.timestamp).getTime();
+  return {
+    image: f?.image || t.total?.token_instance?.image_url || '',
+    name:  f ? escapeHTML(f.name) : ('CryptoFish ' + token).trim(),
+    token, eth,
+    usd:  fmtUSD(eth),
+    time: timeAgo(ts),
+    ts,
+    idx:  idx >= 0 ? idx : 0,
+  };
+}
+
 async function fetchRecentSales() {
+  // Serve from cache immediately (5 min TTL)
+  const cached = await idbGet('sales', 5 * 60_000);
+  if (cached) {
+    renderSalesFeed(cached.recent);
+    renderTopSales(cached.top);
+    // Still refresh in background after serving cache
+    _refreshSalesFromChain().catch(() => {});
+    return;
+  }
+
+  // No cache — block on live fetch
+  const ok = await _refreshSalesFromChain();
+  if (!ok) {
+    // Try stale cache (any age)
+    const stale = await idbGet('sales', Infinity);
+    if (stale) {
+      renderSalesFeed(stale.recent);
+      renderTopSales(stale.top);
+    } else {
+      renderSalesFeed([], true);
+    }
+  }
+}
+
+async function _refreshSalesFromChain() {
   try {
     const r = await fetch(`${BLOCKSCOUT}/tokens/${CF_CONTRACT}/transfers`, { cache: 'no-store' });
     if (!r.ok) throw new Error(r.status);
     const d = await r.json();
     const items = d.items ?? [];
 
-    // Only keep marketplace sale transfers (Seaport methods)
+    // Filter to marketplace sale transfers
     const saleTransfers = items.filter(t =>
       t.method && SALE_METHODS.some(m => t.method.startsWith(m))
-    ).slice(0, 20);
+    ).slice(0, 8);
 
-    if (!saleTransfers.length) { renderSalesFeed([], true); return; }
+    if (!saleTransfers.length) {
+      renderSalesFeed([], true);
+      return false;
+    }
 
-    // Batch-fetch tx values for ETH price
-    const results = await Promise.allSettled(
-      saleTransfers.map(async t => {
+    // Sequential tx fetches to avoid rate-limiting (max 8)
+    const sales = [];
+    for (const t of saleTransfers) {
+      try {
         const txR = await fetch(`${BLOCKSCOUT}/transactions/${t.transaction_hash}`);
-        if (!txR.ok) return null;
+        if (!txR.ok) continue;
         const txD = await txR.json();
-        return { transfer: t, value: txD.value };
-      })
-    );
+        const sale = _transferToSale(t, txD.value || '0');
+        if (parseFloat(sale.eth) > 0) sales.push(sale);
+      } catch { /* skip failed tx */ }
+    }
 
-    const sales = results
-      .map(r => r.status === 'fulfilled' ? r.value : null)
-      .filter(Boolean)
-      .map(({ transfer: t, value }) => {
-        const rawId = t.total?.token_id ?? '';
-        const idx   = rawId ? parseInt(rawId) - 1 : -1;
-        const f     = idx >= 0 ? FISH_DATA[idx] : null;
-        const eth   = (Number(BigInt(value || '0')) / 1e18).toFixed(4);
-        const token = rawId ? '#' + String(rawId).padStart(4, '0') : '';
-        const ts    = new Date(t.timestamp).getTime();
-        return {
-          image: f?.image || t.total?.token_instance?.metadata?.image || '',
-          name:  f ? escapeHTML(f.name) : ('CryptoFish ' + token).trim(),
-          token, eth,
-          usd:  fmtUSD(eth),
-          time: timeAgo(ts),
-          ts,
-          idx:  idx >= 0 ? idx : 0,
-        };
-      })
-      .filter(s => parseFloat(s.eth) > 0);
+    if (!sales.length) {
+      renderSalesFeed([], true);
+      return false;
+    }
 
-    renderSalesFeed([...sales].sort((a, b) => b.ts - a.ts));
-    // Also feed top-sales from same data
-    renderTopSales([...sales].sort((a, b) => parseFloat(b.eth) - parseFloat(a.eth)));
+    const recent = [...sales].sort((a, b) => b.ts - a.ts);
+    const top    = [...sales].sort((a, b) => parseFloat(b.eth) - parseFloat(a.eth));
+
+    renderSalesFeed(recent);
+    renderTopSales(top);
+
+    // Persist to IndexedDB
+    await idbSet('sales', { recent, top });
+    return true;
   } catch (e) {
-    console.warn('[Blockscout sales] failed:', e.message);
-    renderSalesFeed([], true);
+    console.warn('[Blockscout sales]', e.message);
+    return false;
   }
 }
 
@@ -299,11 +383,11 @@ function renderSalesFeed(sales, isError = false) {
       <div class="sale-fish-icon">${s.image ? `<img src="${encodeURI(s.image)}" alt="" loading="lazy">` : '🐟'}</div>
       <div class="sale-info">
         <div class="sale-name">${s.name}</div>
-        <div class="sale-detail">${s.token} · ${s.time}</div>
+        <div class="sale-detail">${s.token} · ${s.ts ? timeAgo(s.ts) : s.time}</div>
       </div>
       <div class="sale-price">
         <div class="sale-eth">${s.eth} ETH</div>
-        <div class="sale-usd">${s.usd}</div>
+        <div class="sale-usd">${s.usd || fmtUSD(s.eth)}</div>
       </div>
     </div>`).join('');
 }
