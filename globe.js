@@ -1,5 +1,5 @@
 ﻿// ================================================
-// CryptoFish — globe.js  v3  (globe.gl)
+// CryptoFish  -  globe.js  v3  (globe.gl)
 // ================================================
 
 let globeInitialized = false;

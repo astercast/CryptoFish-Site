@@ -1,5 +1,5 @@
 // ================================================
-// CryptoFish — app.js
+// CryptoFish - app.js
 // Navigation, library, detail, live data
 // ================================================
 
@@ -26,7 +26,7 @@ function setHTML(id, html) {
 }
 function fmt(n, dec = 3) { return parseFloat(n).toFixed(dec); }
 function fmtUSD(eth) {
-  if (!liveEthPrice || !eth) return '—';
+  if (!liveEthPrice || !eth) return '';
   return '$' + Math.round(parseFloat(eth) * liveEthPrice).toLocaleString();
 }
 function timeAgo(ms) {
@@ -80,7 +80,66 @@ function toggleMobileNav() {
   if (nav) nav.classList.toggle('open', mobileNavOpen);
 }
 
-// ── Live: ETH Price (CoinGecko → CryptoCompare) ─────────────────
+// ── Live: Individual Token Listing Price (Reservoir) ─────────────
+async function fetchFishListing(tokenId, expectedIdx) {
+  try {
+    const r = await fetch(
+      `https://api.reservoir.tools/tokens/v7?tokens=${CF_CONTRACT}:${tokenId}`,
+      { headers: RESERVOIR_HEADERS, cache: 'no-store' }
+    );
+    if (!r.ok) throw new Error(r.status);
+    const d = await r.json();
+    const market = d.tokens?.[0]?.market;
+    const price  = market?.floorAsk?.price?.amount?.decimal ?? null;
+
+    if (currentFishIndex !== expectedIdx) return;  // user navigated away
+    const priceEl  = document.getElementById('detail-price');
+    const usdEl    = document.getElementById('detail-usd');
+    const buyBtnEl = document.getElementById('detail-buy-btn');
+    if (price !== null) {
+      const eth = parseFloat(price);
+      if (priceEl) priceEl.textContent = eth.toFixed(4) + ' ETH';
+      if (usdEl)   usdEl.textContent   = liveEthPrice ? '≈ $' + Math.round(eth * liveEthPrice).toLocaleString() : '';
+      if (buyBtnEl) buyBtnEl.textContent = 'Buy on OpenSea';
+    } else {
+      if (priceEl) priceEl.textContent = 'Not Listed';
+      if (usdEl)   usdEl.textContent   = '';
+      if (buyBtnEl) buyBtnEl.textContent = 'View on OpenSea';
+    }
+  } catch (e) {
+    console.warn('[Reservoir listing]', e.message);
+    if (currentFishIndex !== expectedIdx) return;
+    const priceEl = document.getElementById('detail-price');
+    if (priceEl) priceEl.textContent = 'Not Listed';
+  }
+}
+
+// ── Library: Filter by Trait (from detail page clicks) ─────────────
+function filterByTrait(type, value) {
+  clearFilters();
+  if (type === 'genera' || type === 'genus') {
+    activeFilters.genera.push(value);
+    document.querySelectorAll('#genera-filters .filter-pill').forEach(p => {
+      if (p.textContent.startsWith(value)) p.classList.add('active');
+    });
+  } else if (type === 'locality') {
+    activeFilters.locality.push(value);
+    document.querySelectorAll('#locality-filters .filter-pill').forEach(p => {
+      if (p.textContent.startsWith(value)) p.classList.add('active');
+    });
+  } else if (type === 'status') {
+    activeFilters.status.push(value);
+    document.querySelectorAll('#status-filters .filter-pill').forEach(p => {
+      if (p.textContent.includes('(' + value + ')') || p.dataset?.val === value) p.classList.add('active');
+    });
+  } else if (type === 'species') {
+    currentSearch = value.toLowerCase();
+  }
+  showPage('library');
+  renderLibrary();
+}
+
+// ── Live: ETH Price (CoinGecko -> CryptoCompare) ─────────────────
 async function fetchEthPrice() {
   try {
     const r = await fetch(
@@ -108,16 +167,17 @@ async function fetchEthPrice() {
 
 function updatePriceDisplays() {
   const c = liveCollection;
-  setEl('stat-vol-usd',   c?.total_volume != null && liveEthPrice ? '≈ ' + fmtUSD(c.total_volume) : '—');
-  setEl('stat-floor-usd', c?.floor_price  != null && liveEthPrice ? '≈ ' + fmtUSD(c.floor_price)  : '—');
-  setEl('stat-offer-usd', c?.avg_price    != null && liveEthPrice ? '≈ ' + fmtUSD(c.avg_price)    : '—');
+  setEl('stat-vol-usd',   c?.total_volume != null && liveEthPrice ? '≈ ' + fmtUSD(c.total_volume) : '');
+  setEl('stat-floor-usd', c?.floor_price  != null && liveEthPrice ? '≈ ' + fmtUSD(c.floor_price)  : '');
+  setEl('stat-offer-usd', c?.avg_price    != null && liveEthPrice ? '≈ ' + fmtUSD(c.avg_price)    : '');
   const navEl = document.getElementById('nav-eth-val');
-  if (navEl) navEl.textContent = liveEthPrice ? '$' + liveEthPrice.toLocaleString() : '—';
+  if (navEl) navEl.textContent = liveEthPrice ? '$' + liveEthPrice.toLocaleString() : '--';
 }
 
 // ── Live: Collection Stats (Reservoir) ──────────────
 const RESERVOIR_HEADERS = { 'x-api-key': 'demo-api-key', accept: 'application/json' };
 const CF_CONTRACT = '0x9ef31ce8cca614e7aff3c1b883740e8d2728fe91';
+
 
 async function fetchCollectionStats() {
   try {
@@ -162,13 +222,13 @@ async function fetchRecentSales() {
       if (!rawEth) return null;
       const eth   = parseFloat(rawEth).toFixed(4);
       const rawId = e.token?.tokenId ?? '';
-      const token = rawId ? '#' + String(rawId).padStart(4, '0') : '—';
+      const token = rawId ? '#' + String(rawId).padStart(4, '0') : '';
       const ts    = (e.timestamp ?? 0) * 1000;
       const idx   = rawId ? parseInt(rawId) - 1 : -1;
       const f     = idx >= 0 ? FISH_DATA[idx] : null;
       return {
         image: f?.image || '',
-        name:  f ? escapeHTML(f.name) : ('CryptoFish ' + (rawId ? token : '—')),
+        name:  f ? escapeHTML(f.name) : ('CryptoFish ' + (rawId ? token : '')).trim(),
         token,
         eth,
         usd:   fmtUSD(eth),
@@ -195,11 +255,11 @@ function renderStatsBar() {
   const c = liveCollection;
   if (!c) return;
 
-  setEl('stat-floor',  c.floor_price  != null ? fmt(c.floor_price, 3) : '—');
-  setEl('stat-volume', c.total_volume != null ? c.total_volume.toLocaleString(undefined, { maximumFractionDigits: 1 }) : '—');
-  setEl('stat-holders',c.num_owners   != null ? c.num_owners.toLocaleString() : '—');
+  setEl('stat-floor',  c.floor_price  != null ? fmt(c.floor_price, 3) : '--');
+  setEl('stat-volume', c.total_volume != null ? c.total_volume.toLocaleString(undefined, { maximumFractionDigits: 1 }) : '--');
+  setEl('stat-holders',c.num_owners   != null ? c.num_owners.toLocaleString() : '--');
   setEl('stat-items',  c.total_supply != null ? c.total_supply.toLocaleString() : '2,166');
-  setEl('stat-offer',  c.avg_price    != null ? fmt(c.avg_price, 3) : '—');
+  setEl('stat-offer',  c.avg_price    != null ? fmt(c.avg_price, 3) : '--');
 
   const floorEl   = document.getElementById('stat-floor');
   const volumeEl  = document.getElementById('stat-volume');
@@ -268,9 +328,9 @@ function renderFOTD() {
   }
 
   setEl('fotd-name',    fish.name);
-  setEl('fotd-sci',     fish.sci || '—');
-  setEl('fotd-genera',  fish.genus || '—');
-  setEl('fotd-locality',fish.locality || '—');
+  setEl('fotd-sci',     fish.sci || '');
+  setEl('fotd-genera',  fish.genus || '');
+  setEl('fotd-locality',fish.locality || '');
   setEl('fotd-token',   '#' + fish.id);
   setEl('fotd-desc',    fish.sci
     ? `${fish.genus} ${fish.species} from ${fish.locality || 'unknown locality'}. Conservation status: ${STATUS_NAMES[fish.status] || 'Unknown'}.`
@@ -304,24 +364,36 @@ function showFish(idx, { pushState = true } = {}) {
   setEl('detail-token',      'Token #' + f.id);
   setEl('detail-common',     f.name);
   setEl('detail-sci',        f.sci || (f.honorary ? 'Custom / Honorary' : ''));
-  setEl('detail-genus-bc',   f.genus || (f.honorary ? 'Honorary' : '—'));
-  setEl('detail-species-bc', f.species || (f.honorary ? f.honorary : '—'));
+  setEl('detail-genus-bc',   f.genus || (f.honorary ? 'Honorary' : ''));
+  setEl('detail-species-bc', f.species || (f.honorary ? f.honorary : ''));
   setEl('sp-common',   f.name);
-  setEl('sp-sci',      f.sci || (f.honorary ? 'Custom / Honorary' : '—'));
-  setEl('sp-genus',    f.genus || '—');
-  setEl('sp-species',  f.species || '—');
-  setEl('sp-locality', f.locality || '—');
-  setEl('sp-status',   (STATUS_NAMES[f.status] || 'Unknown') + ' (' + f.status + ')');
+  setEl('sp-sci',      f.sci || (f.honorary ? 'Custom / Honorary' : ''));
+
+  // Clickable trait pills for genus, locality, status
+  const genusVal = f.genus || '';
+  const locVal   = f.locality || '';
+  const spVal    = f.species || '';
+  const genusHTML   = genusVal   ? `<span class="trait-link" onclick="filterByTrait('genera','${escapeHTML(genusVal)}')">${escapeHTML(genusVal)}</span>` : '';
+  const speciesHTML = spVal      ? `<span class="trait-link" onclick="filterByTrait('species','${escapeHTML(spVal)}')">${escapeHTML(spVal)}</span>` : '';
+  const locHTML     = locVal     ? `<span class="trait-link" onclick="filterByTrait('locality','${locVal.replace(/'/g,"&#39;")}')">${escapeHTML(locVal)}</span>` : '';
+  const stHTML      = f.status   ? `<span class="trait-link" onclick="filterByTrait('status','${escapeHTML(f.status)}')">${escapeHTML((STATUS_NAMES[f.status] || 'Unknown') + ' (' + f.status + ')')}</span>` : '';
+  setHTML('sp-genus',    genusHTML   || '--');
+  setHTML('sp-species',  speciesHTML || '--');
+  setHTML('sp-locality', locHTML     || '--');
+  setHTML('sp-status',   stHTML      || '--');
 
   setHTML('detail-status-pill',
     `<span class="status-pill status-${f.status.toLowerCase()}">⬤ ${STATUS_NAMES[f.status] || 'Unknown'}</span>`);
 
-  const buyBtn = document.getElementById('detail-buy-btn');
-  if (buyBtn) buyBtn.onclick = () =>
+  const detailPriceEl = document.getElementById('detail-price');
+  const detailUsdEl   = document.getElementById('detail-usd');
+  const buyBtnEl      = document.getElementById('detail-buy-btn');
+  if (detailPriceEl) detailPriceEl.textContent = 'Loading...';
+  if (detailUsdEl)   detailUsdEl.textContent   = '';
+  if (buyBtnEl) buyBtnEl.onclick = () =>
     window.open(`https://opensea.io/assets/ethereum/0x9ef31ce8cca614e7aff3c1b883740e8d2728fe91/${f.tokenId}`, '_blank');
-
-  setEl('detail-price', '—');
-  setEl('detail-usd', '');
+  // Fetch live listing price (will update button text and price display)
+  fetchFishListing(f.tokenId, idx);
 
   // Collection context stats
   const sameGenus    = f.genus ? FISH_DATA.filter(x => x.genus === f.genus).length : 0;
@@ -330,10 +402,10 @@ function showFish(idx, { pushState = true } = {}) {
   const ctx = document.getElementById('detail-context');
   if (ctx) {
     const parts = [];
-    if (f.genus)    parts.push(`<strong>${sameGenus}</strong> in genus <em>${escapeHTML(f.genus)}</em>`);
-    if (f.locality) parts.push(`<strong>${sameLocality}</strong> from ${escapeHTML(f.locality)}`);
-    parts.push(`<strong>${sameStatus}</strong> ${STATUS_NAMES[f.status] || 'Unknown'}`);
-    ctx.innerHTML = parts.join(' &nbsp;·&nbsp; ');
+    if (f.genus)    parts.push(`<span class="trait-link" onclick="filterByTrait('genera','${escapeHTML(f.genus)}')">${sameGenus} in genus <em>${escapeHTML(f.genus)}</em></span>`);
+    if (f.locality) parts.push(`<span class="trait-link" onclick="filterByTrait('locality','${f.locality.replace(/'/g,"&#39;")}')">${sameLocality} from ${escapeHTML(f.locality)}</span>`);
+    parts.push(`<span class="trait-link" onclick="filterByTrait('status','${escapeHTML(f.status)}')">${sameStatus} ${STATUS_NAMES[f.status] || 'Unknown'}</span>`);
+    ctx.innerHTML = parts.join(' &nbsp;&#183;&nbsp; ');
   }
 
   // Bio section heading
@@ -354,11 +426,11 @@ function showFish(idx, { pushState = true } = {}) {
         'EN': 'Endangered species face a very high risk of extinction in the wild. The IUCN Endangered category indicates a severe population decline and restricted range. Active conservation programs and habitat protection are critical to preventing extinction.',
         'VU': 'Vulnerable species face a high risk of extinction in the wild under current conditions. They have experienced significant population declines or are restricted to vulnerable habitat, and require monitoring and protection to prevent further decline.',
         'NT': 'Near Threatened species are not currently threatened but are close to qualifying for a threatened category, or may do so without continued conservation measures. They are monitored closely for any signs of decline.',
-        'LC': 'Least Concern species have been evaluated and do not meet the criteria for more threatened categories. However, this designation does not mean the species faces no pressure — many LC species face habitat loss, collection pressure, or pollution that has not yet triggered a status change.',
-        'DD': 'Data Deficient means insufficient information exists to make a direct or indirect assessment of the species\' extinction risk. This is not a positive status — it means the species has not been studied enough to know if it is threatened.',
-        'NE': 'Not Evaluated — this species has not yet been assessed against IUCN criteria. Many freshwater and marine species fall into this category due to limited scientific survey coverage.',
-        'EW': 'Extinct in the Wild — this species survives only in captivity or as a naturalized population outside its historic range. Its natural ecosystem no longer supports a wild population.',
-        'EX': 'Extinct — this species is no longer known to exist anywhere on Earth. This is the final designation on the IUCN Red List, assigned only when exhaustive surveys confirm no surviving individuals.',
+        'LC': 'Least Concern species have been evaluated and do not meet the criteria for more threatened categories. However, this designation does not mean the species faces no pressure. Many LC species face habitat loss, collection pressure, or pollution that has not yet triggered a status change.',
+        'DD': 'Data Deficient means insufficient information exists to make a direct or indirect assessment of the species\' extinction risk. This is not a positive status. It means the species has not been studied enough to know if it is threatened.',
+        'NE': 'Not Evaluated. This species has not yet been assessed against IUCN criteria. Many freshwater and marine species fall into this category due to limited scientific survey coverage.',
+        'EW': 'Extinct in the Wild. This species survives only in captivity or as a naturalized population outside its historic range. Its natural ecosystem no longer supports a wild population.',
+        'EX': 'Extinct. This species is no longer known to exist anywhere on Earth. This is the final designation on the IUCN Red List, assigned only when exhaustive surveys confirm no surviving individuals.',
       }[f.status] || '';
       consEl.innerHTML = `<strong>IUCN Red List status: ${escapeHTML(statusName)} (${escapeHTML(f.status)})</strong>${statusDesc ? '<br><br>' + escapeHTML(statusDesc) : ''}`;
     } else {
@@ -446,7 +518,7 @@ function renderLibrary() {
           <div class="fish-card-common">${escapeHTML(f.name)}</div>
           <div class="fish-card-sci">${f.sci ? escapeHTML(f.sci) : (f.honorary ? 'Custom' : '')}</div>
           <div class="fish-card-footer">
-            <div class="fish-card-locality">${escapeHTML(f.locality || '—')}</div>
+            <div class="fish-card-locality">${escapeHTML(f.locality || '')}</div>
             <div class="fish-card-status-label">${f.status}</div>
           </div>
         </div>
@@ -566,7 +638,7 @@ function showMorePills(containerId, btnId) {
 }
 
 function buildFilterPills() {
-  // Status — full names, conservation-severity order
+  // Status - full names, conservation-severity order
   const statusOrder  = ['CR','EN','VU','NT','LC','DD','NE','EX','EW','?'];
   const statusCounts = {};
   FISH_DATA.forEach(f => { if (f.status) statusCounts[f.status] = (statusCounts[f.status]||0)+1; });

@@ -629,6 +629,9 @@ nav {
 .bio-status-note { margin-top: 14px; }
 .wiki-link { display: inline-block; margin-top: 10px; font-size: 12px; color: var(--accent); text-decoration: none; opacity: .8; transition: opacity .15s; }
 .wiki-link:hover { opacity: 1; text-decoration: underline; }
+.trait-link { display: inline; cursor: pointer; color: var(--accent); border-bottom: 1px dashed var(--accent); transition: color .15s, border-color .15s; }
+.trait-link:hover { color: var(--accent-hi, var(--accent)); border-bottom-style: solid; }
+.detail-collection-context .trait-link { font-size: inherit; }
 .detail-bio .detail-prose { margin: 0; }
 
 /* ── Fish Detail ───────────────────────────────── */

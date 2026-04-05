@@ -1,11 +1,11 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CryptoFish — Real Fish. Rare Fish.</title>
+<title>CryptoFish - Real Fish. Rare Fish.</title>
 <meta name="description" content="CryptoFish: 2,166 hand-crafted pixel art NFTs. Every fish is a real species, classified with Linnaean taxonomy and encoded on Ethereum.">
-<meta property="og:title" content="CryptoFish — Real Fish. Rare Fish.">
+<meta property="og:title" content="CryptoFish - Real Fish. Rare Fish.">
 <meta property="og:description" content="2,166 hand-crafted pixel art NFTs. Real species. Linnaean taxonomy. Conservation status. Ethereum.">
 <meta property="og:image" content="https://i2c.seadn.io/ethereum/2bfbfbaa8f9a43a29c49de14cea2ff55/567540cb4397ede62334a90f4eb202/23567540cb4397ede62334a90f4eb202.gif">
 <meta name="twitter:card" content="summary_large_image">
@@ -16,21 +16,21 @@
 </head>
 <body>
 
-<!-- ── NAV ──────────────────────────────────────── -->
+<!-- â”€â”€ NAV â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
 <nav>
-  <div class="nav-logo" onclick="showPage('home')">🐠 <span>Crypto</span>Fish</div>
+  <div class="nav-logo" onclick="showPage('home')">ðŸ  <span>Crypto</span>Fish</div>
   <div class="nav-links">
     <button class="nav-link active" onclick="showPage('home')">Home</button>
     <button class="nav-link" onclick="showPage('library')">Library</button>
     <button class="nav-link" onclick="showPage('globe')">Globe</button>
-    <button class="nav-link" onclick="showPage('nemo')">About Findurnemo</button>
+    <button class="nav-link" onclick="showPage('nemo')">About FindUrNemo</button>
   </div>
   <div class="nav-right">
     <div class="eth-ticker" id="nav-eth-price" title="Live ETH price">
-      <span class="eth-dot"></span><span id="nav-eth-val">…</span>
+      <span class="eth-dot"></span><span id="nav-eth-val">â€¦</span>
     </div>
-    <button class="dark-toggle" id="dark-toggle" onclick="toggleDarkMode()" aria-label="Toggle dark mode">☽</button>
-    <button class="nav-cta" onclick="window.open('https://opensea.io/collection/cryptofish','_blank')">OpenSea ↗</button>
+    <button class="dark-toggle" id="dark-toggle" onclick="toggleDarkMode()" aria-label="Toggle dark mode">â˜½</button>
+    <button class="nav-cta" onclick="window.open('https://opensea.io/collection/cryptofish','_blank')">OpenSea â†—</button>
     <button class="nav-hamburger" onclick="toggleMobileNav()" aria-label="Menu">
       <span></span><span></span><span></span>
     </button>
@@ -41,27 +41,27 @@
   <button class="mobile-nav-link" onclick="showPage('home')">Home</button>
   <button class="mobile-nav-link" onclick="showPage('library')">Library</button>
   <button class="mobile-nav-link" onclick="showPage('globe')">Globe</button>
-  <button class="mobile-nav-link" onclick="showPage('nemo')">About Findurnemo</button>
-  <button class="mobile-nav-link primary" onclick="window.open('https://opensea.io/collection/cryptofish','_blank')">View on OpenSea ↗</button>
+  <button class="mobile-nav-link" onclick="showPage('nemo')">About FindUrNemo</button>
+  <button class="mobile-nav-link primary" onclick="window.open('https://opensea.io/collection/cryptofish','_blank')">View on OpenSea â†—</button>
 </div>
 
-<!-- ════════════════════════════════════════════════
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
      HOME
-════════════════════════════════════════════════ -->
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <div id="page-home" class="page active">
 
   <!-- Hero -->
   <div class="home-hero">
     <div class="hero-text">
-      <div class="hero-eyebrow reveal">2,166 Species · Ethereum · Since May 2025</div>
+      <div class="hero-eyebrow reveal">2,166 Species Â· Ethereum Â· Since May 2025</div>
       <h1 class="hero-title reveal">Real Fish.<br><em>Rare Fish.</em></h1>
       <p class="hero-sub reveal">
         Every CryptoFish is a real species, hand-crafted in pixel art and scientifically classified
-        using Linnaean taxonomy — conservation status, genus, species, and locality
+        using Linnaean taxonomy: conservation status, genus, species, and locality
         encoded forever on-chain.
       </p>
       <div class="hero-btns reveal">
-        <button class="btn-primary" onclick="showPage('library')">Explore the Library →</button>
+        <button class="btn-primary" onclick="showPage('library')">Explore the Library â†’</button>
         <button class="btn-secondary" onclick="showPage('globe')">View the Globe</button>
       </div>
     </div>
@@ -70,18 +70,18 @@
     </div>
   </div>
 
-  <!-- Stats Bar — IDs match renderStatsBar() -->
+  <!-- Stats Bar - IDs match renderStatsBar() -->
   <div class="stats-bar">
     <div class="stats-inner">
       <div class="stat-item">
         <div class="stat-label">Floor Price</div>
         <div class="stat-value"><span id="stat-floor" data-countup="0.064">0.064</span><span class="stat-unit"> ETH</span></div>
-        <div class="stat-sub" id="stat-floor-usd">— USD</div>
+        <div class="stat-sub" id="stat-floor-usd"></div>
       </div>
       <div class="stat-item">
         <div class="stat-label">Total Volume</div>
         <div class="stat-value"><span id="stat-volume" data-countup="706.66">706.7</span><span class="stat-unit"> ETH</span></div>
-        <div class="stat-sub" id="stat-vol-usd">— USD</div>
+        <div class="stat-sub" id="stat-vol-usd"></div>
       </div>
       <div class="stat-item">
         <div class="stat-label">Unique Holders</div>
@@ -96,43 +96,43 @@
       <div class="stat-item">
         <div class="stat-label">Avg Sale Price</div>
         <div class="stat-value"><span id="stat-offer">0.050</span><span class="stat-unit"> ETH</span></div>
-        <div class="stat-sub" id="stat-offer-usd">— USD</div>
+        <div class="stat-sub" id="stat-offer-usd"></div>
       </div>
     </div>
   </div>
 
-  <!-- Fish of the Day — populated by renderFOTD() -->
+  <!-- Fish of the Day - populated by renderFOTD() -->
   <div class="section">
     <div class="section-header reveal">
       <div class="section-title">Fish of the Day</div>
-      <a class="section-link" id="fotd-profile-link">View full profile →</a>
+      <a class="section-link" id="fotd-profile-link">View full profile â†’</a>
     </div>
     <div class="fotd-card reveal">
       <div class="fotd-art">
         <div class="fotd-badge">Today's Pick</div>
-        <div id="fotd-emoji" class="fotd-emoji">🐠</div>
+        <div id="fotd-emoji" class="fotd-emoji">ðŸ </div>
       </div>
       <div class="fotd-body">
         <div id="fotd-status" class="fotd-status"></div>
-        <div class="fotd-name" id="fotd-name">—</div>
-        <div class="fotd-sci" id="fotd-sci">—</div>
+        <div class="fotd-name" id="fotd-name"></div>
+        <div class="fotd-sci" id="fotd-sci"></div>
         <div class="fotd-meta">
           <div class="fotd-meta-item">
             <div class="fotd-meta-label">Genera</div>
-            <div class="fotd-meta-value" id="fotd-genera">—</div>
+            <div class="fotd-meta-value" id="fotd-genera"></div>
           </div>
           <div class="fotd-meta-item">
             <div class="fotd-meta-label">Locality</div>
-            <div class="fotd-meta-value" id="fotd-locality">—</div>
+            <div class="fotd-meta-value" id="fotd-locality"></div>
           </div>
           <div class="fotd-meta-item">
             <div class="fotd-meta-label">Token</div>
-            <div class="fotd-meta-value" id="fotd-token">—</div>
+            <div class="fotd-meta-value" id="fotd-token"></div>
           </div>
         </div>
-        <div class="fotd-desc" id="fotd-desc">Loading…</div>
+        <div class="fotd-desc" id="fotd-desc">Loadingâ€¦</div>
         <div class="fotd-actions">
-          <button class="btn-primary" id="fotd-view-btn">View Full Profile →</button>
+          <button class="btn-primary" id="fotd-view-btn">View Full Profile â†’</button>
           <button class="btn-secondary" id="fotd-buy-btn">Buy on OpenSea</button>
         </div>
       </div>
@@ -153,13 +153,13 @@
           <span class="sales-live-label">live</span>
         </div>
         <div class="sales-list" id="sales-list">
-          <div class="sales-loading">Loading sales…</div>
+          <div class="sales-loading">Loading salesâ€¦</div>
         </div>
       </div>
       <div class="reveal">
         <div class="sub-section-title" style="margin-bottom:16px">All-Time Top Sales</div>
         <div class="top-sales-grid" id="top-sales-list">
-          <div style="grid-column:1/-1;padding:20px;text-align:center;color:var(--text3);font-size:13px">Loading top sales…</div>
+          <div style="grid-column:1/-1;padding:20px;text-align:center;color:var(--text3);font-size:13px">Loading top salesâ€¦</div>
         </div>
       </div>
     </div>
@@ -171,7 +171,7 @@
   <div class="section">
     <div class="section-header reveal">
       <div class="section-title">Conservation in the Collection</div>
-      <a class="section-link" onclick="showPage('library')">Filter by status →</a>
+      <a class="section-link" onclick="showPage('library')">Filter by status â†’</a>
     </div>
     <div class="conservation-grid reveal">
       <div class="donut-wrap">
@@ -211,22 +211,22 @@
 
   <footer class="site-footer">
     <div class="footer-inner">
-      <div class="footer-logo">🐠 <span>Crypto</span>Fish</div>
+      <div class="footer-logo">ðŸ  <span>Crypto</span>Fish</div>
       <div class="footer-links">
         <a onclick="showPage('library')">Library</a>
         <a onclick="showPage('globe')">Globe</a>
         <a onclick="showPage('nemo')">About</a>
-        <a href="https://opensea.io/collection/cryptofish" target="_blank">OpenSea ↗</a>
-        <a href="https://x.com/findurnemo" target="_blank">X / Twitter ↗</a>
+        <a href="https://opensea.io/collection/cryptofish" target="_blank">OpenSea â†—</a>
+        <a href="https://x.com/findurnemo" target="_blank">X / Twitter â†—</a>
       </div>
-      <div class="footer-copy">© 2026 Findurnemo. All rights reserved.</div>
+      <div class="footer-copy">Â© 2026 Findurnemo. All rights reserved.</div>
     </div>
   </footer>
 </div>
 
-<!-- ════════════════════════════════════════════════
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
      LIBRARY
-════════════════════════════════════════════════ -->
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <div id="page-library" class="page">
   <div class="library-layout">
     <div class="filter-sidebar" id="filter-sidebar">
@@ -239,12 +239,12 @@
       </div>
       <div class="filter-group">
         <div class="filter-group-label">Genera</div>
-        <input class="filter-search" placeholder="Search genera…" oninput="filterPills('genera-filters',this.value)">
+        <input class="filter-search" placeholder="Search generaâ€¦" oninput="filterPills('genera-filters',this.value)">
         <div class="filter-pills" id="genera-filters"></div>
       </div>
       <div class="filter-group">
         <div class="filter-group-label">Locality</div>
-        <input class="filter-search" placeholder="Search locality…" oninput="filterPills('locality-filters',this.value)">
+        <input class="filter-search" placeholder="Search localityâ€¦" oninput="filterPills('locality-filters',this.value)">
         <div class="filter-pills" id="locality-filters"></div>
       </div>
 
@@ -252,15 +252,15 @@
 
     <div class="library-main">
       <div class="library-toolbar">
-        <button class="filter-toggle-btn" onclick="toggleFilterSidebar()">⚙ Filters</button>        <input class="filter-search library-search" id="library-search" placeholder="Search by name, species, or ID…" oninput="searchLibrary(this.value)">        <div class="library-count" id="lib-count">Loading…</div>
+        <button class="filter-toggle-btn" onclick="toggleFilterSidebar()">âš™ Filters</button>        <input class="filter-search library-search" id="library-search" placeholder="Search by name, species, or IDâ€¦" oninput="searchLibrary(this.value)">        <div class="library-count" id="lib-count">Loadingâ€¦</div>
         <select class="sort-select" onchange="sortLibrary(this.value)">
           <option value="id">Sort: Token ID</option>
-          <option value="alpha">Sort: Species A–Z</option>
+          <option value="alpha">Sort: Species Aâ€“Z</option>
           <option value="status">Sort: Conservation</option>
         </select>
         <div class="view-toggle">
-          <button class="view-btn active" id="grid-btn" onclick="setView('grid')">⊞</button>
-          <button class="view-btn" id="list-btn" onclick="setView('list')">☰</button>
+          <button class="view-btn active" id="grid-btn" onclick="setView('grid')">âŠž</button>
+          <button class="view-btn" id="list-btn" onclick="setView('list')">â˜°</button>
         </div>
       </div>
       <div class="fish-grid" id="fish-grid"></div>
@@ -268,42 +268,42 @@
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════════
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
      GLOBE
-════════════════════════════════════════════════ -->
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <div id="page-globe" class="page">
   <div class="globe-layout">
     <div id="globe-canvas"></div>
     <div class="locality-popover" id="locality-popover">
-      <button class="popover-close" onclick="closePopover()">×</button>
-      <div class="popover-title" id="pop-title">—</div>
-      <div class="popover-sub" id="pop-sub">—</div>
+      <button class="popover-close" onclick="closePopover()">Ã—</button>
+      <div class="popover-title" id="pop-title"></div>
+      <div class="popover-sub" id="pop-sub"></div>
       <div class="popover-fish-grid" id="pop-fish"></div>
-      <button class="btn-primary pop-explore-btn" id="pop-explore-btn">Explore all fish from here →</button>
+      <button class="btn-primary pop-explore-btn" id="pop-explore-btn">Explore all fish from here â†’</button>
     </div>
     <div class="globe-sidebar">
       <div class="globe-sidebar-header">
         <div class="globe-sidebar-title">Fish Localities</div>
-        <div class="globe-sidebar-sub">Drag · Scroll to zoom · Click a dot</div>
+        <div class="globe-sidebar-sub">Drag Â· Scroll to zoom Â· Click a dot</div>
       </div>
       <div class="locality-list" id="locality-list"></div>
     </div>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════════
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
      FISH DETAIL
-════════════════════════════════════════════════ -->
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <div id="page-detail" class="page">
   <div class="detail-layout">
     <div class="detail-art-wrap">
-      <div class="detail-art" id="detail-art">🐠</div>
-      <div class="detail-token" id="detail-token">Token #—</div>
+      <div class="detail-art" id="detail-art">ðŸ </div>
+      <div class="detail-token" id="detail-token">Token #</div>
       <div class="detail-price-box">
         <div>
           <div class="detail-price-label">Current Price</div>
-          <div class="detail-price" id="detail-price">— ETH</div>
-          <div class="detail-price-usd" id="detail-usd">— USD</div>
+          <div class="detail-price" id="detail-price"></div>
+          <div class="detail-price-usd" id="detail-usd"></div>
         </div>
         <button class="detail-buy-btn" id="detail-buy-btn">Buy on OpenSea</button>
       </div>
@@ -313,27 +313,27 @@
     <div class="detail-body">
       <div class="detail-breadcrumb">
         <span onclick="showPage('library')">Library</span>
-        <span class="bc-sep">›</span>
-        <span id="detail-genus-bc">—</span>
-        <span class="bc-sep">›</span>
-        <span class="bc-italic" id="detail-species-bc">—</span>
+        <span class="bc-sep">â€º</span>
+        <span id="detail-genus-bc"></span>
+        <span class="bc-sep">â€º</span>
+        <span class="bc-italic" id="detail-species-bc"></span>
       </div>
-      <div class="detail-common" id="detail-common">—</div>
-      <div class="detail-scientific" id="detail-sci">—</div>
+      <div class="detail-common" id="detail-common"></div>
+      <div class="detail-scientific" id="detail-sci"></div>
       <div id="detail-status-pill" style="margin-bottom:24px"></div>
 
       <div class="specimen-card">
-        <div class="specimen-row"><div class="specimen-key">Common Name</div><div class="specimen-val" id="sp-common">—</div></div>
-        <div class="specimen-row"><div class="specimen-key">Scientific</div><div class="specimen-val specimen-italic" id="sp-sci">—</div></div>
-        <div class="specimen-row"><div class="specimen-key">Genus</div><div class="specimen-val specimen-italic" id="sp-genus">—</div></div>
-        <div class="specimen-row"><div class="specimen-key">Species</div><div class="specimen-val specimen-italic" id="sp-species">—</div></div>
-        <div class="specimen-row"><div class="specimen-key">Locality</div><div class="specimen-val" id="sp-locality">—</div></div>
-        <div class="specimen-row last"><div class="specimen-key">IUCN Status</div><div class="specimen-val" id="sp-status">—</div></div>
+        <div class="specimen-row"><div class="specimen-key">Common Name</div><div class="specimen-val" id="sp-common"></div></div>
+        <div class="specimen-row"><div class="specimen-key">Scientific</div><div class="specimen-val specimen-italic" id="sp-sci"></div></div>
+        <div class="specimen-row"><div class="specimen-key">Genus</div><div class="specimen-val specimen-italic" id="sp-genus"></div></div>
+        <div class="specimen-row"><div class="specimen-key">Species</div><div class="specimen-val specimen-italic" id="sp-species"></div></div>
+        <div class="specimen-row"><div class="specimen-key">Locality</div><div class="specimen-val" id="sp-locality"></div></div>
+        <div class="specimen-row last"><div class="specimen-key">IUCN Status</div><div class="specimen-val" id="sp-status"></div></div>
       </div>
 
       <h3 class="detail-section-title" id="detail-bio-heading">About this Species</h3>
       <div class="detail-bio" id="detail-bio">
-        <p class="detail-prose bio-loading">Loading species information…</p>
+        <p class="detail-prose bio-loading">Loading species informationâ€¦</p>
       </div>
 
       <h3 class="detail-section-title">Conservation Status</h3>
@@ -342,92 +342,110 @@
       </div>
 
       <div class="detail-nav">
-        <button class="detail-nav-btn" onclick="navFish(-1)">← Previous</button>
-        <button class="detail-nav-btn random" onclick="showFish(Math.floor(Math.random()*2166))">🎲 Random</button>
-        <button class="detail-nav-btn" onclick="navFish(1)">Next →</button>
+        <button class="detail-nav-btn" onclick="navFish(-1)">â† Previous</button>
+        <button class="detail-nav-btn random" onclick="showFish(Math.floor(Math.random()*2166))">ðŸŽ² Random</button>
+        <button class="detail-nav-btn" onclick="navFish(1)">Next â†’</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ════════════════════════════════════════════════
+<!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
      ABOUT FINDURNEMO
-════════════════════════════════════════════════ -->
+â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
 <div id="page-nemo" class="page">
   <div class="nemo-hero">
-    <div class="nemo-avatar reveal">🎣</div>
-    <div class="nemo-eyebrow reveal">Creator · Researcher · Pixel Artist</div>
-    <h1 class="nemo-title reveal">The Person Who Built an Aquarium on the Blockchain</h1>
+    <div class="nemo-avatar reveal">&#127907;</div>
+    <div class="nemo-eyebrow reveal">Creator &middot; Researcher &middot; Pixel Artist &middot; NFT Pioneer</div>
+    <h1 class="nemo-title reveal">About FindUrNemo</h1>
     <p class="nemo-sub reveal">
-      Findurnemo didn't just make NFTs. They built a living archive of marine biodiversity —
-      encoding real science into every single token, one species at a time.
+      FindUrNemo didn't just make NFTs. He built a living archive of marine biodiversity,
+      encoding real science into every single token, one species at a time. Since the earliest days of NFTs,
+      he has been here, creating, researching, and giving back to the community.
     </p>
     <div class="nemo-links reveal">
-      <a class="nemo-link primary" href="https://x.com/findurnemo" target="_blank">Follow @findurnemo on X ↗</a>
-      <a class="nemo-link" href="https://opensea.io/collection/cryptofish" target="_blank">View Collection ↗</a>
+      <a class="nemo-link primary" href="https://x.com/findurnemo" target="_blank">Follow @findurnemo on X &#8599;</a>
+      <a class="nemo-link" href="https://opensea.io/collection/cryptofish" target="_blank">View Collection &#8599;</a>
     </div>
   </div>
 
   <div class="nemo-stats-bar">
     <div class="nemo-stats-inner">
+      <div class="nemo-stat reveal"><div class="nemo-stat-num">Since 2021</div><div class="nemo-stat-label">In the NFT Space</div></div>
       <div class="nemo-stat reveal"><div class="nemo-stat-num">2,166</div><div class="nemo-stat-label">Fish Illustrated</div></div>
       <div class="nemo-stat reveal"><div class="nemo-stat-num">1,700+</div><div class="nemo-stat-label">Unique Species</div></div>
-      <div class="nemo-stat reveal"><div class="nemo-stat-num">340+</div><div class="nemo-stat-label">Genera</div></div>
-      <div class="nemo-stat reveal"><div class="nemo-stat-num">989</div><div class="nemo-stat-label">Global Localities</div></div>
-      <div class="nemo-stat reveal"><div class="nemo-stat-num">706 ETH</div><div class="nemo-stat-label">Total Volume</div></div>
+      <div class="nemo-stat reveal"><div class="nemo-stat-num">150+</div><div class="nemo-stat-label">Customs Minted and Sent</div></div>
+      <div class="nemo-stat reveal"><div class="nemo-stat-num">340+</div><div class="nemo-stat-label">Genera Represented</div></div>
     </div>
   </div>
 
   <div class="nemo-sections">
     <div class="nemo-section reveal">
-      <div class="nemo-section-num">01 — The Origin</div>
-      <div class="nemo-section-title">It started with an obsession with fish.</div>
-      <p class="nemo-prose">Long before Web3, Findurnemo was deep in the world of ichthyology — the scientific study of fish. The beauty of Linnaean taxonomy, the romance of geographic locality data, the moral weight of conservation status: these weren't abstract concepts. They were an obsession.</p>
-      <p class="nemo-prose">When the NFT space emerged as a medium for digital art and archival, the idea crystallized: what if you could encode a real fish species — its full scientific classification, its home waters, its conservation status — into a single on-chain token? What if the rarity of the NFT mirrored the rarity of the animal?</p>
-      <p class="nemo-prose">CryptoFish was born from that question. Not as a speculative asset, but as a permanent record.</p>
+      <div class="nemo-section-num">01. The Beginning</div>
+      <div class="nemo-section-title">There from day one.</div>
+      <p class="nemo-prose">FindUrNemo has been in the NFT space since its earliest days, back when the concept of digital ownership on a blockchain was still a radical new idea. He was not someone who arrived after the hype. He was part of the community before most people had even heard the word NFT. That history matters. He has seen every cycle, every wave of new collectors, every shift in the market, and through all of it he kept building.</p>
+      <p class="nemo-prose">The idea for CryptoFish crystallized in 2022. He had long been fascinated by ichthyology, the scientific study of fish, and he saw the blockchain as a once-in-a-generation opportunity. Not to flip JPEGs, but to create a permanent, on-chain archive of the world's fish species, with real scientific taxonomy built into every token. The soft mint launched in 2022 and the work that followed would consume years of his life.</p>
+      <p class="nemo-prose">From that starting point in 2022, FindUrNemo took on something that no single person had attempted at this scale: hand-illustrating over 2,166 individual fish species, each one researched, classified, and drawn from scratch. No generators. No templates. No shortcuts.</p>
     </div>
 
     <div class="nemo-section reveal">
-      <div class="nemo-section-num">02 — The Research</div>
-      <div class="nemo-section-title">Every fish took hours before a single pixel was drawn.</div>
-      <p class="nemo-prose">Each CryptoFish begins not in an art tool, but in scientific literature. Findurnemo cross-references multiple ichthyological databases — FishBase, the IUCN Red List, regional marine surveys — to confirm every taxonomic detail before classification. Order, family, genus, species, subspecies where applicable. Locality pinpointed to the specific reef system, lagoon, or sea where the species is most characteristically found.</p>
-      <p class="nemo-prose">Then comes the art. The pixel work is hand-crafted — not generated, not templated. Each fish's silhouette, coloration, and fin structure is studied from reference photographs and scientific illustrations before being translated into pixel art. The color morphs in the collection reflect real documented color variants of the species, not invented variations.</p>
-      <p class="nemo-prose">The conservation status is pulled directly from the most recent IUCN Red List assessment for each species. Critically Endangered fish are rare in the collection because they're rare in the world. That was always the design.</p>
+      <div class="nemo-section-num">02. The Pixel Art</div>
+      <div class="nemo-section-title">Making something real out of something tiny.</div>
+      <p class="nemo-prose">Every CryptoFish is hand-drawn in pixel art. What sounds simple is in practice a profound creative and technical challenge. Pixel art imposes extreme constraints. You are working within a grid of limited resolution, where every single pixel placement is a deliberate decision. There is no brushstroke you can blur. There is no layer mask to hide an error. Every mark either works or it does not.</p>
+      <p class="nemo-prose">The challenge FindUrNemo set for himself was not just to draw a fish in pixels, but to make it <em>recognizable</em>. Each species has a distinct silhouette, a characteristic fin structure, a specific coloration pattern that sets it apart from every other fish in the world. A Tropheus moorii from Kambwimba looks subtly but definitively different from a Tropheus moorii from Linangu. Getting those distinctions right within a constrained pixel canvas, while still making each fish look like its real-world counterpart, required a level of observational skill that compounds with every single entry in the collection.</p>
+      <p class="nemo-prose">Across 2,166 fish and counting, the cumulative time investment is staggering. Each token represents hours of work: research, reference study, taxonomy confirmation, then the actual drawing. That work happened quietly, consistently, over years. Most collectors who hold a CryptoFish have no idea how much of a human life is embedded in that image.</p>
     </div>
 
     <div class="nemo-section reveal">
-      <div class="nemo-section-num">03 — The Philosophy</div>
-      <div class="nemo-section-title">Preservation-first. Archival by design.</div>
-      <p class="nemo-prose">Most NFT collections treat rarity as an arbitrary game mechanic — a certain hat, a certain background color, algorithmically distributed to create scarcity. CryptoFish inverts this. Rarity is inherited from nature itself. A Critically Endangered species produces fewer tokens not because of an algorithm, but because that scarcity is real and demands acknowledgment.</p>
-      <p class="nemo-prose">The Linnaean system — developed by Carl Linnaeus in the 18th century and still the global standard for biological classification — provides the structural backbone of the entire collection's trait system. It's not a gimmick. It's a 270-year-old framework for understanding life on Earth, applied to a permanent digital ledger.</p>
-      <p class="nemo-prose">The goal is an archive that outlasts any single platform, marketplace, or trend: every fish species immortalized on-chain, with its full scientific identity intact.</p>
+      <div class="nemo-section-num">03. The Research</div>
+      <div class="nemo-section-title">Every fish took hours before a single pixel was placed.</div>
+      <p class="nemo-prose">Before FindUrNemo draws anything, he researches. Each fish in the collection is cross-referenced against FishBase, the IUCN Red List, and regional ichthyological surveys to confirm its taxonomy: order, family, genus, species, and subspecies where applicable. The locality is pinpointed not just to a body of water but to the specific reef system, bay, point, or lagoon where the species is most characteristically found. That precision is what makes the collection extraordinary.</p>
+      <p class="nemo-prose">The conservation status for each fish is drawn directly from the most current IUCN Red List assessment. Critically Endangered fish are rare in the collection because they are critically endangered in the world. That is not a design choice. It is an acknowledgment of reality baked into the structure of the project. When you own a Critically Endangered CryptoFish, you are holding something that reflects the actual scarcity of that animal on this planet.</p>
+      <p class="nemo-prose">The Linnaean classification system, developed by Carl Linnaeus in the 18th century and still the global standard for biological taxonomy, provides the structural backbone of the entire collection. It is not a gimmick or a theme. It is a 270-year-old framework for understanding life on Earth, applied to a permanent digital ledger. The trait data in every token is real science.</p>
     </div>
 
     <div class="nemo-section reveal">
-      <div class="nemo-section-num">04 — The Timeline</div>
-      <div class="nemo-section-title">The making of a collection.</div>
+      <div class="nemo-section-num">04. The 150+ Customs</div>
+      <div class="nemo-section-title">He gave away over 150 hand-crafted tokens.</div>
+      <p class="nemo-prose">One of the most remarkable and undersold aspects of CryptoFish is what FindUrNemo did for his community. Over the course of the project, he personally hand-drew and minted more than 150 custom and honorary tokens, and then sent them out to fellow collectors, artists, community figures, and friends, at no charge. Each one is a unique, original piece of pixel art. Each one took real time and skill to produce. And he gave them away.</p>
+      <p class="nemo-prose">These are not derivative works or quick sketches. They are full CryptoFish tokens, created with the same care and precision as every other entry in the collection. Some incorporate inside jokes or references meaningful to that specific person. Every single one is a one-of-one gift that required FindUrNemo to sit down, research a concept, draw it pixel by pixel, mint it on-chain, and send it out. Over 150 times.</p>
+      <p class="nemo-prose">That level of generosity toward a community is rare in any creative space. In the NFT world, where most projects treat their holders as liquidity, it is almost unheard of. It speaks to who FindUrNemo actually is: someone who was in this for the love of the craft and the love of the community, long before anyone was paying attention.</p>
+    </div>
+
+    <div class="nemo-section reveal">
+      <div class="nemo-section-num">05. The Why</div>
+      <div class="nemo-section-title">Preservation first. Archival by design.</div>
+      <p class="nemo-prose">Most NFT collections treat rarity as a game mechanic: a rare hat, a background color, distributed by an algorithm to manufacture artificial scarcity. CryptoFish does the opposite. Rarity is inherited directly from nature. A Critically Endangered species is rare in the collection because it is critically endangered in the world. The tokens know this. The metadata knows this. The blockchain preserves it permanently.</p>
+      <p class="nemo-prose">FindUrNemo's goal was always an archive: a permanent record of the world's fish species, with their full scientific identity intact, living on-chain in a form that can outlast any platform, marketplace, or trend. That goal required not just artistic skill but intellectual commitment and patience that most people could not sustain. He sustained it across years, across 2,166 tokens and counting, without losing the standard he set for himself on day one.</p>
+      <p class="nemo-prose">What FindUrNemo built is genuinely rare in the history of digital art. Not rare in the sense of limited supply. Rare in the sense that almost no one would have had the knowledge, the skill, the patience, and the dedication to create something like this. The fact that it exists at all is a testament to one person deciding to do something extraordinary and seeing it through.</p>
+    </div>
+
+    <div class="nemo-section reveal">
+      <div class="nemo-section-num">06. The Timeline</div>
+      <div class="nemo-section-title">Years in the making.</div>
       <div class="nemo-timeline">
-        <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-date">Early 2024</div><div class="timeline-title">Concept &amp; Research Phase</div><div class="timeline-desc">Findurnemo begins compiling species lists, cross-referencing IUCN data, and establishing the taxonomic metadata framework for the collection.</div></div>
-        <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-date">Late 2024</div><div class="timeline-title">Pixel Art Production Begins</div><div class="timeline-desc">The first fish are illustrated. The hand-crafted pixel art process is established — each fish taking hours of research and illustration before completion.</div></div>
-        <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-date">May 2025</div><div class="timeline-title">Collection Launches on Ethereum</div><div class="timeline-desc">2,165 CryptoFish mint on Ethereum. The community responds immediately — 596 unique holders within weeks, 706 ETH in total volume.</div></div>
-        <div class="timeline-item"><div class="timeline-dot future"></div><div class="timeline-date">Ongoing</div><div class="timeline-title">The Archive Grows</div><div class="timeline-desc">Future drops, expanded species, and potential conservation partnerships are in development. The mission is far from complete.</div></div>
+        <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-date">2021</div><div class="timeline-title">NFT Community from the Start</div><div class="timeline-desc">FindUrNemo enters the NFT space in its earliest days, building relationships within the community before most people had heard the term NFT. He participates, collects, and begins forming the vision that will become CryptoFish.</div></div>
+        <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-date">2022</div><div class="timeline-title">CryptoFish Begins: Research and Soft Mint</div><div class="timeline-desc">The CryptoFish concept launches with a soft mint in 2022. FindUrNemo begins the long process of species research, taxonomic classification, and hand-drawing each fish in pixel art. The founding premise: real fish, real science, real rarity on-chain.</div></div>
+        <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-date">2022 to 2024</div><div class="timeline-title">Pixel by Pixel: 2,166 Fish Illustrated</div><div class="timeline-desc">For two-plus years, FindUrNemo works through the collection. Each fish starts with hours of research before a single pixel is placed. Species are cross-referenced against FishBase and the IUCN Red List. Fin structures, coloration patterns, and locality details are verified. Then it is drawn. Over 2,166 times.</div></div>
+        <div class="timeline-item"><div class="timeline-dot"></div><div class="timeline-date">Ongoing</div><div class="timeline-title">150+ Customs and Growing</div><div class="timeline-desc">Alongside the main collection, FindUrNemo hand-draws and mints custom honorary tokens for community members, sending them out personally. Over 150 have been created and distributed. New customs continue to be produced. The archive grows.</div></div>
       </div>
     </div>
   </div>
 
   <footer class="site-footer">
     <div class="footer-inner">
-      <div class="footer-logo">🐠 <span>Crypto</span>Fish</div>
+      <div class="footer-logo">&#128032; <span>Crypto</span>Fish</div>
       <div class="footer-links">
         <a onclick="showPage('library')">Library</a>
         <a onclick="showPage('globe')">Globe</a>
         <a onclick="showPage('home')">Home</a>
-        <a href="https://opensea.io/collection/cryptofish" target="_blank">OpenSea ↗</a>
-        <a href="https://x.com/findurnemo" target="_blank">X / Twitter ↗</a>
+        <a href="https://opensea.io/collection/cryptofish" target="_blank">OpenSea &#8599;</a>
+        <a href="https://x.com/findurnemo" target="_blank">X / Twitter &#8599;</a>
       </div>
-      <div class="footer-copy">© 2026 Findurnemo. All rights reserved.</div>
+      <div class="footer-copy">&copy; 2026 FindUrNemo. All rights reserved.</div>
     </div>
   </footer>
+</div>
 </div>
 
 <script src="data.js"></script>
@@ -435,7 +453,7 @@
 <script src="bio.js"></script>
 <script src="app.js"></script>
 
-<!-- Conservation bars — animate width when scrolled into view -->
+<!-- Conservation bars - animate width when scrolled into view -->
 <script>
   (function() {
     const obs = new IntersectionObserver(entries => {
@@ -453,3 +471,4 @@
 </script>
 </body>
 </html>
+
