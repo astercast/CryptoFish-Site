@@ -262,7 +262,19 @@ function buildLocData() {
     if (map[f.locality].fish.length < 8 && f.image)
       map[f.locality].fish.push(f);
   });
-  return Object.values(map).sort((a, b) => b.count - a.count);
+  const locs = Object.values(map).sort((a, b) => b.count - a.count);
+
+  // Pre-compute nearby localities (within ~0.7° ≈ 78 km)
+  const THRESH = 0.7;
+  locs.forEach(loc => {
+    loc.nearby = locs.filter(other =>
+      other !== loc &&
+      Math.abs(other.lat - loc.lat) < THRESH &&
+      Math.abs(other.lon - loc.lon) < THRESH
+    ).sort((a, b) => b.count - a.count);
+  });
+
+  return locs;
 }
 
 // ── Main init ─────────────────────────────────────
@@ -303,9 +315,12 @@ function initGlobe() {
     .pointResolution(14)
     .onPointClick(d => { _focusByData(d); showPopover(d); })
     .onGlobeClick(() => closePopover())
-    .pointLabel(d =>
-      `<div style="background:rgba(15,15,30,.82);color:#fff;padding:7px 11px;border-radius:10px;font-family:Inter,sans-serif;font-size:12px;white-space:nowrap"><b>${d.name}</b><br>${d.count} CryptoFish</div>`
-    );
+    .pointLabel(d => {
+      const nearbyStr = d.nearby?.length
+        ? `<div style="margin-top:5px;border-top:1px solid rgba(255,255,255,.2);padding-top:5px;font-size:10px;color:rgba(255,255,255,.65)">${d.nearby.length} nearby: ${d.nearby.slice(0,3).map(n => n.name).join(', ')}${d.nearby.length > 3 ? '…' : ''}</div>`
+        : '';
+      return `<div style="background:rgba(15,15,30,.88);color:#fff;padding:8px 12px;border-radius:10px;font-family:Inter,sans-serif;font-size:12px;white-space:nowrap;max-width:240px"><b>${d.name}</b><br>${d.count} CryptoFish${nearbyStr}</div>`;
+    });
 
   globeInstance(el);
 
@@ -358,6 +373,25 @@ function showPopover(loc) {
     : '<div class="popover-fish-empty">No images mapped to this spot yet</div>';
   const btn = document.getElementById('pop-explore-btn');
   if (btn) btn.onclick = () => exploreLocality(loc.name);
+
+  // Nearby localities list
+  const nearbyEl = document.getElementById('pop-nearby');
+  if (nearbyEl) {
+    if (loc.nearby && loc.nearby.length) {
+      nearbyEl.innerHTML =
+        `<div class="pop-nearby-label">Nearby localities</div>` +
+        `<div class="pop-nearby-list">` +
+        loc.nearby.slice(0, 8).map((n, i) => {
+          const idx = locDataArr.indexOf(n);
+          return `<button class="pop-nearby-btn" onclick="focusLocality(${idx})">${n.name} <span class="pop-nearby-count">${n.count}</span></button>`;
+        }).join('') +
+        `</div>`;
+      nearbyEl.style.display = '';
+    } else {
+      nearbyEl.style.display = 'none';
+    }
+  }
+
   document.getElementById('locality-popover').classList.add('visible');
 }
 

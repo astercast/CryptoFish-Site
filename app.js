@@ -241,12 +241,40 @@ async function fetchRecentSales() {
     // Most recent first for activity feed
     const byTime  = [...sales].sort((a, b) => b.ts - a.ts);
     renderSalesFeed(byTime);
-    // Highest price for top-sales section (up to 9)
-    const byPrice = [...sales].sort((a, b) => parseFloat(b.eth) - parseFloat(a.eth));
-    renderTopSales(byPrice);
   } catch (e) {
     console.warn('[Reservoir sales] failed:', e.message);
-    renderSalesFeed([]);
+    renderSalesFeed([], true);
+  }
+}
+
+// ── Live: Top Sales by Price (Reservoir) ────────────
+async function fetchTopSalesByPrice() {
+  try {
+    const r = await fetch(
+      `https://api.reservoir.tools/sales/v6?collection=${CF_CONTRACT}&limit=9&sortBy=price`,
+      { headers: RESERVOIR_HEADERS, cache: 'no-store' }
+    );
+    if (!r.ok) throw new Error(r.status);
+    const d = await r.json();
+    const sales = (d.sales ?? []).map(e => {
+      const rawEth = e.price?.amount?.decimal;
+      if (!rawEth) return null;
+      const eth   = parseFloat(rawEth).toFixed(4);
+      const rawId = e.token?.tokenId ?? '';
+      const token = rawId ? '#' + String(rawId).padStart(4, '0') : '';
+      const idx   = rawId ? parseInt(rawId) - 1 : -1;
+      const f     = idx >= 0 ? FISH_DATA[idx] : null;
+      return {
+        image: f?.image || '',
+        name:  f ? escapeHTML(f.name) : ('CryptoFish ' + token).trim(),
+        token, eth,
+        usd:   fmtUSD(eth),
+        idx:   idx >= 0 ? idx : 0,
+      };
+    }).filter(Boolean);
+    renderTopSales(sales);
+  } catch (e) {
+    console.warn('[Reservoir top sales]', e.message);
   }
 }
 
@@ -292,10 +320,11 @@ function renderStatsBar() {
 }
 
 // ── Render: Sales Feed ────────────────────────────
-function renderSalesFeed(sales) {
+function renderSalesFeed(sales, isError = false) {
   const el = document.getElementById('sales-list');
-  if (!el) return;  if (!sales.length) {
-    el.innerHTML = '<div class="sales-loading">Loading recent activity…</div>';
+  if (!el) return;
+  if (!sales.length) {
+    el.innerHTML = `<div class="sales-loading">${isError ? 'No recent sales found.' : 'Loading recent activity…'}</div>`;
     return;
   }  el.innerHTML = sales.map((s, i) => `
     <div class="sale-item" style="animation-delay:${i * 0.04}s" onclick="showFish(${s.idx ?? 0})">
@@ -816,6 +845,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await Promise.allSettled([fetchEthPrice(), fetchCollectionStats()]);
   try { renderFOTD(); } catch(e) { console.error('[renderFOTD2]', e); }
   fetchRecentSales();
+  fetchTopSalesByPrice();
 
   setInterval(fetchEthPrice,        60_000);
   setInterval(fetchCollectionStats, 300_000);

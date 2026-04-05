@@ -503,6 +503,8 @@ nav {
 .footer-links a { font-size: 13px; color: var(--text2); cursor: pointer; text-decoration: none; transition: color .15s; }
 .footer-links a:hover { color: var(--text); }
 .footer-copy { font-size: 12px; color: var(--text3); }
+.footer-built-by { color: var(--text2); text-decoration: none; transition: color .15s; }
+.footer-built-by:hover { color: var(--accent); }
 
 /* ── Library ───────────────────────────────────── */
 .library-layout { display: grid; grid-template-columns: 260px 1fr; min-height: calc(100vh - 56px); }
@@ -623,7 +625,11 @@ nav {
 .popover-fish:hover { transform: scale(1.08); }
 .popover-fish img { width: 100%; height: 100%; object-fit: contain; display: block; image-rendering: pixelated; image-rendering: crisp-edges; }
 .popover-fish-empty { grid-column: 1/-1; padding: 16px; text-align: center; color: var(--text3); font-size: 12px; }
-.pop-explore-btn { width: 100%; font-size: 13px; }
+.pop-nearby-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text3); margin: 14px 0 8px; padding-top: 14px; border-top: 1px solid var(--border); }
+.pop-nearby-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.pop-nearby-btn { font-size: 11px; padding: 4px 9px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text2); cursor: pointer; font-family: 'Inter', sans-serif; transition: border-color .15s, color .15s; display: flex; align-items: center; gap: 5px; }
+.pop-nearby-btn:hover { border-color: var(--accent); color: var(--accent); }
+.pop-nearby-count { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--text3); background: var(--bg2); padding: 1px 4px; border-radius: 3px; }\n.pop-explore-btn { width: 100%; font-size: 13px; margin-top: 14px; }
 
 .detail-bio { margin-bottom: 28px; }
 .detail-bio p + p { margin-top: 12px; }
@@ -752,6 +758,10 @@ nav {
   .detail-art { padding: 0; }
   .nemo-hero { padding: 48px 20px 40px; }
   .nemo-stats-bar { padding: 0 20px; }
+  .nemo-stats-inner { min-width: 0; flex-wrap: wrap; }
+  .nemo-stat { flex: 0 0 50%; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  .nemo-stat:nth-child(even) { border-right: none; }
+  .nemo-stat:nth-last-child(-n+2) { border-bottom: none; }
   .nemo-sections { padding: 40px 20px 60px; }
   .footer-inner { flex-direction: column; align-items: flex-start; padding: 24px 20px; }
 }
