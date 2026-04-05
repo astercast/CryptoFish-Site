@@ -80,37 +80,22 @@ function toggleMobileNav() {
   if (nav) nav.classList.toggle('open', mobileNavOpen);
 }
 
-// ── Live: Individual Token Listing Price (Reservoir) ─────────────
+// ── Live: Individual Token Listing Price (Blockscout) ─────────────
 async function fetchFishListing(tokenId, expectedIdx) {
   try {
-    const r = await fetch(
-      `https://api.reservoir.tools/tokens/v7?tokens=${CF_CONTRACT}:${tokenId}`,
-      { headers: RESERVOIR_HEADERS, cache: 'no-store' }
-    );
-    if (!r.ok) throw new Error(r.status);
-    const d = await r.json();
-    const market = d.tokens?.[0]?.market;
-    const price  = market?.floorAsk?.price?.amount?.decimal ?? null;
-
-    if (currentFishIndex !== expectedIdx) return;  // user navigated away
+    // Blockscout doesn't have listing data; show "View on OpenSea" and skip price
+    if (currentFishIndex !== expectedIdx) return;
     const priceEl  = document.getElementById('detail-price');
     const usdEl    = document.getElementById('detail-usd');
     const buyBtnEl = document.getElementById('detail-buy-btn');
-    if (price !== null) {
-      const eth = parseFloat(price);
-      if (priceEl) priceEl.textContent = eth.toFixed(4) + ' ETH';
-      if (usdEl)   usdEl.textContent   = liveEthPrice ? '≈ $' + Math.round(eth * liveEthPrice).toLocaleString() : '';
-      if (buyBtnEl) buyBtnEl.textContent = 'Buy on OpenSea';
-    } else {
-      if (priceEl) priceEl.textContent = 'Not Listed';
-      if (usdEl)   usdEl.textContent   = '';
-      if (buyBtnEl) buyBtnEl.textContent = 'View on OpenSea';
-    }
+    if (priceEl) priceEl.textContent = '--';
+    if (usdEl)   usdEl.textContent   = '';
+    if (buyBtnEl) buyBtnEl.textContent = 'View on OpenSea';
   } catch (e) {
-    console.warn('[Reservoir listing]', e.message);
+    console.warn('[listing]', e.message);
     if (currentFishIndex !== expectedIdx) return;
     const priceEl = document.getElementById('detail-price');
-    if (priceEl) priceEl.textContent = 'Not Listed';
+    if (priceEl) priceEl.textContent = '--';
   }
 }
 
@@ -174,108 +159,91 @@ function updatePriceDisplays() {
   if (navEl) navEl.textContent = liveEthPrice ? '$' + liveEthPrice.toLocaleString() : '--';
 }
 
-// ── Live: Collection Stats (Reservoir) ──────────────
-const RESERVOIR_HEADERS = { 'x-api-key': 'demo-api-key', accept: 'application/json' };
+// ── Live: Collection Stats (Blockscout) ─────────────
+const BLOCKSCOUT = 'https://eth.blockscout.com/api/v2';
 const CF_CONTRACT = '0x9ef31ce8cca614e7aff3c1b883740e8d2728fe91';
-
 
 async function fetchCollectionStats() {
   try {
-    const r = await fetch(
-      `https://api.reservoir.tools/collections/v7?id=${CF_CONTRACT}`,
-      { headers: RESERVOIR_HEADERS, cache: 'no-store' }
-    );
+    const r = await fetch(`${BLOCKSCOUT}/tokens/${CF_CONTRACT}`, { cache: 'no-store' });
     if (!r.ok) throw new Error(r.status);
     const d = await r.json();
-    const c = d.collections?.[0];
-    if (!c) throw new Error('no collection');
     liveCollection = {
-      floor_price:  c.floorAsk?.price?.amount?.decimal ?? null,
-      total_volume: c.volume?.allTime ?? null,
-      num_owners:   c.ownerCount     ?? null,
-      total_supply: c.tokenCount     ?? 2166,
-      listed_count: c.onSaleCount    ?? null,
-      avg_price:    c.volume?.['7day'] && c.tokenCount
-                      ? parseFloat((c.volume['7day'] / Math.max(c.tokenCount * 0.01, 1)).toFixed(4))
-                      : null,
+      floor_price:  null,
+      total_volume: null,
+      num_owners:   parseInt(d.holders_count) || null,
+      total_supply: 2166,
+      listed_count: null,
+      avg_price:    null,
     };
   } catch (e) {
-    console.warn('[Reservoir stats] failed:', e.message);
+    console.warn('[Blockscout stats] failed:', e.message);
+    liveCollection = { floor_price: null, total_volume: null, num_owners: null, total_supply: 2166, listed_count: null, avg_price: null };
   }
   renderStatsBar();
 }
 
-// ── Live: Recent Sales (Reservoir) ─────────────────
+// ── Live: Recent Sales (Blockscout) ─────────────────
+const SALE_METHODS = ['fulfillBasicOrder', 'fulfillAdvancedOrder', 'matchOrders', 'matchAdvancedOrders'];
+
 async function fetchRecentSales() {
   try {
-    const r = await fetch(
-      `https://api.reservoir.tools/sales/v6?collection=${CF_CONTRACT}&limit=50&sortBy=time`,
-      { headers: RESERVOIR_HEADERS, cache: 'no-store' }
-    );
+    const r = await fetch(`${BLOCKSCOUT}/tokens/${CF_CONTRACT}/transfers`, { cache: 'no-store' });
     if (!r.ok) throw new Error(r.status);
     const d = await r.json();
-    const ev = d.sales ?? [];
-    if (!ev.length) throw new Error('empty');
+    const items = d.items ?? [];
 
-    const sales = ev.map(e => {
-      const rawEth = e.price?.amount?.decimal;
-      if (!rawEth) return null;
-      const eth   = parseFloat(rawEth).toFixed(4);
-      const rawId = e.token?.tokenId ?? '';
-      const token = rawId ? '#' + String(rawId).padStart(4, '0') : '';
-      const ts    = (e.timestamp ?? 0) * 1000;
-      const idx   = rawId ? parseInt(rawId) - 1 : -1;
-      const f     = idx >= 0 ? FISH_DATA[idx] : null;
-      return {
-        image: f?.image || '',
-        name:  f ? escapeHTML(f.name) : ('CryptoFish ' + (rawId ? token : '')).trim(),
-        token,
-        eth,
-        usd:   fmtUSD(eth),
-        time:  timeAgo(ts),
-        ts,
-        idx:   idx >= 0 ? idx : 0,
-      };
-    }).filter(Boolean);
+    // Only keep marketplace sale transfers (Seaport methods)
+    const saleTransfers = items.filter(t =>
+      t.method && SALE_METHODS.some(m => t.method.startsWith(m))
+    ).slice(0, 20);
 
-    // Most recent first for activity feed
-    const byTime  = [...sales].sort((a, b) => b.ts - a.ts);
-    renderSalesFeed(byTime);
+    if (!saleTransfers.length) { renderSalesFeed([], true); return; }
+
+    // Batch-fetch tx values for ETH price
+    const results = await Promise.allSettled(
+      saleTransfers.map(async t => {
+        const txR = await fetch(`${BLOCKSCOUT}/transactions/${t.transaction_hash}`);
+        if (!txR.ok) return null;
+        const txD = await txR.json();
+        return { transfer: t, value: txD.value };
+      })
+    );
+
+    const sales = results
+      .map(r => r.status === 'fulfilled' ? r.value : null)
+      .filter(Boolean)
+      .map(({ transfer: t, value }) => {
+        const rawId = t.total?.token_id ?? '';
+        const idx   = rawId ? parseInt(rawId) - 1 : -1;
+        const f     = idx >= 0 ? FISH_DATA[idx] : null;
+        const eth   = (Number(BigInt(value || '0')) / 1e18).toFixed(4);
+        const token = rawId ? '#' + String(rawId).padStart(4, '0') : '';
+        const ts    = new Date(t.timestamp).getTime();
+        return {
+          image: f?.image || t.total?.token_instance?.metadata?.image || '',
+          name:  f ? escapeHTML(f.name) : ('CryptoFish ' + token).trim(),
+          token, eth,
+          usd:  fmtUSD(eth),
+          time: timeAgo(ts),
+          ts,
+          idx:  idx >= 0 ? idx : 0,
+        };
+      })
+      .filter(s => parseFloat(s.eth) > 0);
+
+    renderSalesFeed([...sales].sort((a, b) => b.ts - a.ts));
+    // Also feed top-sales from same data
+    renderTopSales([...sales].sort((a, b) => parseFloat(b.eth) - parseFloat(a.eth)));
   } catch (e) {
-    console.warn('[Reservoir sales] failed:', e.message);
+    console.warn('[Blockscout sales] failed:', e.message);
     renderSalesFeed([], true);
   }
 }
 
-// ── Live: Top Sales by Price (Reservoir) ────────────
+// ── Top sales now populated from fetchRecentSales ──
 async function fetchTopSalesByPrice() {
-  try {
-    const r = await fetch(
-      `https://api.reservoir.tools/sales/v6?collection=${CF_CONTRACT}&limit=9&sortBy=price`,
-      { headers: RESERVOIR_HEADERS, cache: 'no-store' }
-    );
-    if (!r.ok) throw new Error(r.status);
-    const d = await r.json();
-    const sales = (d.sales ?? []).map(e => {
-      const rawEth = e.price?.amount?.decimal;
-      if (!rawEth) return null;
-      const eth   = parseFloat(rawEth).toFixed(4);
-      const rawId = e.token?.tokenId ?? '';
-      const token = rawId ? '#' + String(rawId).padStart(4, '0') : '';
-      const idx   = rawId ? parseInt(rawId) - 1 : -1;
-      const f     = idx >= 0 ? FISH_DATA[idx] : null;
-      return {
-        image: f?.image || '',
-        name:  f ? escapeHTML(f.name) : ('CryptoFish ' + token).trim(),
-        token, eth,
-        usd:   fmtUSD(eth),
-        idx:   idx >= 0 ? idx : 0,
-      };
-    }).filter(Boolean);
-    renderTopSales(sales);
-  } catch (e) {
-    console.warn('[Reservoir top sales]', e.message);
-  }
+  // No-op: renderTopSales is called from fetchRecentSales with Blockscout data
 }
 
 // ── Render: Stats Bar ─────────────────────────────

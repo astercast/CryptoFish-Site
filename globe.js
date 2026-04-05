@@ -324,9 +324,9 @@ function clusterLocs(locs, threshDeg) {
 function updateGlobeClusters() {
   if (!globeInstance) return;
   const alt = globeInstance.pointOfView().altitude ?? 2.5;
-  if (Math.abs(alt - lastAlt) < 0.04) return;
+  if (Math.abs(alt - lastAlt) < 0.02) return;
   lastAlt = alt;
-  const thresh = Math.max(0.04, alt * 0.55);
+  const thresh = Math.max(0.15, alt * 2.5);
   currentClusters = clusterLocs(locDataArr, thresh);
   globeInstance.pointsData(currentClusters);
 }
@@ -371,12 +371,12 @@ function initGlobe() {
     .pointsData([])
     .pointLat(d => d.lat)
     .pointLng(d => d.lon)
-    .pointAltitude(d => d.isCluster ? 0.025 : 0.012)
+    .pointAltitude(0)
     .pointRadius(d => {
       const base = Math.log(Math.min(d.count, 80) + 1) / Math.log(81);
-      return d.isCluster ? 0.42 + base * 0.85 : 0.22 + base * 0.6;
+      return d.isCluster ? 0.18 + base * 0.35 : 0.12 + base * 0.25;
     })
-    .pointColor(d => d.isCluster ? `hsl(${d.hue},58%,72%)` : `hsl(${d.hue},88%,62%)`)
+    .pointColor(d => d.isCluster ? `hsl(${d.hue},50%,65%)` : `hsl(${d.hue},80%,58%)`)
     .pointResolution(12)
     .onPointClick(d => { _focusByData(d); showPopover(d); })
     .onGlobeClick(() => closePopover())
