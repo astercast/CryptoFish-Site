@@ -284,6 +284,9 @@ function _applyMarketData(d) {
   if (d.listings) {
     _liveListings = d.listings;
   }
+
+  // Fish Watch analytics
+  try { renderFishWatch(d); } catch(e) { console.error('[renderFishWatch]', e); }
 }
 
 // Keep old function names as wrappers so DOMContentLoaded still works
@@ -728,6 +731,93 @@ function buildFilterPills() {
   }
 }
 
+// ── Conservation: Dynamic Render ──────────────────
+function renderConservation() {
+  const el = document.getElementById('conservation-chart');
+  if (!el) return;
+  const counts = {};
+  FISH_DATA.forEach(f => { counts[f.status] = (counts[f.status] || 0) + 1; });
+  const order = Object.keys(counts).sort((a, b) => counts[b] - counts[a]);
+  const total = FISH_DATA.length;
+  const C = 2 * Math.PI * 60;
+  let offset = 0;
+  let segs = '';
+  for (const s of order) {
+    const cnt = counts[s];
+    const arc = (cnt / total) * C;
+    segs += `<circle class="donut-seg" cx="80" cy="80" r="60" fill="none" stroke="${STATUS_COLORS[s] || '#888'}" stroke-width="20" stroke-dasharray="${arc.toFixed(1)} ${(C - arc).toFixed(1)}" stroke-dashoffset="${(-offset).toFixed(1)}"/>`;
+    offset += arc;
+  }
+  const maxCount = Math.max(...order.map(s => counts[s]));
+  let rows = '';
+  for (const s of order) {
+    const cnt = counts[s];
+    const pct = Math.round((cnt / maxCount) * 100);
+    const label = (STATUS_NAMES[s] || s) + (s !== '?' ? ' (' + s + ')' : '');
+    const color = STATUS_COLORS[s] || '#888';
+    rows += `<div class="cons-row cons-clickable" onclick="filterByTrait('status','${s}')" title="Filter by ${STATUS_NAMES[s] || s}"><div class="cons-dot" style="background:${color}"></div><div class="cons-label">${label}</div><div class="cons-bar-wrap"><div class="cons-bar" style="width:0%;background:${color}" data-width="${pct}"></div></div><div class="cons-count">${cnt.toLocaleString()}</div></div>`;
+  }
+  el.innerHTML = `<div class="donut-wrap"><svg class="donut-svg" viewBox="0 0 160 160" width="160" height="160"><circle cx="80" cy="80" r="60" fill="none" stroke="var(--border)" stroke-width="20"/>${segs}</svg><div class="donut-center"><div class="donut-center-num">${total.toLocaleString()}</div><div class="donut-center-label">TOTAL</div></div></div><div class="conservation-list">${rows}</div>`;
+  requestAnimationFrame(() => { requestAnimationFrame(() => {
+    el.querySelectorAll('.cons-bar').forEach(bar => { bar.style.width = bar.dataset.width + '%'; });
+  }); });
+}
+
+// ── Fish Watch: Analytics Engine ──────────────────
+function renderFishWatch(d) {
+  const el = document.getElementById('fish-watch');
+  if (!el || !d) return;
+  const listingsArr = d.listings ? Object.values(d.listings).sort((a, b) => a.eth - b.eth) : [];
+  const listedCount = listingsArr.length;
+  const supply = d.stats?.total_supply || 2166;
+  const floor = d.stats?.floor_price ?? (listingsArr[0]?.eth ?? 0);
+
+  // Floor cluster: count fish before first >30% price jump
+  let floorCluster = listedCount;
+  let wallPrice = null;
+  for (let i = 1; i < listingsArr.length; i++) {
+    const prev = listingsArr[i - 1].eth;
+    const curr = listingsArr[i].eth;
+    if (prev > 0 && (curr - prev) / prev > 0.3) {
+      floorCluster = i;
+      wallPrice = curr;
+      break;
+    }
+  }
+
+  // Holders
+  const owners = d.stats?.num_owners ?? 0;
+  const avgHeld = owners > 0 ? (supply / owners).toFixed(1) : '—';
+
+  // Offer spread
+  const bestOffer = d.offers?.length ? Math.max(...d.offers.map(o => o.eth)) : null;
+  const spread = bestOffer != null && floor > 0
+    ? (((floor - bestOffer) / floor) * 100).toFixed(1) : null;
+
+  el.innerHTML = `
+    <div class="fw-card">
+      <div class="fw-val">${listedCount}<span class="fw-of">/ ${supply.toLocaleString()}</span></div>
+      <div class="fw-label">Currently Listed</div>
+      <div class="fw-sub">${floor > 0 ? fmt(floor, 4) + ' ETH floor' : ''}</div>
+      <div class="fw-meter"><div class="fw-meter-fill" style="width:${((listedCount / supply) * 100).toFixed(1)}%"></div></div>
+    </div>
+    <div class="fw-card">
+      <div class="fw-val">${floorCluster}</div>
+      <div class="fw-label">Fish at Floor</div>
+      <div class="fw-sub">${wallPrice ? 'Wall at ' + fmt(wallPrice, 4) + ' ETH (+' + (((wallPrice - floor) / floor) * 100).toFixed(0) + '%)' : 'No significant price wall'}</div>
+    </div>
+    <div class="fw-card">
+      <div class="fw-val">${owners ? owners.toLocaleString() : '—'}</div>
+      <div class="fw-label">Unique Holders</div>
+      <div class="fw-sub">${owners ? '~' + avgHeld + ' fish per holder' : ''}</div>
+    </div>
+    <div class="fw-card">
+      <div class="fw-val">${spread !== null ? spread + '<span class="fw-unit">%</span>' : '—'}</div>
+      <div class="fw-label">Bid\u2013Ask Spread</div>
+      <div class="fw-sub">${bestOffer ? 'Offer ' + fmt(bestOffer, 4) + ' \u00b7 Floor ' + fmt(floor, 4) + ' ETH' : 'No active offers'}</div>
+    </div>`;
+}
+
 // ── Scroll Reveal ─────────────────────────────────
 function initScrollReveal() {
   // Immediately reveal anything already in the viewport
@@ -855,6 +945,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   try { renderSalesFeed([]); }  catch(e) { console.error('[renderSalesFeed]', e); }
   try { renderLibrary(); }      catch(e) { console.error('[renderLibrary]', e); }
   try { renderFOTD(); }         catch(e) { console.error('[renderFOTD]', e); }
+  try { renderConservation(); }  catch(e) { console.error('[renderConservation]', e); }
   initScrollReveal();
 
   // Deep-link routing: open the correct page based on URL params

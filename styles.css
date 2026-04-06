@@ -489,10 +489,27 @@ nav {
 .donut-center-label { font-size: 10px; color: var(--text3); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 2px; }
 .conservation-list { display: flex; flex-direction: column; gap: 14px; }
 .cons-row { display: flex; align-items: center; gap: 12px; }
+.cons-clickable { cursor: pointer; border-radius: 8px; padding: 6px 8px; margin: -6px -8px; transition: background .15s; }
+.cons-clickable:hover { background: var(--bg2); }
 .cons-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
 .cons-label { font-size: 13px; flex: 0 0 190px; color: var(--text2); }
 .cons-bar-wrap { flex: 1; background: var(--bg2); border-radius: 4px; height: 6px; overflow: hidden; }
 .cons-count { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text2); min-width: 44px; text-align: right; }
+
+/* ── Fish Watch ────────────────────────────────── */
+.section-sub { font-size: 11px; color: var(--accent); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
+.fish-watch-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.fw-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: 24px; display: flex; flex-direction: column; gap: 6px;
+}
+.fw-val { font-family: 'Bricolage Grotesque', sans-serif; font-size: 32px; font-weight: 700; line-height: 1.1; }
+.fw-of { font-size: 14px; font-weight: 400; color: var(--text3); margin-left: 4px; }
+.fw-unit { font-size: 18px; font-weight: 500; }
+.fw-label { font-size: 13px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; }
+.fw-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.fw-meter { height: 4px; background: var(--bg2); border-radius: 4px; overflow: hidden; margin-top: 8px; }
+.fw-meter-fill { height: 100%; background: var(--accent); border-radius: 4px; transition: width 1s var(--ease-out); }
 
 /* ── Footer ────────────────────────────────────── */
 .site-footer { border-top: 1px solid var(--border); background: var(--surface); margin-top: 60px; }
@@ -727,6 +744,7 @@ nav {
   .fotd-card { grid-template-columns: 220px 1fr; }
   .detail-layout { grid-template-columns: 300px 1fr; gap: 40px; }
   .conservation-grid { grid-template-columns: 160px 1fr; gap: 32px; }
+  .fish-watch-grid { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 768px) {
   nav { padding: 0 20px; }
@@ -744,6 +762,8 @@ nav {
   .conservation-grid { grid-template-columns: 1fr; text-align: center; }
   .donut-wrap { margin: 0 auto; }
   .cons-label { flex: 0 0 130px; font-size: 12px; }
+  .fish-watch-grid { grid-template-columns: repeat(2, 1fr); }
+  .fw-val { font-size: 24px; }
   .library-layout { grid-template-columns: 1fr; }
   .filter-sidebar { display: none; position: fixed; top: 56px; left: 0; right: 0; z-index: 150; height: calc(100vh - 56px); border-right: none; border-bottom: 1px solid var(--border); }
   .filter-sidebar.open { display: block; animation: pageFadeUp .2s var(--ease-out); }
@@ -773,6 +793,7 @@ nav {
   .stat-item:last-child, .stat-item:nth-last-child(2):nth-child(odd) { border-bottom: none; }
   .library-toolbar { gap: 8px; }
   .library-search { flex: 1 1 100%; order: -1; }
+  .fish-watch-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 480px) {
   .top-sales-grid { grid-template-columns: 1fr; }

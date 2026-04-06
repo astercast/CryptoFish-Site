@@ -371,7 +371,7 @@ function initGlobe() {
     .pointsData([])
     .pointLat(d => d.lat)
     .pointLng(d => d.lon)
-    .pointAltitude(0)
+    .pointAltitude(0.02)
     .pointRadius(d => {
       const base = Math.log(Math.min(d.count, 80) + 1) / Math.log(81);
       return d.isCluster ? 0.18 + base * 0.35 : 0.12 + base * 0.25;
@@ -391,7 +391,7 @@ function initGlobe() {
 
   // Auto-rotate
   globeInstance.controls().autoRotate      = true;
-  globeInstance.controls().autoRotateSpeed = 0.38;
+  globeInstance.controls().autoRotateSpeed = 0.5;
   globeInstance.controls().enableDamping   = true;
 
   let autoTimer;
@@ -414,6 +414,81 @@ function initGlobe() {
   updateGlobeClusters();
 
   renderLocalityList();
+
+  // Cube morph + visual effects (wait for texture load)
+  setTimeout(() => {
+    morphGlobeShape();
+    addGlobeEffects();
+  }, 800);
+}
+
+// ── Cube Morph ────────────────────────────────────
+function morphGlobeShape() {
+  if (!globeInstance) return;
+  const scene = globeInstance.scene();
+  const CUBE_MIX = 0.42;
+  scene.traverse(obj => {
+    if (!obj.isMesh || !obj.geometry?.attributes?.position) return;
+    const pos = obj.geometry.attributes.position;
+    if (pos.count < 100) return;
+    const r0 = Math.sqrt(pos.getX(0) ** 2 + pos.getY(0) ** 2 + pos.getZ(0) ** 2);
+    if (r0 < 10) return;
+    const mix = obj.material?.map ? CUBE_MIX : CUBE_MIX * 0.5;
+    for (let i = 0; i < pos.count; i++) {
+      const x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
+      const len = Math.sqrt(x * x + y * y + z * z);
+      if (len < 0.001) continue;
+      const nx = x / len, ny = y / len, nz = z / len;
+      const maxC = Math.max(Math.abs(nx), Math.abs(ny), Math.abs(nz));
+      const cubeScale = 1.0 / maxC;
+      const morphScale = 1.0 + (cubeScale - 1.0) * mix;
+      pos.setXYZ(i, x * morphScale, y * morphScale, z * morphScale);
+    }
+    pos.needsUpdate = true;
+    obj.geometry.computeVertexNormals();
+    obj.geometry.computeBoundingSphere();
+  });
+}
+
+// ── Globe Visual Effects ──────────────────────────
+function addGlobeEffects() {
+  if (!globeInstance) return;
+  const scene = globeInstance.scene();
+
+  // Orbital ring 1
+  const ringGeo = new THREE.TorusGeometry(120, 0.35, 8, 120);
+  const ringMat = new THREE.MeshBasicMaterial({ color: 0x4488ff, transparent: true, opacity: 0.35 });
+  const ring1 = new THREE.Mesh(ringGeo, ringMat);
+  ring1.rotation.x = Math.PI / 3;
+  ring1.onBeforeRender = function () { this.rotation.z += 0.0012; };
+  scene.add(ring1);
+
+  // Orbital ring 2
+  const ring2Geo = new THREE.TorusGeometry(132, 0.22, 8, 120);
+  const ring2Mat = new THREE.MeshBasicMaterial({ color: 0x66aaff, transparent: true, opacity: 0.22 });
+  const ring2 = new THREE.Mesh(ring2Geo, ring2Mat);
+  ring2.rotation.x = -Math.PI / 4;
+  ring2.rotation.y = Math.PI / 6;
+  ring2.onBeforeRender = function () { this.rotation.z -= 0.0009; };
+  scene.add(ring2);
+
+  // Particle field
+  const N = 180;
+  const positions = new Float32Array(N * 3);
+  for (let i = 0; i < N; i++) {
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.acos(2 * Math.random() - 1);
+    const r = 110 + Math.random() * 55;
+    positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+    positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+    positions[i * 3 + 2] = r * Math.cos(phi);
+  }
+  const pGeo = new THREE.BufferGeometry();
+  pGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  const pMat = new THREE.PointsMaterial({ color: 0xaaddff, size: 1.2, transparent: true, opacity: 0.45, sizeAttenuation: true });
+  const particles = new THREE.Points(pGeo, pMat);
+  particles.onBeforeRender = function () { this.rotation.y += 0.00025; this.rotation.x += 0.0001; };
+  scene.add(particles);
 }
 
 function _focusByData(d) {

@@ -13,10 +13,11 @@ async function osFetch(path) {
 
 module.exports = async function handler(req, res) {
   try {
-    const [statsData, salesData, listingsData] = await Promise.all([
+    const [statsData, salesData, listingsData, offersData] = await Promise.all([
       osFetch(`/collections/${SLUG}/stats`),
       osFetch(`/events/collection/${SLUG}?event_type=sale&limit=20`),
-      osFetch(`/listings/collection/${SLUG}/best?limit=50`),
+      osFetch(`/listings/collection/${SLUG}/best?limit=100`),
+      osFetch(`/offers/collection/${SLUG}?limit=20`).catch(() => ({ offers: [] })),
     ]);
 
     // --- Stats ---
@@ -61,8 +62,16 @@ module.exports = async function handler(req, res) {
       }
     }
 
+    // --- Collection offers (WETH bids) ---
+    const offers = (offersData.offers || []).map(o => {
+      const wei = o.price?.current?.value || '0';
+      const dec = o.price?.current?.decimals || 18;
+      const eth = parseFloat(wei) / (10 ** dec);
+      return { eth: +eth.toFixed(6) };
+    }).filter(o => o.eth > 0).sort((a, b) => b.eth - a.eth);
+
     res.setHeader('Cache-Control', 's-maxage=120, stale-while-revalidate=300');
-    res.status(200).json({ stats, sales, listings });
+    res.status(200).json({ stats, sales, listings, offers });
   } catch (e) {
     console.error('[api/market]', e);
     res.status(502).json({ error: e.message });

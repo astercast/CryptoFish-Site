@@ -168,46 +168,26 @@
 
   <hr class="divider">
 
+  <!-- Fish Watch -->
+  <div class="section">
+    <div class="section-header reveal">
+      <div class="section-title">Fish Watch</div>
+      <span class="section-sub">Live Analytics</span>
+    </div>
+    <div class="fish-watch-grid reveal" id="fish-watch">
+      <div style="grid-column:1/-1;padding:20px;text-align:center;color:var(--text3);font-size:13px">Loading analytics&hellip;</div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
   <!-- Conservation -->
   <div class="section">
     <div class="section-header reveal">
       <div class="section-title">Conservation in the Collection</div>
       <a class="section-link" onclick="showPage('library')">Filter by status &#8594;</a>
     </div>
-    <div class="conservation-grid reveal">
-      <div class="donut-wrap">
-        <svg class="donut-svg" viewBox="0 0 160 160" width="160" height="160">
-          <circle cx="80" cy="80" r="60" fill="none" stroke="#e2ddd8" stroke-width="20"/>
-          <circle class="donut-seg" cx="80" cy="80" r="60" fill="none" stroke="#2d7a4f" stroke-width="20"
-            stroke-dasharray="171 206" stroke-dashoffset="0"/>
-          <circle class="donut-seg" cx="80" cy="80" r="60" fill="none" stroke="#557799" stroke-width="20"
-            stroke-dasharray="145 232" stroke-dashoffset="-171"/>
-          <circle class="donut-seg" cx="80" cy="80" r="60" fill="none" stroke="#7a4a2d" stroke-width="20"
-            stroke-dasharray="20 357" stroke-dashoffset="-316"/>
-          <circle class="donut-seg" cx="80" cy="80" r="60" fill="none" stroke="#5c1515" stroke-width="20"
-            stroke-dasharray="13 364" stroke-dashoffset="-336"/>
-          <circle class="donut-seg" cx="80" cy="80" r="60" fill="none" stroke="#999" stroke-width="20"
-            stroke-dasharray="12 365" stroke-dashoffset="-349"/>
-          <circle class="donut-seg" cx="80" cy="80" r="60" fill="none" stroke="#7a2d2d" stroke-width="20"
-            stroke-dasharray="9 368" stroke-dashoffset="-361"/>
-          <circle class="donut-seg" cx="80" cy="80" r="60" fill="none" stroke="#7a6d2d" stroke-width="20"
-            stroke-dasharray="7 370" stroke-dashoffset="-370"/>
-        </svg>
-        <div class="donut-center">
-          <div class="donut-center-num">2,166</div>
-          <div class="donut-center-label">TOTAL</div>
-        </div>
-      </div>
-      <div class="conservation-list">
-        <div class="cons-row"><div class="cons-dot" style="background:#2d7a4f"></div><div class="cons-label">Least Concern (LC)</div><div class="cons-bar-wrap"><div class="cons-bar" style="width:0%;background:#2d7a4f" data-width="45"></div></div><div class="cons-count">980</div></div>
-        <div class="cons-row"><div class="cons-dot" style="background:#557799"></div><div class="cons-label">Not Evaluated / Unknown</div><div class="cons-bar-wrap"><div class="cons-bar" style="width:0%;background:#557799" data-width="39"></div></div><div class="cons-count">839</div></div>
-        <div class="cons-row"><div class="cons-dot" style="background:#7a4a2d"></div><div class="cons-label">Vulnerable (VU)</div><div class="cons-bar-wrap"><div class="cons-bar" style="width:0%;background:#7a4a2d" data-width="5"></div></div><div class="cons-count">114</div></div>
-        <div class="cons-row"><div class="cons-dot" style="background:#5c1515"></div><div class="cons-label">Critically Endangered (CR)</div><div class="cons-bar-wrap"><div class="cons-bar" style="width:0%;background:#5c1515" data-width="3"></div></div><div class="cons-count">73</div></div>
-        <div class="cons-row"><div class="cons-dot" style="background:#999"></div><div class="cons-label">Data Deficient (DD)</div><div class="cons-bar-wrap"><div class="cons-bar" style="width:0%;background:#999" data-width="3"></div></div><div class="cons-count">67</div></div>
-        <div class="cons-row"><div class="cons-dot" style="background:#7a2d2d"></div><div class="cons-label">Endangered (EN)</div><div class="cons-bar-wrap"><div class="cons-bar" style="width:0%;background:#7a2d2d" data-width="2"></div></div><div class="cons-count">51</div></div>
-        <div class="cons-row"><div class="cons-dot" style="background:#7a6d2d"></div><div class="cons-label">Near Threatened (NT)</div><div class="cons-bar-wrap"><div class="cons-bar" style="width:0%;background:#7a6d2d" data-width="2"></div></div><div class="cons-count">42</div></div>
-      </div>
-    </div>
+    <div class="conservation-grid reveal" id="conservation-chart"></div>
   </div>
 
   <footer class="site-footer">
