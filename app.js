@@ -664,7 +664,7 @@ let _allTimeTop = [];
 let _salesScanRunning = false;
 
 async function _loadTopSales() {
-  // 1. Serve from local IDB cache immediately (returning visitors)
+  // 1. Serve from IDB cache immediately (returning visitors get instant display)
   try {
     const stored = await idbGet('all-sales', Infinity);
     if (stored?.length) {
@@ -672,32 +672,7 @@ async function _loadTopSales() {
       renderTopSales(_allTimeTop);
     }
   } catch {}
-  // 2. Fetch server-side cached top sales — CDN-cached, fast for new visitors
-  try {
-    const r = await fetch('/api/top-sales');
-    if (r.ok) {
-      const d = await r.json();
-      if (d.top?.length) {
-        const mapped = d.top.map(s => {
-          const idx = s.tokenId ? parseInt(s.tokenId) - 1 : -1;
-          const f = idx >= 0 ? FISH_DATA[idx] : null;
-          return {
-            image: f?.image || s.image || '',
-            name: f ? escapeHTML(f.name) : ('CryptoFish #' + String(s.tokenId).padStart(4, '0')),
-            token: '#' + String(s.tokenId).padStart(4, '0'),
-            eth: s.eth,
-            usd: fmtUSD(s.eth),
-            ts: s.ts,
-            idx: idx >= 0 ? idx : 0,
-          };
-        });
-        await _mergeTopSales(mapped);
-      }
-    }
-  } catch (e) {
-    console.warn('[top-sales-api]', e.message);
-  }
-  // 3. Deep scan in background for complete historical coverage
+  // 2. Deep scan all sales in background to build/refresh the all-time list
   _deepScanSales();
 }
 
@@ -721,8 +696,8 @@ async function _deepScanSales() {
   // Check if we already have a full scan cached
   const meta = await idbGet('sales-scan-meta', Infinity);
   const now = Date.now();
-  // Re-scan at most once per hour (full scan), always get first 2 pages for recency
-  const needFull = !meta || (now - (meta.ts || 0)) > 3600_000;
+  // Re-scan at most once per 24h (full scan), always get first 2 pages for recency
+  const needFull = !meta || (now - (meta.ts || 0)) > 86400_000;
   try {
     let cursor = null;
     let page = 0;
