@@ -43,7 +43,10 @@
   <button class="mobile-nav-link" onclick="showPage('library')">Library</button>
   <button class="mobile-nav-link" onclick="showPage('globe')">Globe</button>
   <button class="mobile-nav-link" onclick="showPage('nemo')">About FindUrNemo</button>
-  <button class="mobile-nav-link primary" onclick="window.open('https://opensea.io/collection/cryptofish','_blank')">View on OpenSea &#8599;</button>
+  <div class="mobile-nav-row">
+    <button class="mobile-nav-link primary" onclick="window.open('https://opensea.io/collection/cryptofish','_blank')">View on OpenSea &#8599;</button>
+    <button class="mobile-nav-link dark-toggle-mobile" onclick="toggleDarkMode();toggleMobileNav()" aria-label="Toggle dark mode">&#9789; Dark / Light</button>
+  </div>
 </div>
 
 <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
@@ -268,7 +271,8 @@
     <div class="globe-sidebar">
       <div class="globe-sidebar-header">
         <div class="globe-sidebar-title">Fish Localities</div>
-        <div class="globe-sidebar-sub">Drag &middot; Scroll to zoom &middot; Click a dot</div>
+        <div class="globe-sidebar-sub globe-tip-desktop">Drag &middot; Scroll to zoom &middot; Click a dot</div>
+        <div class="globe-sidebar-sub globe-tip-mobile">Pinch to zoom &middot; Tap a dot &middot; Swipe to rotate</div>
       </div>
       <div class="locality-list" id="locality-list"></div>
     </div>

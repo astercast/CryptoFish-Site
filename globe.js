@@ -426,22 +426,26 @@ function initGlobe() {
 function morphGlobeShape() {
   if (!globeInstance) return;
   const scene = globeInstance.scene();
-  const CUBE_MIX = 0.65;
+  const MIX = 0.82;
   scene.traverse(obj => {
     if (!obj.isMesh || !obj.geometry?.attributes?.position) return;
     const pos = obj.geometry.attributes.position;
     if (pos.count < 100) return;
     const r0 = Math.sqrt(pos.getX(0) ** 2 + pos.getY(0) ** 2 + pos.getZ(0) ** 2);
     if (r0 < 10) return;
-    const mix = obj.material?.map ? CUBE_MIX : CUBE_MIX * 0.5;
     for (let i = 0; i < pos.count; i++) {
       const x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
       const len = Math.sqrt(x * x + y * y + z * z);
       if (len < 0.001) continue;
       const nx = x / len, ny = y / len, nz = z / len;
-      const maxC = Math.max(Math.abs(nx), Math.abs(ny), Math.abs(nz));
-      const cubeScale = 1.0 / maxC;
-      const morphScale = 1.0 + (cubeScale - 1.0) * mix;
+      // Project onto cube face: each axis clamped to [-1,1] cube
+      const ax = Math.abs(nx), ay = Math.abs(ny), az = Math.abs(nz);
+      const maxC = Math.max(ax, ay, az);
+      // Smooth cube: use power to flatten edges without sharp corners
+      const p = 6; // higher = sharper cube edges
+      const cubeDist = Math.pow(Math.pow(ax, p) + Math.pow(ay, p) + Math.pow(az, p), 1/p);
+      const cubeScale = 1.0 / cubeDist;
+      const morphScale = 1.0 + (cubeScale - 1.0) * MIX;
       pos.setXYZ(i, x * morphScale, y * morphScale, z * morphScale);
     }
     pos.needsUpdate = true;
