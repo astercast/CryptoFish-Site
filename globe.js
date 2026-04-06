@@ -412,9 +412,11 @@ function initGlobe() {
 
   // Cube morph + pastel tint + visual effects (wait for texture load)
   setTimeout(() => {
-    morphGlobeShape();
-    pastelizeGlobe();
-    addGlobeEffects();
+    try {
+      morphGlobeShape();
+      pastelizeGlobe();
+      addGlobeEffects();
+    } catch(e) { console.warn('[CryptoFish] Globe effects error:', e); }
     el.style.transition = 'opacity .5s';
     el.style.opacity = '1';
   }, 800);
@@ -481,7 +483,8 @@ function pastelizeGlobe() {
       px[i+2] = Math.min(255, b + (255 - b) * 0.30);
     }
     ctx.putImageData(id, 0, 0);
-    obj.material.map = new THREE.CanvasTexture(c);
+    // Update existing texture in-place (avoids needing global THREE)
+    obj.material.map.image = c;
     obj.material.map.needsUpdate = true;
     obj.material.needsUpdate = true;
   });
@@ -489,7 +492,7 @@ function pastelizeGlobe() {
 
 // ── Globe Visual Effects ──────────────────────────
 function addGlobeEffects() {
-  if (!globeInstance) return;
+  if (!globeInstance || typeof THREE === 'undefined') return;
   const scene = globeInstance.scene();
 
   // Orbital ring 1
