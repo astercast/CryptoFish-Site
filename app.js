@@ -275,9 +275,9 @@ function _applyMarketData(d) {
       };
     });
     const recent = [...sales].sort((a, b) => b.ts - a.ts);
-    const top    = [...sales].sort((a, b) => parseFloat(b.eth) - parseFloat(a.eth));
     renderSalesFeed(recent);
-    renderTopSales(top);
+    // Accumulate all-time top sales with IDB persistence
+    _mergeTopSales(sales);
   }
 
   // Listings map
@@ -659,6 +659,33 @@ function searchLibrary(query) {
   renderLibrary();
 }
 
+// ── All-Time Top Sales Accumulator (IDB-persistent) ──
+let _allTimeTop = [];
+
+async function _loadTopSales() {
+  try {
+    const stored = await idbGet('top-sales', Infinity);
+    if (stored?.length) {
+      _allTimeTop = stored;
+      renderTopSales(_allTimeTop);
+    }
+  } catch {}
+}
+
+async function _mergeTopSales(newSales) {
+  // Merge new sales into persistent top list, dedup by token+ts+eth
+  const seen = new Set(_allTimeTop.map(s => s.token + '|' + s.ts + '|' + s.eth));
+  for (const s of newSales) {
+    const key = s.token + '|' + s.ts + '|' + s.eth;
+    if (!seen.has(key)) { _allTimeTop.push(s); seen.add(key); }
+  }
+  // Keep top 30 by price (generous buffer so we don't lose data)
+  _allTimeTop.sort((a, b) => parseFloat(b.eth) - parseFloat(a.eth));
+  _allTimeTop = _allTimeTop.slice(0, 30);
+  renderTopSales(_allTimeTop);
+  await idbSet('top-sales', _allTimeTop);
+}
+
 // ── Render: Top Sales ────────────────────────────
 function renderTopSales(sales) {
   const el = document.getElementById('top-sales-list');
@@ -957,7 +984,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   try { buildFilterPills(); }   catch(e) { console.error('[buildFilterPills]', e); }
   try { renderHeroCards(); }    catch(e) { console.error('[renderHeroCards]', e); }
-  try { renderTopSales([]); }   catch(e) { console.error('[renderTopSales]', e); }
+  try { _loadTopSales(); }       catch(e) { console.error('[loadTopSales]', e); }
   try { renderSalesFeed([]); }  catch(e) { console.error('[renderSalesFeed]', e); }
   try { renderLibrary(); }      catch(e) { console.error('[renderLibrary]', e); }
   try { renderFOTD(); }         catch(e) { console.error('[renderFOTD]', e); }

@@ -30,7 +30,7 @@ module.exports = async function handler(req, res) {
   try {
     const [statsData, allSaleEvents, listingsData, offersData] = await Promise.all([
       osFetch(`/collections/${SLUG}/stats`),
-      fetchAllSales(4),
+      fetchAllSales(10),
       osFetch(`/listings/collection/${SLUG}/best?limit=100`),
       osFetch(`/offers/collection/${SLUG}?limit=20`).catch(() => ({ offers: [] })),
     ]);
