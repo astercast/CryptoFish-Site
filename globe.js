@@ -994,8 +994,8 @@ function clusterLocs(locs, threshDeg) {
 
 function updateGlobeClusters() {
   if (!globeInstance) return;
-  // Cluster once with very tight threshold — only truly overlapping locations merge
-  currentClusters = clusterLocs(locDataArr, 0.12);
+  // Cluster with wider threshold so nearby locations group together
+  currentClusters = clusterLocs(locDataArr, 0.6);
   globeInstance.pointsData(currentClusters);
 }
 
