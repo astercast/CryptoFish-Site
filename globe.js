@@ -455,38 +455,7 @@ function morphGlobeShape() {
 
 // ── Pastelize Globe Texture ───────────────────────
 function pastelizeGlobe() {
-  if (!globeInstance) return;
-  const scene = globeInstance.scene();
-  scene.traverse(obj => {
-    if (!obj.isMesh || !obj.material?.map) return;
-    const tex = obj.material.map;
-    if (!tex.image || tex.image.width < 512) return;
-    // Draw texture to canvas, desaturate + lighten
-    const img = tex.image;
-    const c = document.createElement('canvas');
-    c.width = img.width; c.height = img.height;
-    const ctx = c.getContext('2d');
-    ctx.drawImage(img, 0, 0);
-    const id = ctx.getImageData(0, 0, c.width, c.height);
-    const px = id.data;
-    for (let i = 0; i < px.length; i += 4) {
-      let r = px[i], g = px[i+1], b = px[i+2];
-      // Desaturate 20%
-      const gray = 0.299 * r + 0.587 * g + 0.114 * b;
-      r = r + (gray - r) * 0.20;
-      g = g + (gray - g) * 0.20;
-      b = b + (gray - b) * 0.20;
-      // Lighten 12% toward white
-      px[i]   = Math.min(255, r + (255 - r) * 0.12);
-      px[i+1] = Math.min(255, g + (255 - g) * 0.12);
-      px[i+2] = Math.min(255, b + (255 - b) * 0.12);
-    }
-    ctx.putImageData(id, 0, 0);
-    // Update existing texture in-place (avoids needing global THREE)
-    obj.material.map.image = c;
-    obj.material.map.needsUpdate = true;
-    obj.material.needsUpdate = true;
-  });
+  // No-op: use original globe colors
 }
 
 
