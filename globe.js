@@ -323,20 +323,13 @@ function clusterLocs(locs, threshDeg) {
 
 function updateGlobeClusters() {
   if (!globeInstance) return;
-  const alt = globeInstance.pointOfView().altitude ?? 2.5;
-  if (Math.abs(alt - lastAlt) < 0.02) return;
-  lastAlt = alt;
-  const thresh = Math.max(0.08, alt * 0.35);
-  currentClusters = clusterLocs(locDataArr, thresh);
+  // Cluster once with very tight threshold — only truly overlapping locations merge
+  currentClusters = clusterLocs(locDataArr, 0.12);
   globeInstance.pointsData(currentClusters);
 }
 
 function scheduleClusterUpdate() {
-  if (clusterRafId) return;
-  clusterRafId = requestAnimationFrame(() => {
-    clusterRafId = null;
-    updateGlobeClusters();
-  });
+  // No-op: clustering is static, no re-clustering on zoom
 }
 
 // ── Main init ─────────────────────────────────────
@@ -366,7 +359,7 @@ function initGlobe() {
     .backgroundColor('rgba(0,0,0,0)')
     .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
     .atmosphereColor('#c8ddf5')
-    .atmosphereAltitude(0.22)
+    .atmosphereAltitude(0.08)
     .pointsData([])
     .pointLat(d => d.lat)
     .pointLng(d => d.lon)
