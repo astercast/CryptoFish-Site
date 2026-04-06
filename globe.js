@@ -326,7 +326,7 @@ function updateGlobeClusters() {
   const alt = globeInstance.pointOfView().altitude ?? 2.5;
   if (Math.abs(alt - lastAlt) < 0.02) return;
   lastAlt = alt;
-  const thresh = Math.max(0.15, alt * 2.5);
+  const thresh = Math.max(0.1, alt * 0.6);
   currentClusters = clusterLocs(locDataArr, thresh);
   globeInstance.pointsData(currentClusters);
 }
