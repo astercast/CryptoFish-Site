@@ -410,12 +410,11 @@ function initGlobe() {
 
   renderLocalityList();
 
-  // Cube morph + pastel tint + visual effects (wait for texture load)
+  // Cube morph + pastel tint (wait for texture load)
   setTimeout(() => {
     try {
       morphGlobeShape();
       pastelizeGlobe();
-      addGlobeEffects();
     } catch(e) { console.warn('[CryptoFish] Globe effects error:', e); }
     el.style.transition = 'opacity .5s';
     el.style.opacity = '1';
@@ -472,15 +471,15 @@ function pastelizeGlobe() {
     const px = id.data;
     for (let i = 0; i < px.length; i += 4) {
       let r = px[i], g = px[i+1], b = px[i+2];
-      // Desaturate 45%
+      // Desaturate 20%
       const gray = 0.299 * r + 0.587 * g + 0.114 * b;
-      r = r + (gray - r) * 0.45;
-      g = g + (gray - g) * 0.45;
-      b = b + (gray - b) * 0.45;
-      // Lighten 30% toward white + slight warm tint
-      px[i]   = Math.min(255, r + (255 - r) * 0.30 + 6);
-      px[i+1] = Math.min(255, g + (255 - g) * 0.30 + 3);
-      px[i+2] = Math.min(255, b + (255 - b) * 0.30);
+      r = r + (gray - r) * 0.20;
+      g = g + (gray - g) * 0.20;
+      b = b + (gray - b) * 0.20;
+      // Lighten 12% toward white
+      px[i]   = Math.min(255, r + (255 - r) * 0.12);
+      px[i+1] = Math.min(255, g + (255 - g) * 0.12);
+      px[i+2] = Math.min(255, b + (255 - b) * 0.12);
     }
     ctx.putImageData(id, 0, 0);
     // Update existing texture in-place (avoids needing global THREE)
@@ -490,46 +489,7 @@ function pastelizeGlobe() {
   });
 }
 
-// ── Globe Visual Effects ──────────────────────────
-function addGlobeEffects() {
-  if (!globeInstance || typeof THREE === 'undefined') return;
-  const scene = globeInstance.scene();
 
-  // Orbital ring 1
-  const ringGeo = new THREE.TorusGeometry(120, 0.35, 8, 120);
-  const ringMat = new THREE.MeshBasicMaterial({ color: 0x4488ff, transparent: true, opacity: 0.35 });
-  const ring1 = new THREE.Mesh(ringGeo, ringMat);
-  ring1.rotation.x = Math.PI / 3;
-  ring1.onBeforeRender = function () { this.rotation.z += 0.0012; };
-  scene.add(ring1);
-
-  // Orbital ring 2
-  const ring2Geo = new THREE.TorusGeometry(132, 0.22, 8, 120);
-  const ring2Mat = new THREE.MeshBasicMaterial({ color: 0x66aaff, transparent: true, opacity: 0.22 });
-  const ring2 = new THREE.Mesh(ring2Geo, ring2Mat);
-  ring2.rotation.x = -Math.PI / 4;
-  ring2.rotation.y = Math.PI / 6;
-  ring2.onBeforeRender = function () { this.rotation.z -= 0.0009; };
-  scene.add(ring2);
-
-  // Particle field
-  const N = 180;
-  const positions = new Float32Array(N * 3);
-  for (let i = 0; i < N; i++) {
-    const theta = Math.random() * Math.PI * 2;
-    const phi = Math.acos(2 * Math.random() - 1);
-    const r = 110 + Math.random() * 55;
-    positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
-    positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
-    positions[i * 3 + 2] = r * Math.cos(phi);
-  }
-  const pGeo = new THREE.BufferGeometry();
-  pGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  const pMat = new THREE.PointsMaterial({ color: 0xaaddff, size: 1.2, transparent: true, opacity: 0.45, sizeAttenuation: true });
-  const particles = new THREE.Points(pGeo, pMat);
-  particles.onBeforeRender = function () { this.rotation.y += 0.00025; this.rotation.x += 0.0001; };
-  scene.add(particles);
-}
 
 function _focusByData(d) {
   // Works for both clusters and single raw locs
