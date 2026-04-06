@@ -749,10 +749,10 @@ nav {
   .filter-sidebar.open { display: block; animation: pageFadeUp .2s var(--ease-out); }
   .filter-toggle-btn { display: flex; }
   .library-main { padding: 20px; }
-  .globe-layout { flex-direction: column-reverse; height: auto; min-height: calc(100vh - 56px); }
-  .globe-sidebar { width: 100%; min-width: 0; height: 240px; min-height: 240px; border-left: none; border-top: 1px solid var(--border); }
-  #globe-canvas { flex: none; height: 55vw; min-height: 300px; max-height: 520px; }
-  .locality-popover { left: 16px; right: 16px; width: auto; }
+  .globe-layout { flex-direction: column; height: calc(100vh - 56px); min-height: 0; }
+  .globe-sidebar { width: 100%; min-width: 0; max-height: 35vh; border-left: none; border-top: 1px solid var(--border); order: 2; }
+  #globe-canvas { flex: 1; min-height: 0; order: 1; }
+  .locality-popover { position: fixed; top: auto; bottom: 36vh; left: 12px; right: 12px; width: auto; max-height: 55vh; overflow-y: auto; }
   .detail-layout { grid-template-columns: 1fr; gap: 32px; padding: 24px 20px 60px; }
   .detail-art-wrap { position: static; }
   .detail-art { padding: 0; }

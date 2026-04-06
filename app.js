@@ -80,22 +80,45 @@ function toggleMobileNav() {
   if (nav) nav.classList.toggle('open', mobileNavOpen);
 }
 
-// ── Live: Individual Token Listing Price (Blockscout) ─────────────
+// ── Live: Individual Token Listing Price ─────────────
 async function fetchFishListing(tokenId, expectedIdx) {
   try {
-    // Blockscout doesn't have listing data; show "View on OpenSea" and skip price
+    // Fast path: check bulk listings from /api/market
+    const bulk = _liveListings[String(tokenId)];
+    if (bulk) {
+      if (currentFishIndex !== expectedIdx) return;
+      const priceEl  = document.getElementById('detail-price');
+      const usdEl    = document.getElementById('detail-usd');
+      const buyBtnEl = document.getElementById('detail-buy-btn');
+      if (priceEl) priceEl.textContent = parseFloat(bulk.eth).toFixed(4) + ' ETH';
+      if (usdEl)   usdEl.textContent   = liveEthPrice ? '≈ $' + Math.round(bulk.eth * liveEthPrice).toLocaleString() : '';
+      if (buyBtnEl) buyBtnEl.textContent = 'Buy on OpenSea';
+      return;
+    }
+
+    // Slow path: per-token API call
+    const r = await fetch(`/api/listing?id=${tokenId}`);
+    if (!r.ok) throw new Error(r.status);
+    const d = await r.json();
     if (currentFishIndex !== expectedIdx) return;
+
     const priceEl  = document.getElementById('detail-price');
     const usdEl    = document.getElementById('detail-usd');
     const buyBtnEl = document.getElementById('detail-buy-btn');
-    if (priceEl) priceEl.textContent = '--';
-    if (usdEl)   usdEl.textContent   = '';
-    if (buyBtnEl) buyBtnEl.textContent = 'View on OpenSea';
+    if (d.listed && d.eth) {
+      if (priceEl) priceEl.textContent = parseFloat(d.eth).toFixed(4) + ' ETH';
+      if (usdEl)   usdEl.textContent   = liveEthPrice ? '≈ $' + Math.round(d.eth * liveEthPrice).toLocaleString() : '';
+      if (buyBtnEl) buyBtnEl.textContent = 'Buy on OpenSea';
+    } else {
+      if (priceEl) priceEl.textContent = 'Not Listed';
+      if (usdEl)   usdEl.textContent   = '';
+      if (buyBtnEl) buyBtnEl.textContent = 'View on OpenSea';
+    }
   } catch (e) {
     console.warn('[listing]', e.message);
     if (currentFishIndex !== expectedIdx) return;
     const priceEl = document.getElementById('detail-price');
-    if (priceEl) priceEl.textContent = '--';
+    if (priceEl) priceEl.textContent = 'Not Listed';
   }
 }
 
@@ -159,13 +182,11 @@ function updatePriceDisplays() {
   if (navEl) navEl.textContent = liveEthPrice ? '$' + liveEthPrice.toLocaleString() : '--';
 }
 
-// ── Live: Collection Stats (Blockscout) ─────────────
-const BLOCKSCOUT = 'https://eth.blockscout.com/api/v2';
+// ── API + cache ─────────────────────────────────────
 const CF_CONTRACT = '0x9ef31ce8cca614e7aff3c1b883740e8d2728fe91';
-
-// ── IndexedDB cache ─────────────────────────────────
 const IDB_NAME = 'CryptoFishCache';
 const IDB_VER  = 1;
+let _liveListings = {};  // tokenId -> { eth }
 
 function _openIDB() {
   return new Promise((resolve, reject) => {
@@ -202,133 +223,73 @@ async function idbSet(key, data) {
   } catch {}
 }
 
-async function fetchCollectionStats() {
-  // Serve from cache (10 min TTL)
-  const cached = await idbGet('stats', 10 * 60_000);
-  if (cached) { liveCollection = cached; renderStatsBar(); }
+// ── Fetch all market data from /api/market ──────────
+async function fetchMarketData() {
+  // IDB cache: serve stale instantly, refresh behind
+  const cached = await idbGet('market', 2 * 60_000);
+  if (cached) _applyMarketData(cached);
 
   try {
-    const r = await fetch(`${BLOCKSCOUT}/tokens/${CF_CONTRACT}`, { cache: 'no-store' });
+    const r = await fetch('/api/market', { cache: 'no-store' });
     if (!r.ok) throw new Error(r.status);
     const d = await r.json();
-    liveCollection = {
-      floor_price:  null,
-      total_volume: null,
-      num_owners:   parseInt(d.holders_count) || null,
-      total_supply: 2166,
-      listed_count: null,
-      avg_price:    null,
-    };
-    await idbSet('stats', liveCollection);
+    await idbSet('market', d);
+    _applyMarketData(d);
   } catch (e) {
-    console.warn('[Blockscout stats]', e.message);
-    if (!liveCollection) {
-      const stale = await idbGet('stats', Infinity);
-      liveCollection = stale || { floor_price: null, total_volume: null, num_owners: null, total_supply: 2166, listed_count: null, avg_price: null };
-    }
-  }
-  renderStatsBar();
-}
-
-// ── Live: Recent Sales (Blockscout + IDB cache) ─────
-const SALE_METHODS = ['fulfillBasicOrder', 'fulfillAdvancedOrder', 'matchOrders', 'matchAdvancedOrders'];
-
-function _transferToSale(t, ethWei) {
-  const rawId = t.total?.token_id ?? '';
-  const idx   = rawId ? parseInt(rawId) - 1 : -1;
-  const f     = idx >= 0 ? FISH_DATA[idx] : null;
-  const eth   = (parseFloat(ethWei) / 1e18).toFixed(4);
-  const token = rawId ? '#' + String(rawId).padStart(4, '0') : '';
-  const ts    = new Date(t.timestamp).getTime();
-  return {
-    image: f?.image || t.total?.token_instance?.image_url || '',
-    name:  f ? escapeHTML(f.name) : ('CryptoFish ' + token).trim(),
-    token, eth,
-    usd:  fmtUSD(eth),
-    time: timeAgo(ts),
-    ts,
-    idx:  idx >= 0 ? idx : 0,
-  };
-}
-
-async function fetchRecentSales() {
-  // Serve from cache immediately (5 min TTL)
-  const cached = await idbGet('sales', 5 * 60_000);
-  if (cached) {
-    renderSalesFeed(cached.recent);
-    renderTopSales(cached.top);
-    // Still refresh in background after serving cache
-    _refreshSalesFromChain().catch(() => {});
-    return;
-  }
-
-  // No cache — block on live fetch
-  const ok = await _refreshSalesFromChain();
-  if (!ok) {
-    // Try stale cache (any age)
-    const stale = await idbGet('sales', Infinity);
-    if (stale) {
-      renderSalesFeed(stale.recent);
-      renderTopSales(stale.top);
-    } else {
-      renderSalesFeed([], true);
+    console.warn('[/api/market]', e.message);
+    if (!cached) {
+      const stale = await idbGet('market', Infinity);
+      if (stale) _applyMarketData(stale);
+      else renderSalesFeed([], true);
     }
   }
 }
 
-async function _refreshSalesFromChain() {
-  try {
-    const r = await fetch(`${BLOCKSCOUT}/tokens/${CF_CONTRACT}/transfers`, { cache: 'no-store' });
-    if (!r.ok) throw new Error(r.status);
-    const d = await r.json();
-    const items = d.items ?? [];
+function _applyMarketData(d) {
+  // Stats
+  if (d.stats) {
+    liveCollection = {
+      floor_price:  d.stats.floor_price,
+      total_volume: d.stats.total_volume,
+      num_owners:   d.stats.num_owners,
+      total_supply: d.stats.total_supply || 2166,
+      listed_count: null,
+      avg_price:    d.stats.avg_price,
+    };
+    renderStatsBar();
+  }
 
-    // Filter to marketplace sale transfers
-    const saleTransfers = items.filter(t =>
-      t.method && SALE_METHODS.some(m => t.method.startsWith(m))
-    ).slice(0, 8);
-
-    if (!saleTransfers.length) {
-      renderSalesFeed([], true);
-      return false;
-    }
-
-    // Sequential tx fetches to avoid rate-limiting (max 8)
-    const sales = [];
-    for (const t of saleTransfers) {
-      try {
-        const txR = await fetch(`${BLOCKSCOUT}/transactions/${t.transaction_hash}`);
-        if (!txR.ok) continue;
-        const txD = await txR.json();
-        const sale = _transferToSale(t, txD.value || '0');
-        if (parseFloat(sale.eth) > 0) sales.push(sale);
-      } catch { /* skip failed tx */ }
-    }
-
-    if (!sales.length) {
-      renderSalesFeed([], true);
-      return false;
-    }
-
+  // Sales
+  if (d.sales?.length) {
+    const sales = d.sales.map(s => {
+      const idx = s.tokenId ? parseInt(s.tokenId) - 1 : -1;
+      const f   = idx >= 0 ? FISH_DATA[idx] : null;
+      return {
+        image: f?.image || s.image || '',
+        name:  f ? escapeHTML(f.name) : ('CryptoFish #' + String(s.tokenId).padStart(4, '0')),
+        token: '#' + String(s.tokenId).padStart(4, '0'),
+        eth:   s.eth,
+        usd:   fmtUSD(s.eth),
+        ts:    s.ts,
+        idx:   idx >= 0 ? idx : 0,
+      };
+    });
     const recent = [...sales].sort((a, b) => b.ts - a.ts);
     const top    = [...sales].sort((a, b) => parseFloat(b.eth) - parseFloat(a.eth));
-
     renderSalesFeed(recent);
     renderTopSales(top);
+  }
 
-    // Persist to IndexedDB
-    await idbSet('sales', { recent, top });
-    return true;
-  } catch (e) {
-    console.warn('[Blockscout sales]', e.message);
-    return false;
+  // Listings map
+  if (d.listings) {
+    _liveListings = d.listings;
   }
 }
 
-// ── Top sales now populated from fetchRecentSales ──
-async function fetchTopSalesByPrice() {
-  // No-op: renderTopSales is called from fetchRecentSales with Blockscout data
-}
+// Keep old function names as wrappers so DOMContentLoaded still works
+async function fetchCollectionStats() { /* handled by fetchMarketData */ }
+async function fetchRecentSales()     { /* handled by fetchMarketData */ }
+async function fetchTopSalesByPrice() { /* handled by fetchMarketData */ }
 
 // ── Render: Stats Bar ─────────────────────────────
 function renderStatsBar() {
@@ -904,14 +865,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     showPage(deepPage, { pushState: false });
   }
 
-  await Promise.allSettled([fetchEthPrice(), fetchCollectionStats()]);
+  await Promise.allSettled([fetchEthPrice(), fetchMarketData()]);
   try { renderFOTD(); } catch(e) { console.error('[renderFOTD2]', e); }
-  fetchRecentSales();
-  fetchTopSalesByPrice();
 
-  setInterval(fetchEthPrice,        60_000);
-  setInterval(fetchCollectionStats, 300_000);
-  setInterval(fetchRecentSales,     120_000);
+  setInterval(fetchEthPrice,    60_000);
+  setInterval(fetchMarketData, 120_000);
 
   // Ripple effect on .btn-primary clicks
   document.addEventListener('click', e => {
