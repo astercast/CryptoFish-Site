@@ -350,10 +350,10 @@ nav {
   color: var(--accent); text-transform: uppercase; margin-bottom: 20px;
 }
 .hero-title {
-  font-family: 'Bricolage Grotesque', sans-serif;
   font-size: clamp(44px,5.5vw,68px); line-height: 1.02; letter-spacing: -2px; margin-bottom: 20px;
 }
-.hero-title em { color: var(--accent); font-style: italic; }
+.hero-title-main { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; }
+.hero-title-accent { font-family: 'JetBrains Mono', monospace; font-weight: 300; font-style: italic; color: var(--accent); letter-spacing: -1px; }
 .hero-sub { font-size: 16px; line-height: 1.7; color: var(--text2); max-width: 480px; margin-bottom: 36px; }
 .hero-text { min-width: 0; }
 .hero-btns { display: flex; gap: 12px; flex-wrap: wrap; }
@@ -557,6 +557,8 @@ nav {
 .filter-sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 .filter-title { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text3); margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
 .filter-clear { font-size: 11px; color: var(--accent); cursor: pointer; letter-spacing: 0; text-transform: none; font-family: 'Inter', sans-serif; }
+.filter-close-btn { display: none; background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text2); line-height: 1; width: 28px; height: 28px; align-items: center; justify-content: center; border-radius: 4px; transition: background .1s; padding: 0; margin-left: auto; }
+.filter-close-btn:hover { background: var(--bg2); }
 .filter-group { margin-bottom: 24px; }
 .filter-group-label { font-size: 12px; font-weight: 600; color: var(--text2); margin-bottom: 10px; }
 .filter-search { width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); font-size: 13px; background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; outline: none; margin-bottom: 10px; transition: border-color .15s; }
@@ -791,18 +793,19 @@ nav {
   .cons-label { flex: 0 0 130px; font-size: 12px; }
   .fw-val { font-size: 24px; }
   .library-layout { grid-template-columns: 1fr; }
-  .filter-sidebar { display: none; position: fixed; top: 56px; left: 0; right: 0; z-index: 150; height: calc(100vh - 56px); border-right: none; border-bottom: 1px solid var(--border); }
+  .filter-sidebar { display: none; position: fixed; top: 56px; left: 0; right: 0; bottom: 0; z-index: 150; height: calc(100vh - 56px); border-right: none; background: var(--surface); overflow-y: auto; -webkit-overflow-scrolling: touch; }
   .filter-sidebar.open { display: block; animation: pageFadeUp .2s var(--ease-out); }
+  .filter-close-btn { display: flex; }
   .filter-toggle-btn { display: flex; }
   .library-main { padding: 20px; }
   .globe-layout { flex-direction: column; height: calc(100vh - 56px); height: calc(100dvh - 56px); min-height: 0; }
-  .globe-sidebar { width: 100%; min-width: 0; max-height: 28vh; border-left: none; border-top: 1px solid var(--border); order: 2; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .globe-sidebar { width: 100%; min-width: 0; max-height: 20vh; border-left: none; border-top: 1px solid var(--border); order: 2; overflow-y: auto; -webkit-overflow-scrolling: touch; }
   .globe-sidebar-header { padding: 12px 16px; }
   .globe-sidebar-title { font-size: 16px; }
   .globe-tip-desktop { display: none; }
   .globe-tip-mobile { display: block; }
   #globe-canvas { flex: 1; min-height: 0; order: 1; touch-action: none; }
-  .locality-popover { position: fixed; top: auto; bottom: 29vh; left: 8px; right: 8px; width: auto; max-height: 50vh; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px; border-radius: 12px; }
+  .locality-popover { position: fixed; top: auto; bottom: 21vh; left: 8px; right: 8px; width: auto; max-height: 50vh; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px; border-radius: 12px; }
   .popover-title { font-size: 18px; }
   .popover-fish-grid { grid-template-columns: repeat(4,1fr); gap: 4px; }
   .locality-item { padding: 10px 16px; gap: 10px; }
@@ -831,7 +834,7 @@ nav {
   .fish-watch-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 480px) {
-  .top-sales-grid { grid-template-columns: 1fr; }
+  .top-sales-grid { grid-template-columns: repeat(2, 1fr); }
   .hero-btns,.fotd-actions,.nemo-links { flex-direction: column; }
   .fotd-meta { gap: 16px; }
   .detail-nav { flex-wrap: wrap; }

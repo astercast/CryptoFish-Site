@@ -44,7 +44,7 @@
   <button class="mobile-nav-link" onclick="showPage('globe')">Globe</button>
   <button class="mobile-nav-link" onclick="showPage('nemo')">About FindUrNemo</button>
   <div class="mobile-nav-row">
-    <button class="mobile-nav-link primary" onclick="window.open('https://opensea.io/collection/cryptofish','_blank')">View on OpenSea &#8599;</button>
+    <button class="mobile-nav-link primary" onclick="window.open('https://opensea.io/collection/cryptofish','_blank')">View on OpenSea</button>
     <button class="mobile-nav-link dark-toggle-mobile" onclick="toggleDarkMode();toggleMobileNav()" aria-label="Toggle dark mode">&#9789; Dark / Light</button>
   </div>
 </div>
@@ -57,8 +57,7 @@
   <!-- Hero -->
   <div class="home-hero">
     <div class="hero-text">
-      <div class="hero-eyebrow reveal">2,166 Species &middot; Ethereum &middot; Since May 2025</div>
-      <h1 class="hero-title reveal">Real Fish.<br><em>Rare Fish.</em></h1>
+      <h1 class="hero-title reveal"><span class="hero-title-main">Real Fish.</span><br><span class="hero-title-accent">Rare Fish.</span></h1>
       <p class="hero-sub reveal">
         Every CryptoFish is a real species, hand-crafted in pixel art and scientifically classified
         using Linnaean taxonomy: conservation status, genus, species, and locality
@@ -216,6 +215,7 @@
     <div class="filter-sidebar" id="filter-sidebar">
       <div class="filter-title">
         Filters <span class="filter-clear" onclick="clearFilters()">Clear all</span>
+        <button class="filter-close-btn" onclick="toggleFilterSidebar()" aria-label="Close filters">&times;</button>
       </div>
       <div class="filter-group">
         <div class="filter-group-label">Conservation Status</div>
