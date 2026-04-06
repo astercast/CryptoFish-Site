@@ -370,10 +370,10 @@ nav {
 .fish-img-wrap {
   background: var(--bg2); padding: 0;
   display: flex; align-items: center; justify-content: center; overflow: hidden;
-  aspect-ratio: 1; max-height: 110px;
+  aspect-ratio: 1;
 }
 .fish-img-wrap img { width: 100%; height: 100%; object-fit: contain; display: block; image-rendering: pixelated; image-rendering: crisp-edges; }
-.large-wrap { max-height: 140px; min-height: 0; }
+.large-wrap { min-height: 0; }
 .fish-card-info { padding: 8px 10px; }
 .fish-card-name { font-size: 12px; font-weight: 600; margin-bottom: 2px; }
 .fish-card-sci { font-size: 10px; color: var(--text2); font-style: italic; }
