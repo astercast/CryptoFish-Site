@@ -860,19 +860,51 @@ function renderFishWatch(d) {
   const listedCount = listingsArr.length;
   const supply = d.stats?.total_supply || 2166;
   const floor = d.stats?.floor_price ?? (listingsArr[0]?.eth ?? 0);
+  const listedPct = ((listedCount / supply) * 100).toFixed(1);
 
-  // Floor cluster: count fish before first >30% price jump
-  let floorCluster = listedCount;
+  // Listing price stats
+  const prices = listingsArr.map(l => l.eth).filter(p => p > 0);
+  const avgList = prices.length ? prices.reduce((s, p) => s + p, 0) / prices.length : 0;
+  const medianList = prices.length ? prices[Math.floor(prices.length / 2)] : 0;
+  const maxList = prices.length ? prices[prices.length - 1] : 0;
+
+  // Best offer
+  const bestOffer = d.offers?.length ? d.offers[0].eth : 0;
+  const spread = (floor > 0 && bestOffer > 0) ? ((floor - bestOffer) / floor * 100).toFixed(1) : null;
+
+  // Floor cluster: count fish within 20% of floor
+  let floorCluster = 0;
   let wallPrice = null;
-  for (let i = 1; i < listingsArr.length; i++) {
-    const prev = listingsArr[i - 1].eth;
-    const curr = listingsArr[i].eth;
-    if (prev > 0 && (curr - prev) / prev > 0.3) {
-      floorCluster = i;
-      wallPrice = curr;
-      break;
+  for (let i = 0; i < listingsArr.length; i++) {
+    if (floor > 0 && listingsArr[i].eth <= floor * 1.2) {
+      floorCluster++;
+    } else if (!wallPrice && i > 0) {
+      wallPrice = listingsArr[i].eth;
     }
   }
+  if (!wallPrice && listingsArr.length) wallPrice = listingsArr[listingsArr.length - 1].eth;
+
+  // Price distribution (5 buckets for mini histogram)
+  const buckets = [0, 0, 0, 0, 0];
+  if (prices.length > 1) {
+    const lo = prices[0], hi = Math.min(prices[prices.length - 1], lo * 10);
+    const step = (hi - lo) / 5;
+    for (const p of prices) {
+      const bi = step > 0 ? Math.min(4, Math.floor((p - lo) / step)) : 0;
+      buckets[bi]++;
+    }
+  }
+  const maxBucket = Math.max(...buckets, 1);
+
+  // Sales analytics
+  const sales = d.sales || [];
+  const recentSales = sales.filter(s => s.ts > 0);
+  const saleEths = recentSales.map(s => parseFloat(s.eth)).filter(e => e > 0);
+  const totalVol = saleEths.reduce((s, e) => s + e, 0);
+  const avgSale = saleEths.length ? totalVol / saleEths.length : 0;
+  const highSale = saleEths.length ? Math.max(...saleEths) : 0;
+  const uniqueBuyers = new Set(recentSales.map(s => (s.buyer || '').toLowerCase()).filter(Boolean)).size;
+  const uniqueSellers = new Set(recentSales.map(s => (s.seller || '').toLowerCase()).filter(Boolean)).size;
 
   // Holder behavior profile
   const hp = d.holderProfile || {};
@@ -883,19 +915,51 @@ function renderFishWatch(d) {
 
   el.innerHTML = `
     <div class="fw-card">
-      <div class="fw-val">${listedCount}<span class="fw-of">/ ${supply.toLocaleString()}</span></div>
-      <div class="fw-label">Currently Listed</div>
-      <div class="fw-sub">${floor > 0 ? fmt(floor, 4) + ' ETH floor' : ''}</div>
-      <div class="fw-meter"><div class="fw-meter-fill" style="width:${((listedCount / supply) * 100).toFixed(1)}%"></div></div>
+      <div class="fw-card-header">
+        <div class="fw-val">${listedCount}<span class="fw-of">/ ${supply.toLocaleString()}</span></div>
+        <span class="fw-badge fw-badge-blue">${listedPct}%</span>
+      </div>
+      <div class="fw-label">Market Overview</div>
+      <div class="fw-rows">
+        <div class="fw-row"><span class="fw-row-label">Floor</span><span class="fw-row-val">${floor > 0 ? fmt(floor, 4) + ' ETH' : '—'}</span></div>
+        <div class="fw-row"><span class="fw-row-label">Avg listing</span><span class="fw-row-val">${avgList > 0 ? fmt(avgList, 4) + ' ETH' : '—'}</span></div>
+        <div class="fw-row"><span class="fw-row-label">Median</span><span class="fw-row-val">${medianList > 0 ? fmt(medianList, 4) + ' ETH' : '—'}</span></div>
+        <div class="fw-row"><span class="fw-row-label">Ceiling</span><span class="fw-row-val">${maxList > 0 ? fmt(maxList, 4) + ' ETH' : '—'}</span></div>
+        <div class="fw-row"><span class="fw-row-label">Best offer</span><span class="fw-row-val">${bestOffer > 0 ? fmt(bestOffer, 4) + ' ETH' : '—'}</span></div>
+        ${spread !== null ? `<div class="fw-row"><span class="fw-row-label">Bid-ask spread</span><span class="fw-row-val">${spread}%</span></div>` : ''}
+      </div>
+      <div class="fw-meter"><div class="fw-meter-fill" style="width:${listedPct}%;background:var(--accent)"></div></div>
     </div>
     <div class="fw-card">
-      <div class="fw-val">${floorCluster}</div>
-      <div class="fw-label">Fish at Floor</div>
-      <div class="fw-sub">${wallPrice ? 'Wall at ' + fmt(wallPrice, 4) + ' ETH (+' + (((wallPrice - floor) / floor) * 100).toFixed(0) + '%)' : 'No significant price wall'}</div>
+      <div class="fw-card-header">
+        <div class="fw-val">${floorCluster}<span class="fw-of">fish</span></div>
+        ${wallPrice ? `<span class="fw-badge fw-badge-red">wall ${fmt(wallPrice, 3)}</span>` : ''}
+      </div>
+      <div class="fw-label">Depth &amp; Distribution</div>
+      <div class="fw-rows">
+        <div class="fw-row"><span class="fw-row-label">Within 20% of floor</span><span class="fw-row-val">${floorCluster} listed</span></div>
+        <div class="fw-row"><span class="fw-row-label">Price wall at</span><span class="fw-row-val">${wallPrice ? fmt(wallPrice, 4) + ' ETH' : '—'}</span></div>
+        <div class="fw-row"><span class="fw-row-label">Wall gap</span><span class="fw-row-val">${wallPrice && floor > 0 ? '+' + (((wallPrice - floor) / floor) * 100).toFixed(0) + '%' : '—'}</span></div>
+      </div>
+      <div class="fw-sub">Listing price spread</div>
+      <div class="fw-mini-bars">
+        ${buckets.map((b, i) => `<div class="fw-mini-bar" style="height:${Math.max(2, (b / maxBucket) * 100)}%" title="${b} fish in range ${i + 1}"></div>`).join('')}
+      </div>
+      <div class="fw-sub" style="display:flex;justify-content:space-between;margin-top:2px"><span>${floor > 0 ? fmt(floor, 3) : '0'}</span><span>${maxList > 0 ? fmt(maxList, 3) : '?'} ETH</span></div>
     </div>
     <div class="fw-card">
-      <div class="fw-val">${hpTotal}<span class="fw-of">traders</span></div>
-      <div class="fw-label">Holder Behavior</div>
+      <div class="fw-card-header">
+        <div class="fw-val">${hpTotal}<span class="fw-of">traders</span></div>
+        <span class="fw-badge fw-badge-green">${recentSales.length} sales</span>
+      </div>
+      <div class="fw-label">Trading Activity</div>
+      <div class="fw-rows">
+        <div class="fw-row"><span class="fw-row-label">Recent volume</span><span class="fw-row-val">${fmt(totalVol, 3)} ETH</span></div>
+        <div class="fw-row"><span class="fw-row-label">Avg sale price</span><span class="fw-row-val">${avgSale > 0 ? fmt(avgSale, 4) + ' ETH' : '—'}</span></div>
+        <div class="fw-row"><span class="fw-row-label">Highest sale</span><span class="fw-row-val">${highSale > 0 ? fmt(highSale, 4) + ' ETH' : '—'}</span></div>
+        <div class="fw-row"><span class="fw-row-label">Unique buyers</span><span class="fw-row-val">${uniqueBuyers}</span></div>
+        <div class="fw-row"><span class="fw-row-label">Unique sellers</span><span class="fw-row-val">${uniqueSellers}</span></div>
+      </div>
       <div class="fw-stacked-bar">
         <div class="fw-bar-seg fw-seg-diamond" style="width:${dPct}%" title="Diamond Hands ${dPct}%"></div>
         <div class="fw-bar-seg fw-seg-new" style="width:${nPct}%" title="New Buyers ${nPct}%"></div>
@@ -906,7 +970,6 @@ function renderFishWatch(d) {
         <span class="fw-leg"><span class="fw-leg-dot fw-seg-new"></span>New ${hp.newBuyers || 0}</span>
         <span class="fw-leg"><span class="fw-leg-dot fw-seg-flip"></span>Flippers ${hp.flippers || 0}</span>
       </div>
-
     </div>`;
 }
 

@@ -365,19 +365,18 @@ function initGlobe() {
     .width(W).height(H)
     .backgroundColor('rgba(0,0,0,0)')
     .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
-    .bumpImageUrl('https://unpkg.com/three-globe/example/img/earth-topology.png')
-    .atmosphereColor('#aad4f5')
-    .atmosphereAltitude(0.18)
+    .atmosphereColor('#c8ddf5')
+    .atmosphereAltitude(0.22)
     .pointsData([])
     .pointLat(d => d.lat)
     .pointLng(d => d.lon)
-    .pointAltitude(0.02)
+    .pointAltitude(d => d.isCluster ? 0.06 : 0.04)
     .pointRadius(d => {
       const base = Math.log(Math.min(d.count, 80) + 1) / Math.log(81);
-      return d.isCluster ? 0.18 + base * 0.35 : 0.12 + base * 0.25;
+      return d.isCluster ? 0.45 + base * 0.65 : 0.3 + base * 0.5;
     })
-    .pointColor(d => d.isCluster ? `hsl(${d.hue},50%,65%)` : `hsl(${d.hue},80%,58%)`)
-    .pointResolution(12)
+    .pointColor(d => d.isCluster ? `hsl(${d.hue},70%,60%)` : `hsl(${d.hue},90%,55%)`)
+    .pointResolution(16)
     .onPointClick(d => { _focusByData(d); showPopover(d); })
     .onGlobeClick(() => closePopover())
     .pointLabel(d => {
@@ -415,9 +414,10 @@ function initGlobe() {
 
   renderLocalityList();
 
-  // Cube morph + visual effects (wait for texture load)
+  // Cube morph + pastel tint + visual effects (wait for texture load)
   setTimeout(() => {
     morphGlobeShape();
+    pastelizeGlobe();
     addGlobeEffects();
   }, 800);
 }
@@ -426,7 +426,7 @@ function initGlobe() {
 function morphGlobeShape() {
   if (!globeInstance) return;
   const scene = globeInstance.scene();
-  const CUBE_MIX = 0.42;
+  const CUBE_MIX = 0.65;
   scene.traverse(obj => {
     if (!obj.isMesh || !obj.geometry?.attributes?.position) return;
     const pos = obj.geometry.attributes.position;
@@ -447,6 +447,41 @@ function morphGlobeShape() {
     pos.needsUpdate = true;
     obj.geometry.computeVertexNormals();
     obj.geometry.computeBoundingSphere();
+  });
+}
+
+// ── Pastelize Globe Texture ───────────────────────
+function pastelizeGlobe() {
+  if (!globeInstance) return;
+  const scene = globeInstance.scene();
+  scene.traverse(obj => {
+    if (!obj.isMesh || !obj.material?.map) return;
+    const tex = obj.material.map;
+    if (!tex.image || tex.image.width < 512) return;
+    // Draw texture to canvas, desaturate + lighten
+    const img = tex.image;
+    const c = document.createElement('canvas');
+    c.width = img.width; c.height = img.height;
+    const ctx = c.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    const id = ctx.getImageData(0, 0, c.width, c.height);
+    const px = id.data;
+    for (let i = 0; i < px.length; i += 4) {
+      let r = px[i], g = px[i+1], b = px[i+2];
+      // Desaturate 45%
+      const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+      r = r + (gray - r) * 0.45;
+      g = g + (gray - g) * 0.45;
+      b = b + (gray - b) * 0.45;
+      // Lighten 30% toward white + slight warm tint
+      px[i]   = Math.min(255, r + (255 - r) * 0.30 + 6);
+      px[i+1] = Math.min(255, g + (255 - g) * 0.30 + 3);
+      px[i+2] = Math.min(255, b + (255 - b) * 0.30);
+    }
+    ctx.putImageData(id, 0, 0);
+    obj.material.map = new THREE.CanvasTexture(c);
+    obj.material.map.needsUpdate = true;
+    obj.material.needsUpdate = true;
   });
 }
 
