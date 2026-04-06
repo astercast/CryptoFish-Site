@@ -539,7 +539,7 @@ function getFilteredFish() {
       break;
     }
     case 'price-high': {
-      const p = k => _liveListings[String(k)]?.eth ?? 0;
+      const p = k => _liveListings[String(k)]?.eth ?? -Infinity;
       fish = [...fish].sort((a,b) => p(b.tokenId) - p(a.tokenId));
       break;
     }
@@ -659,31 +659,80 @@ function searchLibrary(query) {
   renderLibrary();
 }
 
-// ── All-Time Top Sales Accumulator (IDB-persistent) ──
+// ── All-Time Top Sales: Deep Scan ─────────────────
 let _allTimeTop = [];
+let _salesScanRunning = false;
 
 async function _loadTopSales() {
   try {
-    const stored = await idbGet('top-sales', Infinity);
+    const stored = await idbGet('all-sales', Infinity);
     if (stored?.length) {
       _allTimeTop = stored;
       renderTopSales(_allTimeTop);
     }
   } catch {}
+  // Kick off deep scan in background
+  _deepScanSales();
 }
 
 async function _mergeTopSales(newSales) {
-  // Merge new sales into persistent top list, dedup by token+ts+eth
-  const seen = new Set(_allTimeTop.map(s => s.token + '|' + s.ts + '|' + s.eth));
+  const seen = new Set(_allTimeTop.map(s => s.token + '|' + s.ts));
+  let added = 0;
   for (const s of newSales) {
-    const key = s.token + '|' + s.ts + '|' + s.eth;
-    if (!seen.has(key)) { _allTimeTop.push(s); seen.add(key); }
+    const key = s.token + '|' + s.ts;
+    if (!seen.has(key)) { _allTimeTop.push(s); seen.add(key); added++; }
   }
-  // Keep top 30 by price (generous buffer so we don't lose data)
-  _allTimeTop.sort((a, b) => parseFloat(b.eth) - parseFloat(a.eth));
-  _allTimeTop = _allTimeTop.slice(0, 30);
-  renderTopSales(_allTimeTop);
-  await idbSet('top-sales', _allTimeTop);
+  if (added) {
+    _allTimeTop.sort((a, b) => parseFloat(b.eth) - parseFloat(a.eth));
+    renderTopSales(_allTimeTop);
+    await idbSet('all-sales', _allTimeTop);
+  }
+}
+
+async function _deepScanSales() {
+  if (_salesScanRunning) return;
+  _salesScanRunning = true;
+  // Check if we already have a full scan cached
+  const meta = await idbGet('sales-scan-meta', Infinity);
+  const now = Date.now();
+  // Re-scan at most once per hour (full scan), always get first 2 pages for recency
+  const needFull = !meta || (now - (meta.ts || 0)) > 3600_000;
+  try {
+    let cursor = null;
+    let page = 0;
+    const maxPages = needFull ? 200 : 2; // 200 pages = 10k sales max
+    while (page < maxPages) {
+      const url = '/api/sales' + (cursor ? '?cursor=' + encodeURIComponent(cursor) : '');
+      const r = await fetch(url);
+      if (!r.ok) break;
+      const d = await r.json();
+      if (!d.sales?.length) break;
+      // Map to display format
+      const mapped = d.sales.map(s => {
+        const idx = s.tokenId ? parseInt(s.tokenId) - 1 : -1;
+        const f = idx >= 0 ? FISH_DATA[idx] : null;
+        return {
+          image: f?.image || s.image || '',
+          name: f ? escapeHTML(f.name) : ('CryptoFish #' + String(s.tokenId).padStart(4, '0')),
+          token: '#' + String(s.tokenId).padStart(4, '0'),
+          eth: s.eth,
+          usd: fmtUSD(s.eth),
+          ts: s.ts,
+          idx: idx >= 0 ? idx : 0,
+        };
+      });
+      await _mergeTopSales(mapped);
+      cursor = d.next;
+      page++;
+      if (!cursor) break;
+      // Small delay to not hammer the API
+      await new Promise(r => setTimeout(r, 250));
+    }
+    if (needFull) await idbSet('sales-scan-meta', { ts: now, pages: page });
+  } catch (e) {
+    console.warn('[deep-scan]', e.message);
+  }
+  _salesScanRunning = false;
 }
 
 // ── Render: Top Sales ────────────────────────────

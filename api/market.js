@@ -11,26 +11,11 @@ async function osFetch(path) {
   return r.json();
 }
 
-// Paginate sales to build all-time top list
-async function fetchAllSales(pages = 4) {
-  let all = [];
-  let cursor = null;
-  for (let i = 0; i < pages; i++) {
-    const qs = `event_type=sale&limit=50${cursor ? '&next=' + cursor : ''}`;
-    const d = await osFetch(`/events/collection/${SLUG}?${qs}`);
-    const events = d.asset_events || [];
-    all = all.concat(events);
-    cursor = d.next;
-    if (!cursor || events.length < 50) break;
-  }
-  return all;
-}
-
 module.exports = async function handler(req, res) {
   try {
-    const [statsData, allSaleEvents, listingsData, offersData] = await Promise.all([
+    const [statsData, salesData, listingsData, offersData] = await Promise.all([
       osFetch(`/collections/${SLUG}/stats`),
-      fetchAllSales(10),
+      osFetch(`/events/collection/${SLUG}?event_type=sale&limit=20`),
       osFetch(`/listings/collection/${SLUG}/best?limit=100`),
       osFetch(`/offers/collection/${SLUG}?limit=20`).catch(() => ({ offers: [] })),
     ]);
@@ -48,8 +33,8 @@ module.exports = async function handler(req, res) {
       week_volume:  statsData.intervals?.[1]?.volume ?? null,
     };
 
-    // --- Sales ---
-    const sales = allSaleEvents.map(e => {
+    // --- Sales (recent 20 for feed) ---
+    const sales = (salesData.asset_events || []).map(e => {
       const wei = e.payment?.quantity || '0';
       const eth = (parseFloat(wei) / 1e18).toFixed(4);
       const tokenId = e.nft?.identifier || '';
