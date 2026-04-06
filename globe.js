@@ -326,7 +326,7 @@ function updateGlobeClusters() {
   const alt = globeInstance.pointOfView().altitude ?? 2.5;
   if (Math.abs(alt - lastAlt) < 0.02) return;
   lastAlt = alt;
-  const thresh = Math.max(0.1, alt * 0.6);
+  const thresh = Math.max(0.08, alt * 0.35);
   currentClusters = clusterLocs(locDataArr, thresh);
   globeInstance.pointsData(currentClusters);
 }
@@ -388,6 +388,9 @@ function initGlobe() {
 
   globeInstance(el);
 
+  // Hide until morph/pastel applied to avoid sphere flash
+  el.style.opacity = '0';
+
   // Auto-rotate
   globeInstance.controls().autoRotate      = true;
   globeInstance.controls().autoRotateSpeed = 0.5;
@@ -419,6 +422,8 @@ function initGlobe() {
     morphGlobeShape();
     pastelizeGlobe();
     addGlobeEffects();
+    el.style.transition = 'opacity .5s';
+    el.style.opacity = '1';
   }, 800);
 }
 

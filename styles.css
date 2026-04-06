@@ -470,10 +470,11 @@ nav {
 [data-theme="dark"] .top-sale-rank { background: rgba(30,29,28,.92); }
 .top-sale-art {
   background: var(--bg2); text-align: center; font-size: 32px; line-height: 1;
-  height: 72px; overflow: hidden;
+  overflow: hidden;
   display: flex; align-items: center; justify-content: center; padding: 0;
+  aspect-ratio: 1;
 }
-.top-sale-art img { width: 100%; height: 72px; object-fit: contain; display: block; image-rendering: pixelated; image-rendering: crisp-edges; }
+.top-sale-art img { width: 100%; height: 100%; object-fit: contain; display: block; image-rendering: pixelated; image-rendering: crisp-edges; }
 .top-sale-info { padding: 8px 10px; }
 .top-sale-name { font-size: 11px; font-weight: 600; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .top-sale-price { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 500; color: var(--accent); }
