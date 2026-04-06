@@ -1037,7 +1037,7 @@ function initGlobe() {
     .pointAltitude(d => d.isCluster ? 0.06 : 0.04)
     .pointRadius(d => {
       const base = Math.log(Math.min(d.count, 80) + 1) / Math.log(81);
-      return d.isCluster ? 0.45 + base * 0.65 : 0.3 + base * 0.5;
+      return d.isCluster ? 0.25 + base * 0.4 : 0.18 + base * 0.3;
     })
     .pointColor(d => d.isCluster ? `hsl(${d.hue},70%,60%)` : `hsl(${d.hue},90%,55%)`)
     .pointResolution(16)
