@@ -533,6 +533,16 @@ function getFilteredFish() {
   switch (currentSort) {
     case 'alpha':  fish = [...fish].sort((a,b) => a.name.localeCompare(b.name)); break;
     case 'status': fish = [...fish].sort((a,b) => (so[a.status]??9)-(so[b.status]??9)); break;
+    case 'price-low': {
+      const p = k => _liveListings[String(k)]?.eth ?? Infinity;
+      fish = [...fish].sort((a,b) => p(a.tokenId) - p(b.tokenId));
+      break;
+    }
+    case 'price-high': {
+      const p = k => _liveListings[String(k)]?.eth ?? 0;
+      fish = [...fish].sort((a,b) => p(b.tokenId) - p(a.tokenId));
+      break;
+    }
     default:       fish = [...fish].sort((a,b) => a.tokenId - b.tokenId);
   }
   return fish;
@@ -552,11 +562,14 @@ function renderLibrary() {
 
   grid.innerHTML = fish.map((f, i) => {
     const idx = f.tokenId - 1;
+    const listing = _liveListings[String(f.tokenId)];
+    const priceTag = listing ? `<div class="fish-card-price">${listing.eth.toFixed(4)} ETH</div>` : '';
     return `
       <div class="fish-card animate-card" style="--card-delay:${(i % 20) * 0.03}s" onclick="showFish(${idx})">
         <div class="fish-card-art">
           <div class="fish-card-token">#${f.id}</div>
           <div class="fish-card-status-dot" style="background:${STATUS_COLORS[f.status]||'#999'}" title="${STATUS_NAMES[f.status]||'Unknown'}"></div>
+          ${priceTag}
           ${f.image ? `<img src="${encodeURI(f.image)}" alt="${escapeHTML(f.name)}" class="fish-card-img" loading="lazy">` : '<div class="fish-card-emoji">🐟</div>'}
         </div>
         <div class="fish-card-body">

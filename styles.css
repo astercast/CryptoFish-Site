@@ -596,7 +596,7 @@ nav {
 .fish-card-sci { font-size: 11px; font-style: italic; color: var(--text2); margin-bottom: 8px; }
 .fish-card-footer { display: flex; align-items: center; justify-content: space-between; }
 .fish-card-locality { font-size: 10px; color: var(--text3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70%; }
-.fish-card-price { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--accent); }
+.fish-card-price { position: absolute; bottom: 6px; left: 8px; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600; color: #fff; background: rgba(0,0,0,.65); padding: 2px 6px; border-radius: 4px; line-height: 1.2; }
 .fish-card-status-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 600; color: var(--text3); letter-spacing: .5px; flex-shrink: 0; }
 
 /* Load more */
