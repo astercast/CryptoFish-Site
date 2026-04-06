@@ -652,7 +652,7 @@ function renderTopSales(sales) {
   if (!el) return;
   const top3 = [...sales]
     .sort((a, b) => parseFloat(b.eth) - parseFloat(a.eth))
-    .slice(0, 3);
+    .slice(0, 9);
   if (!top3.length) {
     el.innerHTML = '<div style="grid-column:1/-1;padding:20px;text-align:center;color:var(--text3);font-size:13px">No sale data available.</div>';
     return;
@@ -785,14 +785,12 @@ function renderFishWatch(d) {
     }
   }
 
-  // Holders
-  const owners = d.stats?.num_owners ?? 0;
-  const avgHeld = owners > 0 ? (supply / owners).toFixed(1) : '—';
-
-  // Offer spread
-  const bestOffer = d.offers?.length ? Math.max(...d.offers.map(o => o.eth)) : null;
-  const spread = bestOffer != null && floor > 0
-    ? (((floor - bestOffer) / floor) * 100).toFixed(1) : null;
+  // Holder behavior profile
+  const hp = d.holderProfile || {};
+  const hpTotal = hp.sample || 0;
+  const dPct = hpTotal ? Math.round((hp.diamondHands / hpTotal) * 100) : 0;
+  const nPct = hpTotal ? Math.round((hp.newBuyers / hpTotal) * 100) : 0;
+  const fPct = hpTotal ? Math.round((hp.flippers / hpTotal) * 100) : 0;
 
   el.innerHTML = `
     <div class="fw-card">
@@ -807,14 +805,19 @@ function renderFishWatch(d) {
       <div class="fw-sub">${wallPrice ? 'Wall at ' + fmt(wallPrice, 4) + ' ETH (+' + (((wallPrice - floor) / floor) * 100).toFixed(0) + '%)' : 'No significant price wall'}</div>
     </div>
     <div class="fw-card">
-      <div class="fw-val">${owners ? owners.toLocaleString() : '—'}</div>
-      <div class="fw-label">Unique Holders</div>
-      <div class="fw-sub">${owners ? '~' + avgHeld + ' fish per holder' : ''}</div>
-    </div>
-    <div class="fw-card">
-      <div class="fw-val">${spread !== null ? spread + '<span class="fw-unit">%</span>' : '—'}</div>
-      <div class="fw-label">Bid\u2013Ask Spread</div>
-      <div class="fw-sub">${bestOffer ? 'Offer ' + fmt(bestOffer, 4) + ' \u00b7 Floor ' + fmt(floor, 4) + ' ETH' : 'No active offers'}</div>
+      <div class="fw-val">${hpTotal}<span class="fw-of">traders</span></div>
+      <div class="fw-label">Holder Behavior</div>
+      <div class="fw-stacked-bar">
+        <div class="fw-bar-seg fw-seg-diamond" style="width:${dPct}%" title="Diamond Hands ${dPct}%"></div>
+        <div class="fw-bar-seg fw-seg-new" style="width:${nPct}%" title="New Buyers ${nPct}%"></div>
+        <div class="fw-bar-seg fw-seg-flip" style="width:${fPct}%" title="Flippers ${fPct}%"></div>
+      </div>
+      <div class="fw-legend">
+        <span class="fw-leg"><span class="fw-leg-dot fw-seg-diamond"></span>Diamond ${hp.diamondHands || 0}</span>
+        <span class="fw-leg"><span class="fw-leg-dot fw-seg-new"></span>New ${hp.newBuyers || 0}</span>
+        <span class="fw-leg"><span class="fw-leg-dot fw-seg-flip"></span>Flippers ${hp.flippers || 0}</span>
+      </div>
+
     </div>`;
 }
 

@@ -11,11 +11,26 @@ async function osFetch(path) {
   return r.json();
 }
 
+// Paginate sales to build all-time top list
+async function fetchAllSales(pages = 4) {
+  let all = [];
+  let cursor = null;
+  for (let i = 0; i < pages; i++) {
+    const qs = `event_type=sale&limit=50${cursor ? '&next=' + cursor : ''}`;
+    const d = await osFetch(`/events/collection/${SLUG}?${qs}`);
+    const events = d.asset_events || [];
+    all = all.concat(events);
+    cursor = d.next;
+    if (!cursor || events.length < 50) break;
+  }
+  return all;
+}
+
 module.exports = async function handler(req, res) {
   try {
-    const [statsData, salesData, listingsData, offersData] = await Promise.all([
+    const [statsData, allSaleEvents, listingsData, offersData] = await Promise.all([
       osFetch(`/collections/${SLUG}/stats`),
-      osFetch(`/events/collection/${SLUG}?event_type=sale&limit=20`),
+      fetchAllSales(4),
       osFetch(`/listings/collection/${SLUG}/best?limit=100`),
       osFetch(`/offers/collection/${SLUG}?limit=20`).catch(() => ({ offers: [] })),
     ]);
@@ -34,7 +49,7 @@ module.exports = async function handler(req, res) {
     };
 
     // --- Sales ---
-    const sales = (salesData.asset_events || []).map(e => {
+    const sales = allSaleEvents.map(e => {
       const wei = e.payment?.quantity || '0';
       const eth = (parseFloat(wei) / 1e18).toFixed(4);
       const tokenId = e.nft?.identifier || '';
@@ -70,8 +85,52 @@ module.exports = async function handler(req, res) {
       return { eth: +eth.toFixed(6) };
     }).filter(o => o.eth > 0).sort((a, b) => b.eth - a.eth);
 
+    // --- Holder behavior profiling ---
+    // Analyze recent sales to classify addresses
+    const now = Date.now();
+    const DAY = 86400_000;
+    const addrBuys  = {};  // addr -> [timestamps]
+    const addrSells = {};  // addr -> [timestamps]
+    for (const s of sales) {
+      const buyer  = (s.buyer  || '').toLowerCase();
+      const seller = (s.seller || '').toLowerCase();
+      if (buyer)  { (addrBuys[buyer]   = addrBuys[buyer]   || []).push(s.ts); }
+      if (seller) { (addrSells[seller]  = addrSells[seller] || []).push(s.ts); }
+    }
+    // All unique addresses that participated
+    const allAddrs = new Set([...Object.keys(addrBuys), ...Object.keys(addrSells)]);
+    let flippers = 0, diamondHands = 0, newBuyers = 0;
+    for (const addr of allAddrs) {
+      const buys  = addrBuys[addr]  || [];
+      const sells = addrSells[addr] || [];
+      const hasSold   = sells.length > 0;
+      const hasBought = buys.length > 0;
+      // Flipper: both bought and sold, or sold 2+
+      if (hasBought && hasSold || sells.length >= 2) {
+        flippers++;
+      }
+      // New buyer: bought in last 14 days and never sold
+      else if (hasBought && !hasSold && buys.some(t => now - t < 14 * DAY)) {
+        newBuyers++;
+      }
+      // Diamond hand: bought (any time in our window) and never sold
+      else if (hasBought && !hasSold) {
+        diamondHands++;
+      }
+      // Pure sellers (only sold, never bought in window) — likely long holders selling
+      else if (hasSold && !hasBought) {
+        diamondHands++;
+      }
+    }
+    const holderProfile = {
+      sample: allAddrs.size,
+      flippers,
+      diamondHands,
+      newBuyers,
+    };
+
     res.setHeader('Cache-Control', 's-maxage=120, stale-while-revalidate=300');
-    res.status(200).json({ stats, sales, listings, offers });
+    res.status(200).json({ stats, sales, listings, offers, holderProfile });
   } catch (e) {
     console.error('[api/market]', e);
     res.status(502).json({ error: e.message });
