@@ -664,7 +664,7 @@ let _allTimeTop = [];
 let _salesScanRunning = false;
 
 async function _loadTopSales() {
-  // 1. Serve from IDB cache immediately (returning visitors get instant display)
+  // 1. IDB cache → show immediately for returning visitors
   try {
     const stored = await idbGet('all-sales', Infinity);
     if (stored?.length) {
@@ -672,7 +672,34 @@ async function _loadTopSales() {
       renderTopSales(_allTimeTop);
     }
   } catch {}
-  // 2. Deep scan all sales in background to build/refresh the all-time list
+
+  // 2. Blob cache → new visitors get the server-stored pre-built top sales
+  try {
+    const r = await fetch('/api/top-sales');
+    if (r.ok) {
+      const d = await r.json();
+      if (d.sales?.length) {
+        const mapped = d.sales.map(s => {
+          const idx = s.tokenId ? parseInt(s.tokenId) - 1 : -1;
+          const f   = idx >= 0 ? FISH_DATA[idx] : null;
+          return {
+            image: f?.image || s.image || '',
+            name:  f ? escapeHTML(f.name) : ('CryptoFish #' + String(s.tokenId).padStart(4, '0')),
+            token: '#' + String(s.tokenId).padStart(4, '0'),
+            eth:   s.eth,
+            usd:   fmtUSD(s.eth),
+            ts:    s.ts,
+            idx:   idx >= 0 ? idx : 0,
+          };
+        });
+        await _mergeTopSales(mapped);
+      }
+    }
+  } catch (e) {
+    console.warn('[top-sales blob]', e.message);
+  }
+
+  // 3. Deep scan in background to catch any new sales and build/refresh blob
   _deepScanSales();
 }
 
@@ -729,7 +756,23 @@ async function _deepScanSales() {
       // Small delay to not hammer the API
       await new Promise(r => setTimeout(r, 250));
     }
-    if (needFull) await idbSet('sales-scan-meta', { ts: now, pages: page });
+    if (needFull) {
+      await idbSet('sales-scan-meta', { ts: now, pages: page });
+      // Save full results to Vercel Blob so future new visitors skip the scan
+      try {
+        const payload = _allTimeTop.slice(0, 500).map(s => ({
+          tokenId: parseInt((s.token || '0').replace(/\D/g, '')) || 0,
+          eth:     s.eth,
+          ts:      s.ts,
+          image:   s.image || '',
+        }));
+        await fetch('/api/top-sales-save', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ sales: payload }),
+        });
+      } catch {}
+    }
   } catch (e) {
     console.warn('[deep-scan]', e.message);
   }
