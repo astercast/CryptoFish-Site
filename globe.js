@@ -992,15 +992,26 @@ function clusterLocs(locs, threshDeg) {
   return clusters;
 }
 
+function getClusterThresh() {
+  if (!globeInstance) return 0.4;
+  const alt = globeInstance.pointOfView().altitude;
+  if (alt > 2.5) return 0.45;
+  if (alt > 1.5) return 0.25;
+  if (alt > 0.8) return 0.12;
+  if (alt > 0.4) return 0.05;
+  return 0.02;
+}
+
 function updateGlobeClusters() {
   if (!globeInstance) return;
-  // Cluster with wider threshold so nearby locations group together
-  currentClusters = clusterLocs(locDataArr, 0.6);
+  currentClusters = clusterLocs(locDataArr, getClusterThresh());
   globeInstance.pointsData(currentClusters);
 }
 
+let _clusterTimer = null;
 function scheduleClusterUpdate() {
-  // No-op: clustering is static, no re-clustering on zoom
+  clearTimeout(_clusterTimer);
+  _clusterTimer = setTimeout(updateGlobeClusters, 150);
 }
 
 // ── Main init ─────────────────────────────────────
@@ -1040,7 +1051,7 @@ function initGlobe() {
       return d.isCluster ? 0.25 + base * 0.4 : 0.18 + base * 0.3;
     })
     .pointColor(d => d.isCluster ? `hsl(${d.hue},70%,60%)` : `hsl(${d.hue},90%,55%)`)
-    .pointResolution(16)
+    .pointResolution(8)
     .onPointClick(d => { _focusByData(d); showPopover(d); })
     .onGlobeClick(() => closePopover())
     .pointLabel(d => {
@@ -1069,11 +1080,21 @@ function initGlobe() {
   window.addEventListener('mouseup',    resumeAuto);
   window.addEventListener('touchend',   resumeAuto);
 
+  let _resizeTimer = null;
   window.addEventListener('resize', () => {
-    if (!globeInstance) return;
-    const w = el.offsetWidth, h = el.offsetHeight;
-    if (w && h) globeInstance.width(w).height(h);
+    clearTimeout(_resizeTimer);
+    _resizeTimer = setTimeout(() => {
+      if (!globeInstance) return;
+      const w = el.offsetWidth, h = el.offsetHeight;
+      if (w && h) globeInstance.width(w).height(h);
+    }, 200);
   });
+
+  // Cap pixel ratio for performance on high-DPI / low-end devices
+  try {
+    const renderer = globeInstance.renderer();
+    if (renderer) renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+  } catch(e) {}
 
   // Zoom-adaptive clustering
   globeInstance.controls().addEventListener('change', scheduleClusterUpdate);
@@ -1083,13 +1104,9 @@ function initGlobe() {
 
   // Cube morph + pastel tint (wait for texture load)
   setTimeout(() => {
-    try {
-      morphGlobeShape();
-      pastelizeGlobe();
-    } catch(e) { console.warn('[CryptoFish] Globe effects error:', e); }
     el.style.transition = 'opacity .5s';
     el.style.opacity = '1';
-  }, 800);
+  }, 600);
 }
 
 // ── Cube Morph ────────────────────────────────────
