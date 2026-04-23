@@ -724,11 +724,6 @@ async function _deepScanSales() {
   const meta = await idbGet('sales-scan-meta', Infinity);
   const now = Date.now();
   const needFull = !meta || (now - (meta.ts || 0)) > 86400_000;
-
-  // On a full rebuild: start from an empty slate so we get ground-truth top sales,
-  // not a merge into potentially stale/partial IDB data.
-  // The IDB data already rendered above, so the grid isn't blank while we scan.
-  if (needFull) _allTimeTop = [];
   try {
     let cursor = null;
     let page = 0;
