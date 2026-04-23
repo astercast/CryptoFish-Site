@@ -1106,6 +1106,10 @@ function initGlobe() {
   setTimeout(() => {
     el.style.transition = 'opacity .5s';
     el.style.opacity = '1';
+    // Morph after fade-in so it doesn't block initial render
+    setTimeout(() => {
+      try { morphGlobeShape(); } catch(e) { console.warn('[globe morph]', e); }
+    }, 300);
   }, 600);
 }
 
