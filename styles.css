@@ -469,6 +469,8 @@ nav {
 .top-sale-card:hover { transform: translateY(-3px) scale(1.02); box-shadow: var(--shadow-lg); border-color: var(--border2); }
 .top-sale-rank { position: absolute; top: 6px; left: 6px; font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 500; background: rgba(255,255,255,.92); padding: 2px 6px; border-radius: 4px; color: var(--text2); z-index: 1; }
 [data-theme="dark"] .top-sale-rank { background: rgba(30,29,28,.92); }
+.top-sale-price-badge { position: absolute; bottom: 6px; right: 6px; font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600; background: rgba(255,255,255,.92); padding: 2px 7px; border-radius: 4px; color: var(--accent); z-index: 1; }
+[data-theme="dark"] .top-sale-price-badge { background: rgba(30,29,28,.92); }
 .top-sale-art {
   background: var(--bg2); text-align: center; font-size: 32px; line-height: 1;
   overflow: hidden;
