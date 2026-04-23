@@ -723,8 +723,12 @@ async function _deepScanSales() {
   // Check if we already have a full scan cached
   const meta = await idbGet('sales-scan-meta', Infinity);
   const now = Date.now();
-  // Re-scan at most once per 24h (full scan), always get first 2 pages for recency
   const needFull = !meta || (now - (meta.ts || 0)) > 86400_000;
+
+  // On a full rebuild: start from an empty slate so we get ground-truth top sales,
+  // not a merge into potentially stale/partial IDB data.
+  // The IDB data already rendered above, so the grid isn't blank while we scan.
+  if (needFull) _allTimeTop = [];
   try {
     let cursor = null;
     let page = 0;
@@ -756,6 +760,12 @@ async function _deepScanSales() {
       // Small delay to not hammer the API
       await new Promise(r => setTimeout(r, 250));
     }
+    // After scan completes: always force a definitive sort + render + IDB save
+    // so the UI reflects the real top sales regardless of merge-diffs
+    _allTimeTop.sort((a, b) => parseFloat(b.eth) - parseFloat(a.eth));
+    renderTopSales(_allTimeTop);
+    await idbSet('all-sales', _allTimeTop);
+
     if (needFull) {
       await idbSet('sales-scan-meta', { ts: now, pages: page });
       // Save full results to Vercel Blob so future new visitors skip the scan
