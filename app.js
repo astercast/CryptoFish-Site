@@ -693,11 +693,6 @@ async function _loadTopSales() {
           };
         });
         await _mergeTopSales(mapped);
-        // If blob data is fresh (< 24h), set IDB scan-meta so new visitors
-        // skip the full 200-page re-scan and only do a quick 2-page recency check
-        if (d.ts && (Date.now() - d.ts) < 86400_000) {
-          try { await idbSet('sales-scan-meta', { ts: d.ts, pages: 0, fromBlob: true }); } catch {}
-        }
       }
     }
   } catch (e) {
