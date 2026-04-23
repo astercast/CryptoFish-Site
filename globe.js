@@ -1103,14 +1103,12 @@ function initGlobe() {
   renderLocalityList();
 
   // Cube morph + pastel tint (wait for texture load)
+  // Morph while still hidden, then fade in — user never sees the sphere
   setTimeout(() => {
-    el.style.transition = 'opacity .5s';
+    try { morphGlobeShape(); } catch(e) { console.warn('[globe morph]', e); }
+    el.style.transition = 'opacity .6s';
     el.style.opacity = '1';
-    // Morph after fade-in so it doesn't block initial render
-    setTimeout(() => {
-      try { morphGlobeShape(); } catch(e) { console.warn('[globe morph]', e); }
-    }, 300);
-  }, 600);
+  }, 800);
 }
 
 // ── Cube Morph ────────────────────────────────────
