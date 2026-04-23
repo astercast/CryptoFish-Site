@@ -437,8 +437,8 @@ nav {
 .fotd-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 
 /* ── Sales ─────────────────────────────────────── */
-.sales-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: stretch; height: 408px; }
-.sales-feed { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; display: flex; flex-direction: column; height: 100%; box-sizing: border-box; }
+.sales-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: stretch; grid-template-rows: 440px; }
+.sales-feed { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; display: flex; flex-direction: column; box-sizing: border-box; }
 .sales-feed-header {
   padding: 14px 20px; border-bottom: 1px solid var(--border);
   font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px;
@@ -458,7 +458,7 @@ nav {
 .sale-eth { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 500; }
 .sale-usd { font-size: 11px; color: var(--text3); margin-top: 1px; }
 
-.top-sales-col { display: flex; flex-direction: column; height: 100%; }
+.top-sales-col { display: flex; flex-direction: column; }
 .top-sales-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; flex: 1; min-height: 0; overflow-y: auto; align-content: start; }
 .top-sale-card {
   background: var(--surface); border: 1px solid var(--border);
@@ -788,7 +788,7 @@ nav {
   .fotd-card { grid-template-columns: 1fr; }
   .fotd-art { padding: 40px; font-size: 80px; }
   .fotd-body { padding: 24px; }
-  .sales-grid { grid-template-columns: 1fr; height: auto; }
+  .sales-grid { grid-template-columns: 1fr; grid-template-rows: auto; }
   .sales-feed { height: auto; max-height: 320px; }
   .top-sales-col { height: auto; }
   .top-sales-grid { flex: none; overflow-y: visible; grid-template-columns: 1fr 1fr; }
