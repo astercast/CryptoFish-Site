@@ -508,7 +508,7 @@ nav {
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
   padding: 22px; display: flex; flex-direction: column; gap: 0;
 }
-.fw-card-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 4px; }
+.fw-card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 4px; gap: 8px; }
 .fw-val { font-family: 'Bricolage Grotesque', sans-serif; font-size: 28px; font-weight: 700; line-height: 1.1; }
 .fw-of { font-size: 13px; font-weight: 400; color: var(--text3); margin-left: 4px; }
 .fw-unit { font-size: 16px; font-weight: 500; }
@@ -520,7 +520,8 @@ nav {
 .fw-rows { display: flex; flex-direction: column; gap: 7px; }
 .fw-row { display: flex; justify-content: space-between; align-items: center; }
 .fw-row-label { font-size: 12px; color: var(--text3); }
-.fw-row-val { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 500; }
+.fw-row-val { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
+.fw-row-usd { font-size: 10px; color: var(--text3); font-weight: 400; font-family: 'Inter', sans-serif; }
 .fw-meter { height: 4px; background: var(--bg2); border-radius: 4px; overflow: hidden; margin-top: 6px; }
 .fw-meter-fill { height: 100%; border-radius: 4px; transition: width 1s var(--ease-out); }
 .fw-stacked-bar { display: flex; height: 8px; border-radius: 4px; overflow: hidden; background: var(--bg2); margin-top: 6px; gap: 1px; }

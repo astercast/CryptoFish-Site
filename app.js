@@ -899,33 +899,34 @@ function renderConservation() {
 function renderFishWatch(d) {
   const el = document.getElementById('fish-watch');
   if (!el || !d) return;
+
+  // ── Listings ──────────────────────────────────────
   const listingsArr = d.listings ? Object.values(d.listings).sort((a, b) => a.eth - b.eth) : [];
   const listedCount = listingsArr.length;
-  const supply = d.stats?.total_supply || 2166;
-  const floor = d.stats?.floor_price ?? (listingsArr[0]?.eth ?? 0);
-  const listedPct = ((listedCount / supply) * 100).toFixed(1);
+  const supply      = d.stats?.total_supply || 2166;
+  const floor       = d.stats?.floor_price ?? (listingsArr[0]?.eth ?? 0);
+  const listedPct   = ((listedCount / supply) * 100).toFixed(1);
 
-  // Listing price stats
-  const prices = listingsArr.map(l => l.eth).filter(p => p > 0);
-  const avgList = prices.length ? prices.reduce((s, p) => s + p, 0) / prices.length : 0;
+  const prices     = listingsArr.map(l => l.eth).filter(p => p > 0);
+  const avgList    = prices.length ? prices.reduce((s, p) => s + p, 0) / prices.length : 0;
   const medianList = prices.length ? prices[Math.floor(prices.length / 2)] : 0;
-  const maxList = prices.length ? prices[prices.length - 1] : 0;
+  const maxList    = prices.length ? prices[prices.length - 1] : 0;
 
-  // Best offer
-  const bestOffer = d.offers?.length ? d.offers[0].eth : 0;
-  const spread = (floor > 0 && bestOffer > 0) ? ((floor - bestOffer) / floor * 100).toFixed(1) : null;
+  const bestOffer  = d.offers?.length ? d.offers[0].eth : 0;
+  const offerGap   = (floor > 0 && bestOffer > 0) ? ((floor - bestOffer) / floor * 100).toFixed(1) : null;
+  const marketCap  = d.stats?.market_cap ?? null;
 
-  // ── Depth bands ──────────────────────────────────
-  const band1 = prices.filter(p => floor > 0 ? p <= floor * 1.1 : true).length;
-  const band2 = prices.filter(p => floor > 0 ? p > floor * 1.1 && p <= floor * 3 : false).length;
-  const band3 = prices.filter(p => floor > 0 ? p > floor * 3 : false).length;
+  // ── Depth bands ───────────────────────────────────
+  const band1      = prices.filter(p => floor > 0 ? p <= floor * 1.1  : true).length;
+  const band2      = prices.filter(p => floor > 0 ? p > floor * 1.1 && p <= floor * 3 : false).length;
+  const band3      = prices.filter(p => floor > 0 ? p > floor * 3     : false).length;
   const spreadMult = floor > 0 && medianList > 0 ? (medianList / floor).toFixed(1) + '×' : null;
 
-  // ── 8-bar histogram (floor → ceiling, capped at 15× floor) ──
+  // 8-bar histogram (floor → ceiling, capped at 15× floor)
   const histBuckets = new Array(8).fill(0);
   if (prices.length >= 1) {
-    const lo = floor > 0 ? floor : prices[0];
-    const hi = floor > 0 ? Math.min(maxList, floor * 15) : prices[prices.length - 1];
+    const lo  = floor > 0 ? floor : prices[0];
+    const hi  = floor > 0 ? Math.min(maxList, floor * 15) : prices[prices.length - 1];
     const rng = hi - lo || 0.001;
     for (const p of prices) {
       histBuckets[Math.min(7, Math.max(0, Math.floor((p - lo) / rng * 8)))]++;
@@ -933,80 +934,115 @@ function renderFishWatch(d) {
   }
   const maxHist = Math.max(...histBuckets, 1);
 
-  // ── Sales analytics ───────────────────────────────
-  const sales = d.sales || [];
-  const recentSales = sales.filter(s => s.ts > 0);
-  const saleEths = recentSales.map(s => parseFloat(s.eth)).filter(e => e > 0);
-  const totalVol = saleEths.reduce((s, e) => s + e, 0);
-  const avgSale = saleEths.length ? totalVol / saleEths.length : 0;
-  const highSale = saleEths.length ? Math.max(...saleEths) : 0;
-  const uniqueBuyers = new Set(recentSales.map(s => (s.buyer || '').toLowerCase()).filter(Boolean)).size;
-  const uniqueSellers = new Set(recentSales.map(s => (s.seller || '').toLowerCase()).filter(Boolean)).size;
-  const sortedTs = recentSales.map(s => s.ts).filter(t => t > 0).sort((a, b) => a - b);
-  const spanDays = sortedTs.length >= 2 ? Math.max(1, Math.round((sortedTs[sortedTs.length - 1] - sortedTs[0]) / 86400_000)) : null;
-  const salesPerDay = spanDays && recentSales.length > 1 ? (recentSales.length / spanDays).toFixed(1) : null;
-  const allTimeHigh = _allTimeTop.length ? parseFloat(_allTimeTop[0].eth) : highSale;
+  // ── Volume — use authoritative stats (all-time) ───
+  const totalVol   = d.stats?.total_volume ?? 0;
+  const dayVol     = d.stats?.day_volume   ?? null;
+  const weekVol    = d.stats?.week_volume  ?? null;
+  const avgSaleStat = d.stats?.avg_price   ?? null;
 
-  // ── Holder behavior profile ───────────────────────
-  const hp = d.holderProfile || {};
+  // ── Recent sales (20-sale window for per-sale metrics) ─
+  const sales         = (d.sales || []).filter(s => s.ts > 0);
+  const saleEths      = sales.map(s => parseFloat(s.eth)).filter(e => e > 0);
+  const recentAvg     = saleEths.length ? saleEths.reduce((s, e) => s + e, 0) / saleEths.length : 0;
+  const uniqueBuyers  = new Set(sales.map(s => (s.buyer  || '').toLowerCase()).filter(Boolean)).size;
+  const uniqueSellers = new Set(sales.map(s => (s.seller || '').toLowerCase()).filter(Boolean)).size;
+  const sortedTs      = sales.map(s => s.ts).sort((a, b) => a - b);
+  const spanDays      = sortedTs.length >= 2 ? Math.max(1, Math.round((sortedTs[sortedTs.length - 1] - sortedTs[0]) / 86400_000)) : null;
+  const salesPerDay   = spanDays && sales.length > 1 ? (sales.length / spanDays).toFixed(1) : null;
+  const allTimeHigh   = _allTimeTop.length ? parseFloat(_allTimeTop[0].eth) : (saleEths.length ? Math.max(...saleEths) : 0);
+
+  // ── Holder behavior ───────────────────────────────
+  const hp      = d.holderProfile || {};
   const hpTotal = hp.sample || 0;
-  const dPct = hpTotal ? Math.round((hp.diamondHands / hpTotal) * 100) : 0;
-  const nPct = hpTotal ? Math.round((hp.newBuyers / hpTotal) * 100) : 0;
-  const fPct = hpTotal ? Math.round((hp.flippers / hpTotal) * 100) : 0;
+  const dPct    = hpTotal ? Math.round((hp.diamondHands / hpTotal) * 100) : 0;
+  const nPct    = hpTotal ? Math.round((hp.newBuyers    / hpTotal) * 100) : 0;
+  const fPct    = hpTotal ? Math.round((hp.flippers     / hpTotal) * 100) : 0;
+
+  // ── Signals ───────────────────────────────────────
+  const listPressureClass = parseFloat(listedPct) < 3 ? 'fw-badge-green'
+                          : parseFloat(listedPct) < 7 ? 'fw-badge-blue' : 'fw-badge-red';
+  const dailyAvg          = weekVol != null ? weekVol / 7 : null;
+  const volTrendClass     = dayVol != null && dailyAvg != null
+                          ? (dayVol > dailyAvg * 1.3 ? 'fw-badge-green' : dayVol < dailyAvg * 0.5 ? 'fw-badge-red' : 'fw-badge-blue')
+                          : 'fw-badge-blue';
+
+  const u = (eth) => liveEthPrice && eth > 0 ? `<span class="fw-row-usd">≈ ${fmtUSD(eth)}</span>` : '';
 
   el.innerHTML = `
+    <!-- Card 1: Listing Market -->
     <div class="fw-card">
       <div class="fw-card-header">
-        <div class="fw-val">${listedCount}<span class="fw-of">/ ${supply.toLocaleString()} listed</span></div>
-        <span class="fw-badge fw-badge-blue">${listedPct}%</span>
+        <div>
+          <div class="fw-val">${floor > 0 ? fmt(floor, 4) : '—'}<span class="fw-unit"> ETH</span></div>
+          ${liveEthPrice && floor > 0 ? `<div class="fw-sub" style="margin-top:1px">≈ ${fmtUSD(floor)}</div>` : ''}
+        </div>
+        <span class="fw-badge ${listPressureClass}">${listedCount} listed · ${listedPct}%</span>
       </div>
-      <div class="fw-label">Market Overview</div>
+      <div class="fw-label">Listing Market</div>
       <div class="fw-rows">
-        <div class="fw-row"><span class="fw-row-label">Floor</span><span class="fw-row-val">${floor > 0 ? fmt(floor, 4) + ' ETH' : '—'}</span></div>
-        <div class="fw-row"><span class="fw-row-label">Avg listing</span><span class="fw-row-val">${avgList > 0 ? fmt(avgList, 4) + ' ETH' : '—'}</span></div>
-        <div class="fw-row"><span class="fw-row-label">Median</span><span class="fw-row-val">${medianList > 0 ? fmt(medianList, 4) + ' ETH' : '—'}</span></div>
+        <div class="fw-row"><span class="fw-row-label">Avg listing</span><span class="fw-row-val">${avgList > 0 ? fmt(avgList, 4) + ' ETH' : '—'}${u(avgList)}</span></div>
+        <div class="fw-row"><span class="fw-row-label">Median listing</span><span class="fw-row-val">${medianList > 0 ? fmt(medianList, 4) + ' ETH' : '—'}${u(medianList)}</span></div>
         <div class="fw-row"><span class="fw-row-label">Ceiling</span><span class="fw-row-val">${maxList > 0 ? fmt(maxList, 4) + ' ETH' : '—'}</span></div>
-        <div class="fw-row"><span class="fw-row-label">Best offer</span><span class="fw-row-val">${bestOffer > 0 ? fmt(bestOffer, 4) + ' ETH' : '—'}</span></div>
-        ${spread !== null ? `<div class="fw-row"><span class="fw-row-label">Bid-ask spread</span><span class="fw-row-val">${spread}%</span></div>` : ''}
+        <div class="fw-row"><span class="fw-row-label">Best offer</span><span class="fw-row-val">${bestOffer > 0 ? fmt(bestOffer, 4) + ' ETH' : '—'}${u(bestOffer)}</span></div>
+        ${offerGap !== null ? `<div class="fw-row"><span class="fw-row-label">Floor–offer gap</span><span class="fw-row-val">${offerGap}%</span></div>` : ''}
+        ${marketCap ? `<div class="fw-row"><span class="fw-row-label">Market cap</span><span class="fw-row-val">${fmt(marketCap, 1)} ETH${u(marketCap)}</span></div>` : ''}
       </div>
-      <div class="fw-meter"><div class="fw-meter-fill" style="width:${listedPct}%;background:var(--accent)"></div></div>
+      <div class="fw-meter" style="margin-top:10px">
+        <div class="fw-meter-fill" style="width:${Math.min(100, parseFloat(listedPct) * 6)}%;background:var(--accent)"></div>
+      </div>
     </div>
+
+    <!-- Card 2: Price Depth -->
     <div class="fw-card">
       <div class="fw-card-header">
         <div class="fw-val">${floor > 0 ? fmt(floor, 4) : '—'}<span class="fw-unit"> ETH</span></div>
         <span class="fw-badge fw-badge-blue">${band1} near floor</span>
       </div>
-      <div class="fw-label">Depth &amp; Distribution</div>
+      <div class="fw-label">Price Depth</div>
       <div class="fw-rows">
-        <div class="fw-row"><span class="fw-row-label">Floor band (≤+10%)</span><span class="fw-row-val">${band1} fish</span></div>
-        <div class="fw-row"><span class="fw-row-label">Mid range (1–3×)</span><span class="fw-row-val">${band2} fish</span></div>
-        <div class="fw-row"><span class="fw-row-label">Premiums (&gt;3×)</span><span class="fw-row-val">${band3} fish</span></div>
-        <div class="fw-row"><span class="fw-row-label">Median listing</span><span class="fw-row-val">${medianList > 0 ? fmt(medianList, 4) + ' ETH' : '—'}</span></div>
+        <div class="fw-row"><span class="fw-row-label">Near floor (≤ +10%)</span><span class="fw-row-val">${band1} listings</span></div>
+        <div class="fw-row"><span class="fw-row-label">Mid range (1–3× floor)</span><span class="fw-row-val">${band2} listings</span></div>
+        <div class="fw-row"><span class="fw-row-label">Premiums (&gt; 3× floor)</span><span class="fw-row-val">${band3} listings</span></div>
         ${spreadMult ? `<div class="fw-row"><span class="fw-row-label">Floor → median</span><span class="fw-row-val">${spreadMult} spread</span></div>` : ''}
       </div>
-      <div class="fw-sub">Price density (floor → ceiling)</div>
-      <div class="fw-mini-bars" style="gap:1px">
-        ${histBuckets.map((b, i) => { const h = Math.round(120 - (i / 7) * 90); return `<div class="fw-mini-bar" style="height:${Math.max(4, (b / maxHist) * 100)}%;background:hsl(${h},60%,50%)" title="${b} fish"></div>`; }).join('')}
+      <div class="fw-sub" style="margin-top:10px">Price density across all listings</div>
+      <div class="fw-mini-bars">
+        ${histBuckets.map((b, i) => {
+          const hue = Math.round(120 - (i / 7) * 90);
+          return `<div class="fw-mini-bar" style="height:${Math.max(4, (b / maxHist) * 100)}%;background:hsl(${hue},60%,50%)" title="${b} listings"></div>`;
+        }).join('')}
       </div>
-      <div class="fw-sub" style="display:flex;justify-content:space-between;margin-top:2px"><span>${floor > 0 ? fmt(floor, 3) : '?'}</span><span>${maxList > 0 ? fmt(maxList, 3) : '?'} ETH</span></div>
+      <div class="fw-sub" style="display:flex;justify-content:space-between;margin-top:3px">
+        <span>${floor > 0 ? fmt(floor, 3) : '?'} ETH</span><span>${maxList > 0 ? fmt(maxList, 3) : '?'} ETH</span>
+      </div>
     </div>
+
+    <!-- Card 3: Volume & Activity -->
     <div class="fw-card">
       <div class="fw-card-header">
-        <div class="fw-val">${fmt(totalVol, 3)}<span class="fw-unit"> ETH</span></div>
-        <span class="fw-badge fw-badge-green">${recentSales.length} sales${spanDays ? ` · ${spanDays}d` : ''}</span>
+        <div>
+          <div class="fw-val">${totalVol > 0 ? fmt(totalVol, 1) : '—'}<span class="fw-unit"> ETH</span></div>
+          ${liveEthPrice && totalVol > 0 ? `<div class="fw-sub" style="margin-top:1px">≈ ${fmtUSD(totalVol)} all-time</div>` : ''}
+        </div>
+        <span class="fw-badge ${volTrendClass}">${dayVol != null ? fmt(dayVol, 3) + ' ETH today' : sales.length + ' recent sales'}</span>
       </div>
-      <div class="fw-label">Trading Activity</div>
+      <div class="fw-label">Volume &amp; Activity</div>
       <div class="fw-rows">
-        ${allTimeHigh > 0 ? `<div class="fw-row"><span class="fw-row-label">All-time top sale</span><span class="fw-row-val">${fmt(allTimeHigh, 4)} ETH</span></div>` : ''}
-        <div class="fw-row"><span class="fw-row-label">Recent avg sale</span><span class="fw-row-val">${avgSale > 0 ? fmt(avgSale, 4) + ' ETH' : '—'}</span></div>
+        ${dayVol  != null ? `<div class="fw-row"><span class="fw-row-label">24h volume</span><span class="fw-row-val">${fmt(dayVol, 3)} ETH${u(dayVol)}</span></div>` : ''}
+        ${weekVol != null ? `<div class="fw-row"><span class="fw-row-label">7d volume</span><span class="fw-row-val">${fmt(weekVol, 3)} ETH${u(weekVol)}</span></div>` : ''}
+        ${allTimeHigh > 0 ? `<div class="fw-row"><span class="fw-row-label">All-time top sale</span><span class="fw-row-val">${fmt(allTimeHigh, 4)} ETH${u(allTimeHigh)}</span></div>` : ''}
+        ${avgSaleStat != null
+          ? `<div class="fw-row"><span class="fw-row-label">All-time avg sale</span><span class="fw-row-val">${fmt(avgSaleStat, 4)} ETH${u(avgSaleStat)}</span></div>`
+          : recentAvg > 0 ? `<div class="fw-row"><span class="fw-row-label">Recent avg sale</span><span class="fw-row-val">${fmt(recentAvg, 4)} ETH${u(recentAvg)}</span></div>` : ''}
         ${salesPerDay ? `<div class="fw-row"><span class="fw-row-label">Activity rate</span><span class="fw-row-val">${salesPerDay}/day</span></div>` : ''}
-        <div class="fw-row"><span class="fw-row-label">Unique buyers</span><span class="fw-row-val">${uniqueBuyers}</span></div>
-        <div class="fw-row"><span class="fw-row-label">Unique sellers</span><span class="fw-row-val">${uniqueSellers}</span></div>
+        <div class="fw-row"><span class="fw-row-label">Unique buyers</span><span class="fw-row-val">${uniqueBuyers || '—'}</span></div>
+        <div class="fw-row"><span class="fw-row-label">Unique sellers</span><span class="fw-row-val">${uniqueSellers || '—'}</span></div>
       </div>
-      <div class="fw-stacked-bar">
+      <div class="fw-stacked-bar" style="margin-top:10px">
         <div class="fw-bar-seg fw-seg-diamond" style="width:${dPct}%" title="Diamond Hands ${dPct}%"></div>
-        <div class="fw-bar-seg fw-seg-new" style="width:${nPct}%" title="New Buyers ${nPct}%"></div>
-        <div class="fw-bar-seg fw-seg-flip" style="width:${fPct}%" title="Flippers ${fPct}%"></div>
+        <div class="fw-bar-seg fw-seg-new"     style="width:${nPct}%" title="New Buyers ${nPct}%"></div>
+        <div class="fw-bar-seg fw-seg-flip"    style="width:${fPct}%" title="Flippers ${fPct}%"></div>
+        ${hpTotal === 0 ? `<div class="fw-bar-seg" style="width:100%;background:var(--bg2)"></div>` : ''}
       </div>
       <div class="fw-legend">
         <span class="fw-leg"><span class="fw-leg-dot fw-seg-diamond"></span>Diamond ${hp.diamondHands || 0}${hpTotal ? ` (${dPct}%)` : ''}</span>
