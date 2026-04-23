@@ -755,12 +755,6 @@ async function _deepScanSales() {
       // Small delay to not hammer the API
       await new Promise(r => setTimeout(r, 250));
     }
-    // After scan completes: always force a definitive sort + render + IDB save
-    // so the UI reflects the real top sales regardless of merge-diffs
-    _allTimeTop.sort((a, b) => parseFloat(b.eth) - parseFloat(a.eth));
-    renderTopSales(_allTimeTop);
-    await idbSet('all-sales', _allTimeTop);
-
     if (needFull) {
       await idbSet('sales-scan-meta', { ts: now, pages: page });
       // Save full results to Vercel Blob so future new visitors skip the scan
