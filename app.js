@@ -798,8 +798,10 @@ function renderTopSales(sales) {
   el.innerHTML = top3.map((s, i) => `
     <div class="top-sale-card animate-card" style="--card-delay:${i * 0.08}s" onclick="showFish(${s.idx ?? 0})">
       <div class="top-sale-rank">#${i + 1}</div>
-      <div class="top-sale-art">${s.image ? `<img src="${encodeURI(s.image)}" alt="${s.name}">` : '🐟'}
-        <div class="top-sale-price-badge">${parseFloat(s.eth).toFixed(3)} ETH</div>
+      <div class="top-sale-art">${s.image ? `<img src="${s.image}" alt="${s.name}">` : '🐟'}</div>
+      <div class="top-sale-info">
+        <div class="top-sale-name">${s.name}</div>
+        <div class="top-sale-price">${parseFloat(s.eth).toFixed(3)} ETH</div>
       </div>
     </div>`).join('');
 }
